@@ -82,7 +82,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
 /* WIZARD */
 .wizard-outer{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
-.wizard-wrap{border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);}
+.wizard-wrap{border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);overflow:visible;}
 
 /* LIVE PREVIEW PANEL */
 .live-preview-panel{position:sticky;top:20px;border:1px solid var(--border);background:var(--s1);overflow:hidden;}
@@ -101,7 +101,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .lp-status em{color:var(--lime);}
 
 /* STEP CONTENT */
-.step-content{padding:36px 40px;display:none;animation:stepIn .25s ease;}
+.step-content{padding:36px 40px 56px;display:none;animation:stepIn .25s ease;overflow:visible;}
 .step-content.active{display:block;}
 @keyframes stepIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .sc-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;margin-bottom:6px;color:var(--text);}
@@ -224,7 +224,18 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* TEXT STEP */
+/* AI TEXT ASSIST */
+.field-with-ai{position:relative;}
+.ai-assist-btn{position:absolute;top:32px;right:8px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px 10px;background:rgba(0,255,170,.12);border:1px solid rgba(0,255,170,.4);color:var(--lime);cursor:pointer;transition:all .2s;white-space:nowrap;z-index:1;}
+.ai-assist-btn:hover{background:rgba(0,255,170,.25);border-color:var(--lime);}
+.ai-assist-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-assist-btn.loading{animation:btnPulse .8s ease infinite;}
+@keyframes btnPulse{0%,100%{opacity:.4}50%{opacity:1}}
+.field-with-ai textarea,.field-with-ai input{padding-right:90px;}
+.ai-assist-all-btn{width:100%;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.12em;padding:14px;background:rgba(0,255,170,.1);border:1px solid rgba(0,255,170,.5);color:var(--lime);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;}
+.ai-assist-all-btn:hover{background:rgba(0,255,170,.2);box-shadow:0 0 20px rgba(0,255,170,.15);}
+.ai-assist-all-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-assist-all-btn svg{width:18px;height:18px;}
 .page-text-tabs{display:flex;gap:0;overflow-x:auto;margin-bottom:20px;border-bottom:1px solid var(--border);}
 .ptt-tab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;cursor:none;border:none;background:transparent;color:var(--muted2);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .ptt-tab.active{color:var(--lime);border-bottom-color:var(--lime);}
@@ -254,8 +265,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .gen-status{font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);opacity:.8;margin-top:4px;}
 
 /* NAV */
-.nav-btns{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--border);}
-.btn{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.1em;padding:11px 30px;border:none;cursor:none;transition:all .18s;}
+.nav-btns{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--border);position:relative;z-index:1;clear:both;}
+.btn{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.1em;padding:11px 30px;border:none;cursor:pointer;transition:all .18s;}
 .btn-ghost{background:transparent;color:var(--muted3);border:1px solid var(--b2);}
 .btn-ghost:hover{border-color:var(--lime);color:var(--text);}
 .btn-primary{background:var(--lime);color:#000;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
@@ -616,21 +627,51 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="step-content" id="step-7">
       <div class="sc-title">テキスト<em>入力</em></div>
       <p class="sc-desc">各セクションに載せたい内容を入力（空欄はAIが補完します）</p>
+
+      <!-- 一括AI生成ボタン -->
+      <button class="ai-assist-all-btn" id="ai-all-btn" onclick="aiAssistAll()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        全項目をAIで自動生成
+      </button>
+
       <div class="page-text-tabs" id="text-tabs">
         <div class="ptt-tab active" data-panel="txt-basic" onclick="selTxtTab(this)">基本情報</div>
         <div class="ptt-tab" data-panel="txt-service" onclick="selTxtTab(this)">サービス</div>
         <div class="ptt-tab" data-panel="txt-contact" onclick="selTxtTab(this)">連絡先</div>
         <div class="ptt-tab" data-panel="txt-extra" onclick="selTxtTab(this)">その他</div>
       </div>
+
       <div class="ptt-panel active" id="txt-basic">
-        <div class="field"><label>トップページ — メインメッセージ</label><textarea id="t-top" placeholder="例：地元の素材にこだわった手作りケーキ。ゆっくりできる空間でお待ちしています。"></textarea></div>
-        <div class="field"><label>店舗・会社の紹介（理念・こだわり）</label><textarea id="t-about" placeholder="例：2018年創業。地元農家と提携し、旬の素材を使ったメニューを提供。"></textarea></div>
-        <div class="field"><label>スタッフ・代表者の紹介（任意）</label><textarea id="t-staff" placeholder="例：代表の田中花子。20年のキャリアを経て独立。地域の皆様に愛されるお店を目指しています。" style="min-height:70px;"></textarea></div>
+        <div class="field field-with-ai">
+          <label>トップページ — メインメッセージ</label>
+          <textarea id="t-top" placeholder="例：地元の素材にこだわった手作りケーキ。ゆっくりできる空間でお待ちしています。"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-top','メインキャッチコピー・トップメッセージ')">✦ AI生成</button>
+        </div>
+        <div class="field field-with-ai">
+          <label>店舗・会社の紹介（理念・こだわり）</label>
+          <textarea id="t-about" placeholder="例：2018年創業。地元農家と提携し、旬の素材を使ったメニューを提供。"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-about','店舗・会社紹介文・理念・こだわり')">✦ AI生成</button>
+        </div>
+        <div class="field field-with-ai">
+          <label>スタッフ・代表者の紹介（任意）</label>
+          <textarea id="t-staff" placeholder="例：代表の田中花子。20年のキャリアを経て独立。地域の皆様に愛されるお店を目指しています。" style="min-height:70px;"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-staff','代表者・スタッフ紹介文')">✦ AI生成</button>
+        </div>
       </div>
+
       <div class="ptt-panel" id="txt-service">
-        <div class="field"><label>主なサービス・商品（箇条書きでOK）</label><textarea id="t-service" placeholder="例：&#10;・シフォンケーキ 各種 ¥450〜&#10;・自家焙煎コーヒー ¥500&#10;・季節のパフェ ¥980"></textarea></div>
-        <div class="field"><label>料金・プラン（任意）</label><textarea id="t-price" placeholder="例：&#10;ライトプラン：¥5,000/月&#10;スタンダード：¥10,000/月&#10;プレミアム：要相談" style="min-height:70px;"></textarea></div>
+        <div class="field field-with-ai">
+          <label>主なサービス・商品（箇条書きでOK）</label>
+          <textarea id="t-service" placeholder="例：&#10;・シフォンケーキ 各種 ¥450〜&#10;・自家焙煎コーヒー ¥500&#10;・季節のパフェ ¥980"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-service','サービス・商品一覧')">✦ AI生成</button>
+        </div>
+        <div class="field field-with-ai">
+          <label>料金・プラン（任意）</label>
+          <textarea id="t-price" placeholder="例：&#10;ライトプラン：¥5,000/月&#10;スタンダード：¥10,000/月&#10;プレミアム：要相談" style="min-height:70px;"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-price','料金プラン・価格表')">✦ AI生成</button>
+        </div>
       </div>
+
       <div class="ptt-panel" id="txt-contact">
         <div class="row2">
           <div class="field"><label>営業時間</label><input type="text" id="t-hours" placeholder="例：火〜日 10:00〜19:00 / 月曜定休"></div>
@@ -642,10 +683,20 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         </div>
         <div class="field"><label>住所・アクセス詳細</label><textarea id="t-access" placeholder="例：〒254-0000 神奈川県平塚市〇〇1-2-3 ／ JR平塚駅から徒歩5分 ／ 駐車場5台完備" style="min-height:70px;"></textarea></div>
       </div>
+
       <div class="ptt-panel" id="txt-extra">
-        <div class="field"><label>よくある質問（Q&amp;A形式で）</label><textarea id="t-faq" placeholder="例：&#10;Q: 予約は必要ですか？&#10;A: 不要ですが、5名以上の場合はご連絡ください。&#10;&#10;Q: 駐車場はありますか？&#10;A: 5台分ございます。"></textarea></div>
-        <div class="field"><label>その他AIへの指示・こだわり（任意）</label><textarea id="t-extra" placeholder="例：ペット同伴OKのテラス席あり。子供連れ歓迎。定期的にワークショップ開催。" style="min-height:60px;"></textarea></div>
+        <div class="field field-with-ai">
+          <label>よくある質問（Q&amp;A形式で）</label>
+          <textarea id="t-faq" placeholder="例：&#10;Q: 予約は必要ですか？&#10;A: 不要ですが、5名以上の場合はご連絡ください。"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-faq','よくある質問（FAQ）Q&A形式')">✦ AI生成</button>
+        </div>
+        <div class="field field-with-ai">
+          <label>その他・こだわりポイント（任意）</label>
+          <textarea id="t-extra" placeholder="例：ペット同伴OKのテラス席あり。子供連れ歓迎。定期的にワークショップ開催。" style="min-height:60px;"></textarea>
+          <button class="ai-assist-btn" onclick="aiAssistField('t-extra','こだわりポイント・特徴・アピールポイント')">✦ AI生成</button>
+        </div>
       </div>
+
       <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(7)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(7)">次へ →</button></div>
     </div>
 
@@ -654,18 +705,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <div class="sc-title">生成 &amp; <em>出力</em></div>
       <p class="sc-desc">設定を確認してAIに鍛造させましょう</p>
 
-      <!-- API KEY -->
-      <div style="background:var(--s1);border:1px solid var(--b2);padding:16px 20px;margin-bottom:16px;">
-        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:10px;">// ANTHROPIC API KEY</div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Space Mono',monospace;font-size:12px;outline:none;" oninput="saveApiKey(this.value)">
-          <button onclick="toggleApiKeyVisibility()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);padding:10px 12px;cursor:pointer;font-size:14px;" id="api-key-toggle">👁</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-          <div style="font-size:10px;color:var(--muted2);font-family:'Space Mono',monospace;" id="api-key-status">// キーが未入力です</div>
-          <a href="https://console.anthropic.com" target="_blank" style="font-size:10px;color:var(--lime);font-family:'Space Mono',monospace;text-decoration:none;">APIキーを取得 →</a>
-        </div>
-      </div>
+      <!-- API KEY 不要（Vercelバックエンドで管理） -->
 
       <div style="background:var(--s1);border:1px solid var(--border);padding:20px;margin-bottom:20px;">
         <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:14px;">// SUMMARY</div>
@@ -803,49 +843,45 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
     var oc = document.createElement('canvas');
     oc.width = W; oc.height = H;
     var c = oc.getContext('2d');
-    var fs = Math.min(W/5.5, 160);
+    var fs = Math.min(W/4.5, 180);
     c.fillStyle = '#fff';
     c.font = '900 '+fs+"px 'Bebas Neue',sans-serif";
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('SITE//FORGE', W/2, H/2 - fs*0.1);
-    var sub = Math.min(W/28, 14);
-    c.font = sub+"px 'Space Mono',monospace";
-    c.fillText('HPを鍛造する', W/2, H/2 + fs*0.65);
+    c.fillText('SITE//FORGE', W/2, H/2 - fs*0.08);
+    var sub = Math.min(W/22, 18);
+    c.font = '700 '+sub+"px 'Space Mono',monospace";
+    c.fillText('HP\u3092\u935b\u9020\u3059\u308b', W/2, H/2 + fs*0.62);
     var data = c.getImageData(0,0,W,H).data;
     var pts = [];
-    var gap = Math.max(3, Math.floor(W/300));
+    var gap = Math.max(5, Math.floor(W/120));
     for(var y=0;y<H;y+=gap){
       for(var x=0;x<W;x+=gap){
-        var i=(y*W+x)*4;
-        if(data[i+3]>128) pts.push({x:x,y:y});
+        var idx=(y*W+x)*4;
+        if(data[idx+3]>128) pts.push({x:x,y:y});
       }
     }
     return pts;
   }
 
   function makeParticle(i) {
-    // 画面全体にびっしり散らばった初期配置
     var tp = textPixels.length ? textPixels[i % textPixels.length] : {x:W/2,y:H/2};
-    // グリッド状に配置してランダムオフセットを加える → 均一に全体を覆う
-    var cols = Math.ceil(Math.sqrt((W/H) * 1800));
-    var rows = Math.ceil(1800 / cols);
+    var cols = Math.ceil(Math.sqrt((W/H) * 1200));
+    var rows = Math.ceil(1200 / cols);
     var col = i % cols;
     var row = Math.floor(i / cols) % rows;
-    var px = (col / cols) * W + (Math.random()-0.5) * (W/cols) * 1.5;
-    var py = (row / rows) * H + (Math.random()-0.5) * (H/rows) * 1.5;
+    var px = (col / cols) * W + (Math.random()-0.5) * (W/cols) * 2;
+    var py = (row / rows) * H + (Math.random()-0.5) * (H/rows) * 2;
     px = Math.max(-20, Math.min(W+20, px));
     py = Math.max(-20, Math.min(H+20, py));
-    var ba = 0.25 + Math.random()*0.55;
-    var tp = textPixels.length ? textPixels[i % textPixels.length] : {x:W/2,y:H/2};
     return {
       x: px, y: py,
-      vx: (Math.random()-0.5)*0.6,
-      vy: (Math.random()-0.5)*0.6,
+      vx: (Math.random()-0.5)*0.8,
+      vy: (Math.random()-0.5)*0.8,
       word: siteWords[Math.floor(Math.random()*siteWords.length)],
-      size: 7 + Math.random()*7,
-      alpha: ba * 0.3,
-      baseAlpha: ba,
-      color: Math.random()<0.5 ? LIME : BLUE,
+      size: 9 + Math.random()*8,
+      alpha: 0.5 + Math.random()*0.4,
+      baseAlpha: 0.6 + Math.random()*0.4,
+      color: Math.random()<0.6 ? LIME : BLUE,
       tx: tp.x, ty: tp.y,
       gathered: false
     };
@@ -856,66 +892,71 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
   function updateParticle(p, prog) {
     if(phase==='scatter'){
       p.x+=p.vx; p.y+=p.vy;
-      p.vx+=(Math.random()-0.5)*0.03;
-      p.vy+=(Math.random()-0.5)*0.03;
-      p.vx*=0.982; p.vy*=0.982;
+      p.vx+=(Math.random()-0.5)*0.04;
+      p.vy+=(Math.random()-0.5)*0.04;
+      p.vx*=0.985; p.vy*=0.985;
       if(p.x<-60) p.x=W+40;
       if(p.x>W+60) p.x=-40;
       if(p.y<-40) p.y=H+20;
       if(p.y>H+40) p.y=-20;
-      p.alpha=Math.min(p.baseAlpha, p.alpha+0.015);
     } else if(phase==='gather'){
       var dx=p.tx-p.x, dy=p.ty-p.y;
       var d=Math.sqrt(dx*dx+dy*dy);
-      var spd=0.028+prog*0.055;
+      var spd=0.03+prog*0.07;
       p.x+=dx*spd; p.y+=dy*spd;
-      p.alpha=Math.min(1,p.alpha+0.01);
-      p.size=Math.max(1.5,p.size*0.984);
-      if(d<2) p.gathered=true;
+      p.alpha=Math.min(1,p.alpha+0.012);
+      p.size=Math.max(3,p.size*0.97);
+      if(d<3) p.gathered=true;
     } else if(phase==='hold'){
-      p.x=p.tx+(Math.random()-0.5)*0.4;
-      p.y=p.ty+(Math.random()-0.5)*0.4;
-      p.alpha=Math.min(1,p.alpha+0.02);
+      p.x=p.tx+(Math.random()-0.5)*0.6;
+      p.y=p.ty+(Math.random()-0.5)*0.6;
+      p.alpha=Math.min(1,p.alpha+0.03);
     } else if(phase==='explode'){
-      // 中心から外側に向かって加速しながら飛び散る
       var angle=Math.atan2(p.ty-H/2, p.tx-W/2);
-      var burst=3+Math.random()*8;
-      p.vx+=(Math.random()-0.5)*3 + Math.cos(angle)*burst*0.5;
-      p.vy+=(Math.random()-0.5)*3 + Math.sin(angle)*burst*0.5;
+      var burst=6+Math.random()*14;
+      p.vx+=(Math.random()-0.5)*5 + Math.cos(angle)*burst*0.6;
+      p.vy+=(Math.random()-0.5)*5 + Math.sin(angle)*burst*0.6;
       p.x+=p.vx; p.y+=p.vy;
-      // 時間とともにどんどん加速
-      p.vx*=1.04; p.vy*=1.04;
-      p.alpha-=0.018;
-      p.size*=0.97;
-    } else if(phase==='rescatter'){
-      p.alpha=Math.max(0,p.alpha-0.02);
+      p.vx*=1.05; p.vy*=1.05;
+      p.alpha-=0.022;
+      p.size*=0.96;
     }
   }
 
   function drawParticle(p) {
-    if(p.alpha<=0.01) return;
+    if(p.alpha<=0.02) return;
     ctx.save();
     ctx.globalAlpha=Math.max(0,Math.min(1,p.alpha));
     if((phase==='gather'&&p.gathered)||phase==='hold'){
-      // 集まった状態：輝くドット
-      ctx.fillStyle=LIME;
-      ctx.fillRect(p.tx-1,p.ty-1,2,2);
-      ctx.globalAlpha*=0.25;
-      ctx.fillStyle=LIME;
-      ctx.fillRect(p.tx-4,p.ty-4,8,8);
-    } else if(phase==='explode'){
-      // 爆発：カラフルな光の粒
-      ctx.fillStyle=p.color;
+      var r = 3;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(p.x,p.y,Math.max(0.5,p.size*0.35),0,Math.PI*2);
+      ctx.arc(p.tx, p.ty, r, 0, Math.PI*2);
       ctx.fill();
-      // 残像トレイル
-      ctx.globalAlpha*=0.3;
+      ctx.globalAlpha *= 0.2;
+      ctx.shadowBlur = 20;
       ctx.beginPath();
-      ctx.arc(p.x-p.vx*2,p.y-p.vy*2,Math.max(0.3,p.size*0.2),0,Math.PI*2);
+      ctx.arc(p.tx, p.ty, r*3, 0, Math.PI*2);
+      ctx.fill();
+    } else if(phase==='explode'){
+      var rr = Math.max(1, p.size*0.4);
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, rr, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha *= 0.4;
+      ctx.beginPath();
+      ctx.arc(p.x-p.vx*3, p.y-p.vy*3, rr*0.6, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha *= 0.5;
+      ctx.beginPath();
+      ctx.arc(p.x-p.vx*6, p.y-p.vy*6, rr*0.3, 0, Math.PI*2);
       ctx.fill();
     } else {
-      // scatter / rescatter：サイト名テキスト
       ctx.fillStyle=p.color;
       ctx.font=p.size+"px 'Space Mono',monospace";
       ctx.fillText(p.word,p.x,p.y);
@@ -927,7 +968,7 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
     resize();
     setTimeout(function(){
       textPixels=sampleText();
-      var count=Math.min(Math.max(textPixels.length, 1400), 1800);
+      var count=Math.min(Math.max(textPixels.length, 800), 1200);
       particles=[];
       for(var i=0;i<count;i++) particles.push(makeParticle(i));
       requestAnimationFrame(loop);
@@ -941,58 +982,59 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
     var dt=Math.min(t-lastTime,32);
     lastTime=t; phaseT+=dt;
 
-    // フェーズ遷移
-    if(phase==='scatter'&&phaseT>2000){
+    if(phase==='scatter'&&phaseT>2200){
       phase='gather'; phaseT=0;
       for(var i=0;i<particles.length;i++) particles[i].gathered=false;
     }
-    else if(phase==='gather'&&phaseT>3800){phase='hold';phaseT=0;}
-    else if(phase==='hold'&&phaseT>1200){
+    else if(phase==='gather'&&phaseT>3500){phase='hold';phaseT=0;}
+    else if(phase==='hold'&&phaseT>1400){
       phase='explode'; phaseT=0;
       for(var i=0;i<particles.length;i++){
-        particles[i].vx=(Math.random()-0.5)*1;
-        particles[i].vy=(Math.random()-0.5)*1;
+        particles[i].vx=(Math.random()-0.5)*0.5;
+        particles[i].vy=(Math.random()-0.5)*0.5;
       }
     }
-    else if(phase==='explode'&&phaseT>1400){phase='done';hideLdr();return;}
+    else if(phase==='explode'&&phaseT>1600){phase='done';hideLdr();return;}
 
-    // 背景
-    var bgA = phase==='hold' ? 0.08
-            : phase==='explode' ? 0.16
-            : 0.10;
+    var bgA = phase==='hold' ? 0.06 : phase==='explode' ? 0.18 : 0.12;
     ctx.fillStyle='rgba(2,4,8,'+bgA+')';
     ctx.fillRect(0,0,W,H);
 
-    var prog=Math.min(1,phaseT/(phase==='gather'?3800:1));
+    var prog=Math.min(1,phaseT/(phase==='gather'?3500:1));
     for(var i=0;i<particles.length;i++){
       updateParticle(particles[i],prog);
       drawParticle(particles[i]);
     }
 
-    // hold中：テキストグロー
     if(phase==='hold'){
       ctx.save();
-      var glow=0.12+Math.sin(phaseT*0.006)*0.06;
-      ctx.globalAlpha=glow;
-      var fs=Math.min(W/5.5,160);
+      var fs=Math.min(W/4.5,180);
+      ctx.fillStyle='rgba(2,4,8,0.3)';
+      ctx.fillRect(0,0,W,H);
+      ctx.shadowColor=LIME;
+      ctx.shadowBlur=70;
+      ctx.globalAlpha=0.4+Math.sin(phaseT*0.006)*0.12;
+      ctx.fillStyle=LIME;
       ctx.font='900 '+fs+"px 'Bebas Neue',sans-serif";
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillStyle=LIME;
-      ctx.shadowColor=LIME; ctx.shadowBlur=30;
-      ctx.fillText('SITE//FORGE',W/2,H/2-fs*0.1);
+      ctx.fillText('SITE//FORGE',W/2,H/2-fs*0.08);
+      ctx.shadowBlur=20;
+      ctx.globalAlpha=0.3+Math.sin(phaseT*0.006)*0.06;
+      var sub=Math.min(W/22,18);
+      ctx.font='700 '+sub+"px 'Space Mono',monospace";
+      ctx.fillStyle='#fff';
+      ctx.fillText('HP\u3092\u935b\u9020\u3059\u308b',W/2,H/2+fs*0.62);
       ctx.restore();
     }
 
-    // explode中：フラッシュ
-    if(phase==='explode'&&phaseT<200){
+    if(phase==='explode'&&phaseT<300){
       ctx.save();
-      ctx.globalAlpha=(1-phaseT/200)*0.15;
-      ctx.fillStyle=LIME;
+      ctx.globalAlpha=(1-phaseT/300)*0.55;
+      ctx.fillStyle='#fff';
       ctx.fillRect(0,0,W,H);
       ctx.restore();
     }
   }
-
   function hideLdr(){
     done=true; cancelAnimationFrame(animId);
     var el=document.getElementById('loader');
@@ -1195,30 +1237,30 @@ uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag-over
 
 // ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
-async function generateImage(){
-  const prompt = document.getElementById('ai-img-prompt').value.trim();
+function generateImage(){
+  var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
-  const btn = document.getElementById('ai-gen-btn');
-  const loading = document.getElementById('ai-gen-loading');
+  var btn = document.getElementById('ai-gen-btn');
+  var loading = document.getElementById('ai-gen-loading');
   btn.disabled=true; loading.classList.add('show');
-  const seed = Math.floor(Math.random()*999999);
-  const encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
-  const url = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=384&seed=${seed}&nologo=true`;
-  const results = document.getElementById('ai-img-results');
-  const img = document.createElement('img');
+  var seed = Math.floor(Math.random()*999999);
+  var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
+  var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
+  var results = document.getElementById('ai-img-results');
+  var img = document.createElement('img');
   img.className='ai-img-result';
   img.src=url;
-  img.onload=()=>{
+  img.onload=function(){
     loading.classList.remove('show');
     btn.disabled=false;
     S.aiImages.push(url);
-    img.onclick=()=>{
+    img.onclick=function(){
       img.classList.toggle('selected');
       if(img.classList.contains('selected')) S.selectedImages.push(url);
-      else S.selectedImages=S.selectedImages.filter(i=>i!==url);
+      else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
     };
   };
-  img.onerror=()=>{loading.classList.remove('show');btn.disabled=false;alert('生成に失敗しました。再試行してください。');};
+  img.onerror=function(){loading.classList.remove('show');btn.disabled=false;alert('生成に失敗しました。再試行してください。');};
   results.prepend(img);
 }
 
@@ -1270,6 +1312,82 @@ function buildSummary(){
 }
 
 // ===== GENERATE =====
+// ===== AI TEXT ASSIST =====
+function aiAssistField(fieldId, fieldType) {
+  var siteName = document.getElementById('site-name').value||'店舗名未入力';
+  var industry = (S.industryCat||'') + (S.industrySub?' / '+S.industrySub:'');
+  var vibe = S.vibe||'プロフェッショナル';
+  var catchcopy = document.getElementById('catchcopy').value||'';
+  var existing = document.getElementById(fieldId).value||'';
+
+  var btn = document.querySelector('[onclick*="aiAssistField(\''+fieldId+'\'"]');
+  if(btn){ btn.disabled=true; btn.textContent='生成中...'; btn.classList.add('loading'); }
+
+  var prompt = '以下の情報をもとに、ウェブサイト用の「'+fieldType+'」テキストを日本語で生成してください。\n\n'
+    +'店舗名/サービス名：'+siteName+'\n'
+    +'業種：'+industry+'\n'
+    +'雰囲気・テイスト：'+vibe+'\n'
+    +(catchcopy?'キャッチコピー：'+catchcopy+'\n':'')
+    +(existing?'既存の入力内容（参考）：'+existing+'\n':'')
+    +'\n出力形式：そのままHTMLに使える自然な日本語テキストのみ。説明や前置き不要。200文字以内が理想。';
+
+  return fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:400,
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(function(res){ return res.json(); })
+  .then(function(data){
+    if(data.error) throw new Error(data.error.message);
+    var text = data.content.map(function(b){return b.text||'';}).join('').trim();
+    var el = document.getElementById(fieldId);
+    el.value='';
+    var i=0;
+    var timer=setInterval(function(){
+      if(i>=text.length){clearInterval(timer);return;}
+      el.value+=text[i++];
+    },12);
+  }).catch(function(err){
+    alert('生成エラー: '+err.message);
+  }).then(function(){
+    if(btn){ btn.disabled=false; btn.textContent='✦ AI生成'; btn.classList.remove('loading'); }
+  });
+}
+
+function aiAssistAll() {
+  var btn = document.getElementById('ai-all-btn');
+  btn.disabled=true;
+  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 生成中...';
+
+  var fields = [
+    {id:'t-top',    type:'メインキャッチコピー・トップメッセージ（短く力強く）'},
+    {id:'t-about',  type:'店舗・会社紹介文・理念・こだわり（温かみのある文体で）'},
+    {id:'t-staff',  type:'代表者・スタッフ紹介文（親しみやすく）'},
+    {id:'t-service',type:'主なサービス・商品一覧（箇条書き形式）'},
+    {id:'t-price',  type:'料金プラン（シンプルな表形式）'},
+    {id:'t-faq',    type:'よくある質問3件（Q: A: 形式）'},
+    {id:'t-extra',  type:'こだわりポイント・特徴・アピール文'},
+  ];
+
+  var chain = Promise.resolve();
+  fields.forEach(function(f){
+    chain = chain.then(function(){
+      return aiAssistField(f.id, f.type);
+    }).then(function(){
+      return new Promise(function(r){setTimeout(r,400);});
+    });
+  });
+  chain.then(function(){
+    btn.disabled=false;
+    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 全項目をAIで自動生成';
+  });
+}
+
 // ===== FONT EXPAND =====
 function toggleFontExtra(type) {
   var extraId = type === 'heading' ? 'heading-font-extra' : 'body-font-extra';
@@ -1313,107 +1431,105 @@ function loadApiKey(){
   }
 }
 
-async function generateSite(){
-  const btn = document.getElementById('gen-btn');
-  const gen = document.getElementById('generating');
-  const st = document.getElementById('gen-status');
+function generateSite(){
+  var btn = document.getElementById('gen-btn');
+  var gen = document.getElementById('generating');
+  var st = document.getElementById('gen-status');
   btn.style.display='none'; gen.classList.add('show');
-  const msgs=['analyzing requirements...','building layout structure...','applying design tokens...','generating copy & content...','assembling sections...','optimizing responsive layout...','finalizing HTML output...'];
-  let mi=0;
-  const timer=setInterval(()=>{st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
+  var msgs=['analyzing requirements...','building layout structure...','applying design tokens...','generating copy & content...','assembling sections...','optimizing responsive layout...','finalizing HTML output...'];
+  var mi=0;
+  var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
 
-  const pal = palData[S.globalPalette]||palData['mono-light'];
-  const pageColorInstructions = Object.keys(S.pageColors).length ?
-    '【ページ毎カラー設定】\n'+Object.entries(S.pageColors).map(([p,c])=>`${p}: 背景${c.bg||'継承'} テキスト${c.text||'継承'} アクセント${c.accent||'継承'}`).join('\n') : '';
-  const allImgs = [...S.uploadedImages, ...S.selectedImages];
-  const imgInstructions = allImgs.length ? `【使用画像】\n以下の画像データを実際に使用してください（data URI または URL）:\n${allImgs.slice(0,5).map((img,i)=>`画像${i+1}: ${img.startsWith('data:')?'[アップロード画像 - img要素のsrcに直接このdata URIを使用]':img}`).join('\n')}` : '※画像はプレースホルダーを使用';
+  var pal = palData[S.globalPalette]||palData['mono-light'];
 
-  const prompt = `あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。
-
-【基本情報】
-- サイト名：${S.siteName}
-- 業種カテゴリ：${S.industryCat}
-- 業種詳細：${S.industrySub||'一般'}
-- キャッチコピー：${S.catchcopy||'（業種に合わせてAIが考案）'}
-- 所在地：${S.location||'なし'}
-- 設立：${S.founded||'なし'}
-
-【コンテンツ】
-- メインメッセージ：${S.texts.top||'（AIが業種に合わせて生成）'}
-- 紹介文：${S.texts.about||'（AIが生成）'}
-- スタッフ：${S.texts.staff||'なし'}
-- サービス：${S.texts.service||'（AIが業種に合わせて生成）'}
-- 料金：${S.texts.price||'なし'}
-- 営業時間：${S.texts.hours||'なし'}
-- 電話：${S.texts.tel||'なし'}
-- メール：${S.texts.email||'なし'}
-- SNS：${S.texts.sns||'なし'}
-- アクセス：${S.texts.access||'なし'}
-- FAQ：${S.texts.faq||'なし'}
-- その他：${S.texts.extra||'なし'}
-
-【デザイン仕様】
-- 雰囲気・テイスト：${S.vibe||'モダン・プロフェッショナル'}
-- 全体背景色：${S.customBg||pal.bg}
-- 全体テキスト色：${pal.text}
-- アクセントカラー：${S.customAccent||pal.accent}
-- ナビ背景色：${pal.nav}
-- 見出しフォント：${S.headingFont||'Noto Sans JP'}
-- 本文フォント：${S.bodyFont||'Noto Sans JP'}
-${pageColorInstructions}
-
-【ページ構成（セクションとして実装）】
-${S.pages.join('\n')}
-
-${imgInstructions}
-
-【技術要件】
-- 完全なHTML/CSS/JSを1ファイル
-- Google Fontsインポート
-- スマートフォン・タブレット対応（完全レスポンシブ）
-- スティッキーナビゲーション（スムーズスクロール付き）
-- スクロールアニメーション（IntersectionObserver使用）
-- ハンバーガーメニュー（モバイル用）
-- 各セクションにビジュアル装飾・区切り線・背景パターン等
-- フッターに著作権・連絡先情報
-- プロフェッショナルな品質のダミーコンテンツで充填
-- 画像がない場合はCSSグラデーション・SVGパターンで代替
-
-HTMLのみを出力。コードブロック記法・説明文不要。<!DOCTYPE html>から開始。`;
-
-  try {
-    const apiKey = localStorage.getItem('sf_api_key') || '';
-    if(!apiKey){ throw new Error('APIキーが入力されていません。STEP 8でAPIキーを入力してください。'); }
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,messages:[{role:'user',content:prompt}]})
+  var pageColorInstructions = '';
+  var pcKeys = Object.keys(S.pageColors);
+  if(pcKeys.length){
+    pageColorInstructions = '【ページ毎カラー設定】\n';
+    pcKeys.forEach(function(p){
+      var c=S.pageColors[p];
+      pageColorInstructions += p+': 背景'+(c.bg||'継承')+' テキスト'+(c.text||'継承')+' アクセント'+(c.accent||'継承')+'\n';
     });
+  }
+
+  var allImgs = S.uploadedImages.concat(S.selectedImages);
+  var imgInstructions = allImgs.length
+    ? '【使用画像】\n以下の画像データを実際に使用してください:\n'+allImgs.slice(0,5).map(function(img,i){return '画像'+(i+1)+': '+(img.indexOf('data:')===0?'[アップロード画像 - img要素のsrcに直接このdata URIを使用]':img);}).join('\n')
+    : '※画像はプレースホルダーを使用';
+
+  var prompt = 'あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。\n\n'
+    +'【基本情報】\n'
+    +'- サイト名：'+S.siteName+'\n'
+    +'- 業種カテゴリ：'+S.industryCat+'\n'
+    +'- 業種詳細：'+(S.industrySub||'一般')+'\n'
+    +'- キャッチコピー：'+(S.catchcopy||'（業種に合わせてAIが考案）')+'\n'
+    +'- 所在地：'+(S.location||'なし')+'\n'
+    +'- 設立：'+(S.founded||'なし')+'\n\n'
+    +'【コンテンツ】\n'
+    +'- メインメッセージ：'+(S.texts.top||'（AIが業種に合わせて生成）')+'\n'
+    +'- 紹介文：'+(S.texts.about||'（AIが生成）')+'\n'
+    +'- スタッフ：'+(S.texts.staff||'なし')+'\n'
+    +'- サービス：'+(S.texts.service||'（AIが業種に合わせて生成）')+'\n'
+    +'- 料金：'+(S.texts.price||'なし')+'\n'
+    +'- 営業時間：'+(S.texts.hours||'なし')+'\n'
+    +'- 電話：'+(S.texts.tel||'なし')+'\n'
+    +'- メール：'+(S.texts.email||'なし')+'\n'
+    +'- SNS：'+(S.texts.sns||'なし')+'\n'
+    +'- アクセス：'+(S.texts.access||'なし')+'\n'
+    +'- FAQ：'+(S.texts.faq||'なし')+'\n'
+    +'- その他：'+(S.texts.extra||'なし')+'\n\n'
+    +'【デザイン仕様】\n'
+    +'- 雰囲気・テイスト：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
+    +'- 全体背景色：'+(S.customBg||pal.bg)+'\n'
+    +'- 全体テキスト色：'+pal.text+'\n'
+    +'- アクセントカラー：'+(S.customAccent||pal.accent)+'\n'
+    +'- ナビ背景色：'+pal.nav+'\n'
+    +'- 見出しフォント：'+(S.headingFont||'Noto Sans JP')+'\n'
+    +'- 本文フォント：'+(S.bodyFont||'Noto Sans JP')+'\n'
+    +pageColorInstructions+'\n'
+    +'【ページ構成（セクションとして実装）】\n'
+    +S.pages.join('\n')+'\n\n'
+    +imgInstructions+'\n\n'
+    +'【技術要件】\n'
+    +'- 完全なHTML/CSS/JSを1ファイル\n'
+    +'- Google Fontsインポート\n'
+    +'- スマートフォン・タブレット対応（完全レスポンシブ）\n'
+    +'- スティッキーナビゲーション（スムーズスクロール付き）\n'
+    +'- スクロールアニメーション（IntersectionObserver使用）\n'
+    +'- ハンバーガーメニュー（モバイル用）\n'
+    +'- 各セクションにビジュアル装飾・区切り線・背景パターン等\n'
+    +'- フッターに著作権・連絡先情報\n'
+    +'- プロフェッショナルな品質のダミーコンテンツで充填\n'
+    +'- 画像がない場合はCSSグラデーション・SVGパターンで代替\n\n'
+    +'HTMLのみを出力。コードブロック記法・説明文不要。<!DOCTYPE html>から開始。';
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:8000,messages:[{role:'user',content:prompt}]})
+  }).then(function(res){return res.json();})
+  .then(function(data){
     clearInterval(timer);
-    const data = await res.json();
     if(data.error) throw new Error(data.error.message);
-    let html = data.content.map(b=>b.text||'').join('');
+    var html = data.content.map(function(b){return b.text||'';}).join('');
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
     showResult(html);
-  } catch(err){
+  }).catch(function(err){
     clearInterval(timer);
     gen.classList.remove('show'); btn.style.display='flex';
     alert('生成エラー: '+err.message);
-  }
+  });
 }
 
 function showResult(html){
-  const rs = document.getElementById('result-section');
+  var rs = document.getElementById('result-section');
   rs.classList.add('show');
   document.getElementById('preview-frame').srcdoc=html;
   document.getElementById('code-pre').textContent=html;
-  setTimeout(()=>rs.scrollIntoView({behavior:'smooth'}),100);
+  setTimeout(function(){rs.scrollIntoView({behavior:'smooth'});},100);
 }
 function showPrev(){
   document.getElementById('device-wrap').style.display='flex';
