@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SITE//FORGE v2 — HPを鍛造する</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+<title>Neural Overflow — AIでHPを作る</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#04060a;--s1:#080d14;--s2:#0e1825;--s3:#141e2e;
@@ -25,6 +25,14 @@ body:hover #cur{width:10px;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,180,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:9990;}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9100;}
+#splash.hide{display:none;}
+.splash-produced{font-family:'Space Mono',monospace;font-size:clamp(11px,2vw,14px);letter-spacing:.4em;color:#ffffff;text-transform:lowercase;opacity:0;transition:opacity 1.8s;}
+.splash-produced.show{opacity:1;}
+.splash-brand{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,5vw,60px);letter-spacing:.12em;color:#fff;opacity:0;transition:opacity 1.8s;text-align:center;line-height:1.1;white-space:nowrap;}
+.splash-brand.show{opacity:1;}
+
 /* LOADER */
 #loader{position:fixed;inset:0;background:#020408;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9000;transition:opacity 1s,visibility 1s;}
 #loader.hide{opacity:0;visibility:hidden;pointer-events:none;}
@@ -38,8 +46,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .h-bgtxt{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(120px,24vw,300px);color:transparent;-webkit-text-stroke:1px rgba(0,200,255,.08);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;user-select:none;}
 .h-tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.22em;text-transform:uppercase;margin-bottom:22px;opacity:0;animation:fup .6s .3s forwards;}
 .h-tag::before{content:'// ';}
-.h-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(70px,15vw,210px);line-height:.87;letter-spacing:.02em;margin-bottom:28px;opacity:0;animation:fup .7s .5s forwards;}
-.h-title em{color:var(--lime);font-style:normal;}
+.h-title{font-family:'Audiowide',sans-serif;font-size:clamp(42px,10vw,130px);line-height:.9;letter-spacing:.02em;margin-bottom:28px;opacity:0;animation:fup .7s .5s forwards;font-style:italic;transform:skewX(-6deg);}
+.h-title em{color:#4d7fff;font-style:italic;background:linear-gradient(135deg,#4d7fff,#38b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .h-sub{font-size:clamp(13px,1.7vw,17px);color:var(--muted3);font-weight:300;max-width:440px;line-height:1.85;margin-bottom:44px;opacity:0;animation:fup .7s .7s forwards;}
 .h-cta{display:inline-flex;align-items:center;gap:12px;background:var(--lime);color:#000;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.1em;padding:16px 40px;border:none;cursor:none;text-decoration:none;transition:all .18s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));opacity:0;animation:fup .7s .9s forwards;}
 .h-cta:hover{background:#fff;transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--lime);}
@@ -143,6 +151,48 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .page-card-name{font-size:12px;font-weight:700;color:var(--text);}
 .page-card-desc{font-size:10px;color:var(--muted2);margin-top:2px;}
 .page-tag{font-family:'Space Mono',monospace;font-size:9px;color:var(--lime);padding:2px 7px;border:1px solid var(--border);flex-shrink:0;}
+
+/* LAYOUT SELECT */
+.layout-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.layout-card{border:1px solid var(--border);padding:12px;cursor:pointer;transition:all .15s;background:var(--s1);position:relative;}
+.layout-card:hover{border-color:var(--b2);}
+.layout-card.selected{border-color:var(--lime);background:rgba(0,255,170,.04);}
+.layout-card.selected::after{content:'✓';position:absolute;top:6px;right:8px;font-size:10px;color:var(--lime);}
+.layout-preview{height:80px;background:var(--s2);margin-bottom:8px;position:relative;overflow:hidden;border:1px solid var(--border);}
+.layout-name{font-size:11px;font-weight:700;color:var(--text);letter-spacing:.05em;}
+.layout-desc{font-size:9px;color:var(--muted2);margin-top:2px;}
+/* ミニプレビューのCSS */
+.lp-nav{position:absolute;top:0;left:0;right:0;height:10px;background:rgba(255,255,255,.15);}
+.lp-hero-full{position:absolute;inset:10px 0 0;background:linear-gradient(135deg,rgba(0,255,170,.3),rgba(56,184,255,.2));display:flex;align-items:center;justify-content:center;}
+.lp-hero-split{position:absolute;inset:10px 0 0;display:flex;}
+.lp-hero-split-l{flex:1;background:rgba(255,255,255,.05);display:flex;flex-direction:column;justify-content:center;padding:4px;}
+.lp-hero-split-r{flex:1;background:linear-gradient(135deg,rgba(0,255,170,.2),rgba(56,184,255,.15));}
+.lp-text-block{width:60%;height:4px;background:rgba(255,255,255,.4);margin:2px 4px;border-radius:1px;}
+.lp-text-block.sm{width:40%;height:3px;background:rgba(255,255,255,.25);}
+.lp-big-text{font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(0,255,170,.8);letter-spacing:.05em;}
+.lp-grid-3{position:absolute;inset:10px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;}
+.lp-grid-cell{background:rgba(255,255,255,.08);}
+.lp-grid-cell:first-child{background:linear-gradient(135deg,rgba(0,255,170,.3),rgba(56,184,255,.2));}
+.lp-minimal{position:absolute;inset:10px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
+.lp-center-line{width:40%;height:3px;background:rgba(255,255,255,.4);border-radius:1px;}
+.lp-center-line.sm{width:25%;height:2px;background:rgba(255,255,255,.2);}
+.lp-cards{position:absolute;inset:10px 0 0;display:flex;gap:2px;padding:4px 2px;}
+.lp-card-item{flex:1;background:rgba(255,255,255,.08);border-top:2px solid rgba(0,255,170,.5);}
+.lp-japanese{position:absolute;inset:10px 0 0;background:rgba(180,140,80,.1);display:flex;align-items:center;justify-content:center;}
+.lp-jp-line{width:2px;height:50%;background:rgba(180,140,80,.6);margin:0 3px;}
+.lp-editorial{position:absolute;inset:10px 0 0;display:grid;grid-template-columns:2fr 1fr;gap:2px;}
+.lp-editorial-main{background:linear-gradient(180deg,rgba(0,255,170,.2),transparent);}
+.lp-editorial-side{display:flex;flex-direction:column;gap:2px;}
+.lp-editorial-sm{flex:1;background:rgba(255,255,255,.06);}
+.lp-corporate{position:absolute;inset:10px 0 0;display:flex;flex-direction:column;}
+.lp-corp-hero{flex:2;background:linear-gradient(135deg,rgba(56,184,255,.25),rgba(0,255,170,.15));display:flex;align-items:center;padding:4px;}
+.lp-corp-bottom{flex:1;display:flex;gap:2px;padding:2px;}
+.lp-corp-btn{background:rgba(0,255,170,.3);border-radius:1px;}
+.lp-lp{position:absolute;inset:10px 0 0;display:flex;flex-direction:column;align-items:center;padding:4px;gap:2px;}
+.lp-lp-hero{width:100%;flex:2;background:linear-gradient(135deg,rgba(0,255,170,.2),rgba(56,184,255,.15));}
+.lp-lp-btn{width:60%;height:8px;background:rgba(0,255,170,.5);border-radius:1px;}
+.lp-lp-feature{width:100%;flex:1;display:flex;gap:2px;}
+.lp-lp-f{flex:1;background:rgba(255,255,255,.06);}
 
 /* VIBE GRID */
 .vibe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
@@ -338,6 +388,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 <div id="cur"></div>
 <div id="cur-ring"></div>
 
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-produced" id="splash-produced">produced by</div>
+  <div class="splash-brand" id="splash-brand">PRIORITY CREATIVE WORKS</div>
+</div>
+
 <!-- LOADER -->
 <div id="loader">
   <canvas id="loader-canvas"></canvas>
@@ -346,10 +402,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
 <!-- HERO -->
 <section id="hero">
-  <div class="h-bgtxt">FORGE</div>
-  <div class="h-tag">AI搭載 HP制作ツール v2</div>
-  <h1 class="h-title">SITE<br><em>//</em>FORGE</h1>
-  <p class="h-sub">質問に答えるだけで、AIがあなただけのHPを鍛造する。<br>画像生成・アップロード・細かいカラー設定まで全部入り。</p>
+  <div class="h-bgtxt">OVERFLOW</div>
+  <div class="h-tag">AI-POWERED HP BUILDER</div>
+  <h1 class="h-title">NEURAL<br><em>OVERFLOW</em></h1>
+  <p style="font-family:'Space Mono',monospace;font-size:clamp(10px,1.5vw,13px);letter-spacing:.3em;color:var(--muted2);margin-top:-20px;margin-bottom:28px;opacity:0;animation:fup .7s .7s forwards;">— Chaos of Creation —</p>
+  <p class="h-sub">質問に答えるだけで、AIがあなただけのHPを生成する。<br>画像生成・アップロード・細かいカラー設定まで全部入り。</p>
   <a href="#app" class="h-cta" id="start-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     制作をはじめる
@@ -386,15 +443,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="pb-line"></div>
     <div class="pb-step" data-step="3"><div class="pb-dot">03</div><div class="pb-label">雰囲気</div></div>
     <div class="pb-line"></div>
-    <div class="pb-step" data-step="4"><div class="pb-dot">04</div><div class="pb-label">カラー</div></div>
+    <div class="pb-step" data-step="4"><div class="pb-dot">04</div><div class="pb-label">レイアウト</div></div>
     <div class="pb-line"></div>
-    <div class="pb-step" data-step="5"><div class="pb-dot">05</div><div class="pb-label">フォント</div></div>
+    <div class="pb-step" data-step="5"><div class="pb-dot">05</div><div class="pb-label">カラー</div></div>
     <div class="pb-line"></div>
-    <div class="pb-step" data-step="6"><div class="pb-dot">06</div><div class="pb-label">画像</div></div>
+    <div class="pb-step" data-step="6"><div class="pb-dot">06</div><div class="pb-label">フォント</div></div>
     <div class="pb-line"></div>
-    <div class="pb-step" data-step="7"><div class="pb-dot">07</div><div class="pb-label">テキスト</div></div>
+    <div class="pb-step" data-step="7"><div class="pb-dot">07</div><div class="pb-label">画像</div></div>
     <div class="pb-line"></div>
-    <div class="pb-step" data-step="8"><div class="pb-dot">08</div><div class="pb-label">生成</div></div>
+    <div class="pb-step" data-step="8"><div class="pb-dot">08</div><div class="pb-label">テキスト</div></div>
+    <div class="pb-line"></div>
+    <div class="pb-step" data-step="9"><div class="pb-dot">09</div><div class="pb-label">生成</div></div>
   </div>
 
   <div class="wizard-outer">
@@ -477,8 +536,57 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(3)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(3)">次へ →</button></div>
     </div>
 
-    <!-- ===== STEP 4: カラー ===== -->
+    <!-- ===== STEP 4: レイアウト ===== -->
     <div class="step-content" id="step-4">
+      <div class="sc-title">レイアウト<em>選択</em></div>
+      <p class="sc-desc">トップページのレイアウトパターンを選んでください</p>
+      <div class="layout-grid" id="layout-grid">
+        <div class="layout-card" data-layout="FULL SCREEN HERO：全画面ビジュアル＋中央に大きなテキストとCTAボタン" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-hero-full"><span class="lp-big-text">FULL</span></div></div>
+          <div class="layout-name">01 FULL SCREEN</div><div class="layout-desc">全画面ビジュアル・インパクト重視</div>
+        </div>
+        <div class="layout-card" data-layout="SPLIT LAYOUT：左半分にテキスト・右半分に画像の2カラム構成" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-hero-split"><div class="lp-hero-split-l"><div class="lp-text-block"></div><div class="lp-text-block sm"></div><div class="lp-text-block sm"></div></div><div class="lp-hero-split-r"></div></div></div>
+          <div class="layout-name">02 SPLIT</div><div class="layout-desc">左テキスト・右画像の2カラム</div>
+        </div>
+        <div class="layout-card" data-layout="BOLD TYPOGRAPHY：超大きなタイポグラフィがメインビジュアルのテキスト主体デザイン" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div style="position:absolute;inset:10px 0 0;display:flex;align-items:center;padding:4px 6px;"><span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(0,255,170,.9);line-height:.9;">BOLD<br>TYPE</span></div></div>
+          <div class="layout-name">03 BOLD TYPE</div><div class="layout-desc">超大テキストがメイン・力強い</div>
+        </div>
+        <div class="layout-card" data-layout="MAGAZINE STYLE：雑誌風グリッドレイアウト・複数の画像とテキストブロックが混在" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-grid-3"><div class="lp-grid-cell"></div><div class="lp-grid-cell" style="background:rgba(255,255,255,.06)"></div><div class="lp-grid-cell" style="background:rgba(56,184,255,.15)"></div><div class="lp-grid-cell" style="grid-column:span 2;background:rgba(255,255,255,.04)"></div><div class="lp-grid-cell" style="background:rgba(0,255,170,.1)"></div></div></div>
+          <div class="layout-name">04 MAGAZINE</div><div class="layout-desc">雑誌風グリッド・情報量多め</div>
+        </div>
+        <div class="layout-card" data-layout="MINIMAL CENTER：余白を大きく取ったミニマルなデザイン・中央揃えのテキストのみ" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-minimal"><div class="lp-center-line"></div><div class="lp-center-line sm"></div><div class="lp-center-line sm"></div><div style="width:20%;height:6px;background:rgba(0,255,170,.4);border-radius:1px;margin-top:3px;"></div></div></div>
+          <div class="layout-name">05 MINIMAL</div><div class="layout-desc">余白重視・シンプル中央揃え</div>
+        </div>
+        <div class="layout-card" data-layout="CARD GRID：サービスカードが最初から3列で並ぶグリッドレイアウト" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div style="position:absolute;inset:10px 0 0;padding:4px;display:flex;flex-direction:column;gap:2px;"><div style="height:20px;background:linear-gradient(135deg,rgba(0,255,170,.2),rgba(56,184,255,.15));"></div><div class="lp-cards" style="position:static;flex:1;"><div class="lp-card-item"></div><div class="lp-card-item"></div><div class="lp-card-item"></div></div></div></div>
+          <div class="layout-name">06 CARD GRID</div><div class="layout-desc">サービスカード3列・わかりやすい</div>
+        </div>
+        <div class="layout-card" data-layout="JAPANESE STYLE：和風デザイン・縦組み風テキスト・和柄パターン背景" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-japanese"><div class="lp-jp-line"></div><div class="lp-jp-line"></div><div class="lp-jp-line" style="height:35%"></div><div class="lp-jp-line"></div></div></div>
+          <div class="layout-name">07 JAPANESE</div><div class="layout-desc">和風・縦組み風・伝統的</div>
+        </div>
+        <div class="layout-card" data-layout="EDITORIAL：ファッション誌・アート系の非対称グリッドレイアウト" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-editorial"><div class="lp-editorial-main"></div><div class="lp-editorial-side"><div class="lp-editorial-sm"></div><div class="lp-editorial-sm"></div><div class="lp-editorial-sm"></div></div></div></div>
+          <div class="layout-name">08 EDITORIAL</div><div class="layout-desc">非対称グリッド・アート系</div>
+        </div>
+        <div class="layout-card" data-layout="CORPORATE：スティッキーナビ＋大きなヒーロー＋下部に3つの特徴ブロック" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-corporate"><div class="lp-corp-hero"><div><div class="lp-text-block" style="margin:0 0 2px;"></div><div class="lp-text-block sm" style="margin:0;"></div></div></div><div class="lp-corp-bottom"><div class="lp-corp-btn" style="flex:1;"></div><div style="flex:1;background:rgba(255,255,255,.06);"></div><div style="flex:1;background:rgba(255,255,255,.06);"></div></div></div></div>
+          <div class="layout-name">09 CORPORATE</div><div class="layout-desc">企業HP定番・信頼感重視</div>
+        </div>
+        <div class="layout-card" data-layout="LANDING PAGE：縦長LP型・大きなCTAボタン・特徴セクションが縦に続く" onclick="selLayout(this)">
+          <div class="layout-preview"><div class="lp-nav"></div><div class="lp-lp"><div class="lp-lp-hero"></div><div class="lp-lp-btn"></div><div class="lp-lp-feature"><div class="lp-lp-f"></div><div class="lp-lp-f"></div><div class="lp-lp-f"></div></div></div></div>
+          <div class="layout-name">10 LANDING PAGE</div><div class="layout-desc">縦長LP・CTA重視・集客向け</div>
+        </div>
+      </div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(4)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(4)">次へ →</button></div>
+    </div>
+
+    <!-- ===== STEP 5: カラー ===== -->
+    <div class="step-content" id="step-5">
       <div class="sc-title">カラー<em>設定</em></div>
       <p class="sc-desc">全体テーマを選んだあと、ページ毎に細かく変更できます</p>
 
@@ -514,11 +622,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div id="page-color-panels"></div>
       </div>
 
-      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(4)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(4)">次へ →</button></div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(5)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(5)">次へ →</button></div>
     </div>
 
-    <!-- ===== STEP 5: フォント ===== -->
-    <div class="step-content" id="step-5">
+    <!-- ===== STEP 6: フォント ===== -->
+    <div class="step-content" id="step-6">
       <div class="sc-title">フォント<em>選択</em></div>
       <p class="sc-desc">見出しと本文のフォントを選んでください</p>
 
@@ -579,11 +687,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="font-card" data-fname="Noto Sans JP" onclick="selFont(this,'body')"><div class="font-preview-jp" style="font-family:'Noto Sans JP';font-size:13px;font-weight:300;">本文テキスト。細字で上品な印象。</div><div class="font-meta">NOTO SANS LIGHT // 細字・上品</div></div>
       </div>
 
-      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(5)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(5)">次へ →</button></div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(6)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(6)">次へ →</button></div>
     </div>
 
-    <!-- ===== STEP 6: 画像 ===== -->
-    <div class="step-content" id="step-6">
+    <!-- ===== STEP 7: 画像 ===== -->
+    <div class="step-content" id="step-7">
       <div class="sc-title">画像<em>設定</em></div>
       <p class="sc-desc">写真をアップロードするか、AIで画像を生成してください</p>
 
@@ -620,11 +728,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;">※ Pollinations.AIを使用。生成に数秒かかります。</div>
       </div>
 
-      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(6)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(6)">次へ →</button></div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(7)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(7)">次へ →</button></div>
     </div>
 
-    <!-- ===== STEP 7: テキスト ===== -->
-    <div class="step-content" id="step-7">
+    <!-- ===== STEP 8: テキスト ===== -->
+    <div class="step-content" id="step-8">
       <div class="sc-title">テキスト<em>入力</em></div>
       <p class="sc-desc">各セクションに載せたい内容を入力（空欄はAIが補完します）</p>
 
@@ -679,9 +787,19 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         </div>
         <div class="row2">
           <div class="field"><label>メールアドレス</label><input type="text" id="t-email" placeholder="例：info@example.com"></div>
-          <div class="field"><label>SNS（Instagram等）</label><input type="text" id="t-sns" placeholder="例：@myshop_official"></div>
+          <div class="field"><label>住所・アクセス詳細</label><input type="text" id="t-access" placeholder="例：神奈川県平塚市〇〇1-2-3"></div>
         </div>
-        <div class="field"><label>住所・アクセス詳細</label><textarea id="t-access" placeholder="例：〒254-0000 神奈川県平塚市〇〇1-2-3 ／ JR平塚駅から徒歩5分 ／ 駐車場5台完備" style="min-height:70px;"></textarea></div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:12px;margin-top:8px;">// SNS・連絡先リンク</div>
+        <div class="row2">
+          <div class="field"><label>LINE URL</label><input type="text" id="t-line" placeholder="例：https://line.me/ti/p/~XXXXXXXX"></div>
+          <div class="field"><label>Instagram URL</label><input type="text" id="t-instagram" placeholder="例：https://instagram.com/yourshop"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>X（Twitter）URL</label><input type="text" id="t-twitter" placeholder="例：https://x.com/yourshop"></div>
+          <div class="field"><label>Facebook URL</label><input type="text" id="t-facebook" placeholder="例：https://facebook.com/yourshop"></div>
+        </div>
+        <div class="field"><label>TikTok / YouTube URL（任意）</label><input type="text" id="t-other-sns" placeholder="例：https://tiktok.com/@yourshop"></div>
+        <div style="font-size:10px;color:var(--muted2);font-family:'Space Mono',monospace;margin-top:-8px;margin-bottom:16px;">// LINE URLを入力するとQRコードが自動生成されHPに埋め込まれます</div>
       </div>
 
       <div class="ptt-panel" id="txt-extra">
@@ -697,11 +815,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         </div>
       </div>
 
-      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(7)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(7)">次へ →</button></div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(8)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(8)">次へ →</button></div>
     </div>
 
-    <!-- ===== STEP 8: 生成 ===== -->
-    <div class="step-content" id="step-8">
+    <!-- ===== STEP 9: 生成 ===== -->
+    <div class="step-content" id="step-9">
       <div class="sc-title">生成 &amp; <em>出力</em></div>
       <p class="sc-desc">設定を確認してAIに鍛造させましょう</p>
 
@@ -724,7 +842,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         AIでHP生成
       </button>
-      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(8)">← 戻る</button></div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(9)">← 戻る</button></div>
     </div>
 
   </div><!-- /.wizard-wrap -->
@@ -797,6 +915,7 @@ const S = {
   industryCat:'', industrySub:'',
   pages:[],
   vibe:'',
+  layout:'',
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
@@ -811,6 +930,39 @@ const curR = document.getElementById('cur-ring');
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
 (function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
+
+// ===== SPLASH SEQUENCE =====
+(function(){
+  var splash = document.getElementById('splash');
+  var produced = document.getElementById('splash-produced');
+  var brand = document.getElementById('splash-brand');
+
+  // Phase 1: "produced by" ゆっくりフェードイン
+  setTimeout(function(){ produced.classList.add('show'); }, 500);
+
+  // Phase 2: "produced by" ゆっくりフェードアウト
+  setTimeout(function(){ produced.style.transition='opacity 1.8s'; produced.style.opacity = '0'; }, 4200);
+
+  // Phase 3: "PRIORITY CREATIVE WORKS" ゆっくりフェードイン
+  setTimeout(function(){ brand.classList.add('show'); }, 5200);
+
+  // Phase 4: ゆっくり文字が広がりながらフェードアウト → パーティクルへ
+  setTimeout(function(){
+    brand.style.transition = 'opacity 1.5s, letter-spacing 1.5s';
+    brand.style.letterSpacing = '1em';
+    brand.style.opacity = '0';
+    setTimeout(function(){
+      splash.classList.add('hide');
+    }, 1200);
+  }, 8000);
+
+  // タップでスキップ
+  splash.addEventListener('click', function(){
+    splash.classList.add('hide');
+    // パーティクルを即開始
+    if(typeof startParticlesNow === 'function') startParticlesNow();
+  });
+})();
 
 // ===== PARTICLE INTRO =====
 (function(){
@@ -847,10 +999,10 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
     c.fillStyle = '#fff';
     c.font = '900 '+fs+"px 'Bebas Neue',sans-serif";
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('SITE//FORGE', W/2, H/2 - fs*0.08);
+    c.fillText('NEURAL OVERFLOW', W/2, H/2 - fs*0.08);
     var sub = Math.min(W/22, 18);
     c.font = '700 '+sub+"px 'Space Mono',monospace";
-    c.fillText('HP\u3092\u935b\u9020\u3059\u308b', W/2, H/2 + fs*0.62);
+    c.fillText('HP\u3092\u4f5c\u308b', W/2, H/2 + fs*0.62);
     var data = c.getImageData(0,0,W,H).data;
     var pts = [];
     var gap = Math.max(5, Math.floor(W/120));
@@ -1017,13 +1169,13 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
       ctx.fillStyle=LIME;
       ctx.font='900 '+fs+"px 'Bebas Neue',sans-serif";
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('SITE//FORGE',W/2,H/2-fs*0.08);
+      ctx.fillText('NEURAL OVERFLOW',W/2,H/2-fs*0.08);
       ctx.shadowBlur=20;
       ctx.globalAlpha=0.3+Math.sin(phaseT*0.006)*0.06;
       var sub=Math.min(W/22,18);
       ctx.font='700 '+sub+"px 'Space Mono',monospace";
       ctx.fillStyle='#fff';
-      ctx.fillText('HP\u3092\u935b\u9020\u3059\u308b',W/2,H/2+fs*0.62);
+      ctx.fillText('HP\u3092\u4f5c\u308b',W/2,H/2+fs*0.62);
       ctx.restore();
     }
 
@@ -1043,10 +1195,24 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
 
   window.skipIntro=hideLdr;
   window.addEventListener('resize',function(){resize();textPixels=sampleText();});
-  try{
-    if(document.fonts&&document.fonts.ready){document.fonts.ready.then(init);}
-    else{setTimeout(init,500);}
-  }catch(e){setTimeout(init,500);}
+
+  function startParticlesNow(){
+    try{
+      if(document.fonts&&document.fonts.ready){document.fonts.ready.then(init);}
+      else{setTimeout(init,200);}
+    }catch(e){setTimeout(init,200);}
+  }
+  window.startParticlesNow = startParticlesNow;
+
+  // スプラッシュが終わった後（9.5秒後）に自動開始
+  setTimeout(startParticlesNow, 9500);
+
+  window.skipIntro = function(){
+    hideLdr();
+    var splash = document.getElementById('splash');
+    if(splash) splash.classList.add('hide');
+    startParticlesNow();
+  };
 })();
 
 
@@ -1074,7 +1240,7 @@ function goToStep(n){
   if(n===8) setTimeout(loadApiKey, 50);
 }
 function nextStep(from){
-  if(from===7) buildSummary();
+  if(from===8) buildSummary();
   goToStep(from+1);
 }
 function prevStep(from){if(from>1)goToStep(from-1);}
@@ -1111,6 +1277,13 @@ document.querySelectorAll('.page-cb').forEach(cb=>{
     cb.closest('.page-card').classList.toggle('checked',cb.checked);
   });
 });
+
+// ===== LAYOUT =====
+function selLayout(el){
+  document.querySelectorAll('.layout-card').forEach(function(e){e.classList.remove('selected');});
+  el.classList.add('selected');
+  S.layout = el.dataset.layout;
+}
 
 // ===== VIBE =====
 function selVibe(el){
@@ -1288,8 +1461,12 @@ function buildSummary(){
     hours:  document.getElementById('t-hours').value,
     tel:    document.getElementById('t-tel').value,
     email:  document.getElementById('t-email').value,
-    sns:    document.getElementById('t-sns').value,
-    access: document.getElementById('t-access').value,
+    sns:    document.getElementById('t-other-sns') ? document.getElementById('t-other-sns').value : '',
+    access: document.getElementById('t-access') ? document.getElementById('t-access').value : '',
+    line:   document.getElementById('t-line') ? document.getElementById('t-line').value : '',
+    instagram: document.getElementById('t-instagram') ? document.getElementById('t-instagram').value : '',
+    twitter:   document.getElementById('t-twitter') ? document.getElementById('t-twitter').value : '',
+    facebook:  document.getElementById('t-facebook') ? document.getElementById('t-facebook').value : '',
     faq:    document.getElementById('t-faq').value,
     extra:  document.getElementById('t-extra').value,
   };
@@ -1474,12 +1651,17 @@ function generateSite(){
     +'- 営業時間：'+(S.texts.hours||'なし')+'\n'
     +'- 電話：'+(S.texts.tel||'なし')+'\n'
     +'- メール：'+(S.texts.email||'なし')+'\n'
-    +'- SNS：'+(S.texts.sns||'なし')+'\n'
     +'- アクセス：'+(S.texts.access||'なし')+'\n'
+    +'- LINE URL：'+(S.texts.line||'なし')+'\n'
+    +'- Instagram：'+(S.texts.instagram||'なし')+'\n'
+    +'- X(Twitter)：'+(S.texts.twitter||'なし')+'\n'
+    +'- Facebook：'+(S.texts.facebook||'なし')+'\n'
+    +'- その他SNS：'+(S.texts.sns||'なし')+'\n'
     +'- FAQ：'+(S.texts.faq||'なし')+'\n'
     +'- その他：'+(S.texts.extra||'なし')+'\n\n'
     +'【デザイン仕様】\n'
     +'- 雰囲気・テイスト：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
+    +'- レイアウトパターン：'+(S.layout||'FULL SCREEN HERO')+'\n'
     +'- 全体背景色：'+(S.customBg||pal.bg)+'\n'
     +'- 全体テキスト色：'+pal.text+'\n'
     +'- アクセントカラー：'+(S.customAccent||pal.accent)+'\n'
@@ -1500,7 +1682,9 @@ function generateSite(){
     +'- 各セクションにビジュアル装飾・区切り線・背景パターン等\n'
     +'- フッターに著作権・連絡先情報\n'
     +'- プロフェッショナルな品質のダミーコンテンツで充填\n'
-    +'- 画像がない場合はCSSグラデーション・SVGパターンで代替\n\n'
+    +'- 画像がない場合はCSSグラデーション・SVGパターンで代替\n'
+    +'- LINE URLが入力されている場合：LINEの友達追加ボタン（緑色）とQRコードを設置。QRコードはhttps://api.qrserver.com/v1/create-qr-code/?size=150x150&data=【LINE URL】で生成\n'
+    +'- SNS URLが入力されている場合：各SNSのアイコンボタンをフッターまたは専用セクションに設置\n\n'
     +'HTMLのみを出力。コードブロック記法・説明文不要。<!DOCTYPE html>から開始。';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
