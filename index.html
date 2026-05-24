@@ -605,6 +605,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="step-content" id="step-5">
       <div class="sc-title">カラー<em>設定</em></div>
       <p class="sc-desc">全体テーマを選んだあと、ページ毎に細かく変更できます</p>
+      <div id="auto-color-notice" style="display:none;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);background:rgba(0,255,170,.08);border:1px solid rgba(0,255,170,.3);padding:10px 14px;margin-bottom:16px;letter-spacing:.05em;"></div>
 
       <!-- GLOBAL PALETTE -->
       <div class="color-section">
@@ -1263,6 +1264,7 @@ function goToStep(n){
   S.step=n;
   document.getElementById('app').scrollIntoView({behavior:'smooth',block:'start'});
   debouncedLP();
+  if(n===5) setTimeout(autoSelectColor, 100);
   if(n===8) setTimeout(loadApiKey, 50);
 }
 function nextStep(from){
@@ -1304,7 +1306,43 @@ document.querySelectorAll('.page-cb').forEach(cb=>{
   });
 });
 
-// ===== LAYOUT =====
+// ===== AUTO COLOR BY INDUSTRY & VIBE =====
+var AUTO_COLOR_MAP = {
+  '飲食・食品':     {default:'earth',   vibe:{'ナチュラル':'forest','ラグジュアリー':'black-gold','ポップ':'fire','和風':'navy','ミニマル':'mono-light'}},
+  '美容・健康':     {default:'rose',    vibe:{'ラグジュアリー':'black-gold','ナチュラル':'mint','ミニマル':'mono-light','キュート':'rose','エレガント':'purple'}},
+  '製造業・工業':   {default:'charcoal',vibe:{'コーポレート':'navy','インダストリアル':'charcoal','ミニマル':'mono-dark','テック':'sky'}},
+  '建設・不動産':   {default:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ナチュラル':'earth','ミニマル':'mono-light'}},
+  'クリエイティブ': {default:'mono-dark',vibe:{'ストリート':'charcoal','ラグジュアリー':'black-gold','ボールド':'fire','テック':'mono-dark','エレガント':'purple'}},
+  'IT・テクノロジー':{default:'sky',    vibe:{'テック':'sky','ミニマル':'mono-dark','コーポレート':'navy','ストリート':'charcoal'}},
+  '小売・EC':       {default:'mono-light',vibe:{'ラグジュアリー':'black-gold','キュート':'rose','ナチュラル':'earth','ポップ':'fire','ミニマル':'mono-light'}},
+  '教育・学習':     {default:'sky',     vibe:{'ナチュラル':'forest','キュート':'rose','コーポレート':'navy','ミニマル':'mono-light'}},
+  '士業・専門職':   {default:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ミニマル':'mono-light'}},
+  '医療・介護':     {default:'sky',     vibe:{'ナチュラル':'mint','ミニマル':'mono-light','コーポレート':'sky'}},
+  '物流・運輸':     {default:'navy',    vibe:{'コーポレート':'navy','インダストリアル':'charcoal','テック':'sky'}},
+  'その他・一般':   {default:'mono-light',vibe:{}},
+};
+
+function autoSelectColor(){
+  if(S.globalPalette) return; // 既に選択済みなら何もしない
+  var industry = S.industryCat||'その他・一般';
+  var vibe = S.vibe||'';
+  var map = AUTO_COLOR_MAP[industry] || AUTO_COLOR_MAP['その他・一般'];
+  var vibeKey = Object.keys(map.vibe||{}).find(function(k){return vibe.indexOf(k)>=0;});
+  var palId = (vibeKey && map.vibe[vibeKey]) || map.default || 'mono-light';
+  S.globalPalette = palId;
+  // UIも更新
+  document.querySelectorAll('#global-palette .pal-item').forEach(function(el){
+    el.classList.toggle('selected', el.dataset.pid===palId);
+  });
+  // 通知表示
+  var notice = document.getElementById('auto-color-notice');
+  if(notice){
+    var palNames = {'black-gold':'BLACK GOLD','mono-dark':'MONO DARK','mono-light':'MONO LIGHT','navy':'NAVY','forest':'FOREST','rose':'ROSE','fire':'FIRE','sky':'SKY','earth':'EARTH','purple':'VIOLET','mint':'MINT','charcoal':'CHARCOAL RED'};
+    notice.textContent = '✦ 業種・雰囲気から「'+(palNames[palId]||palId)+'」を自動選択しました';
+    notice.style.display='block';
+  }
+  debouncedLP();
+}
 function selLayout(el){
   document.querySelectorAll('.layout-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
@@ -1335,9 +1373,14 @@ const palData = {
   'charcoal':    {bg:'#2c2c2c',text:'#f0f0f0',accent:'#ff4444',nav:'#222222'},
 };
 function selPal(el, group){
-  document.querySelectorAll(`#${group}-palette .pal-item`).forEach(e=>e.classList.remove('selected'));
+  document.querySelectorAll('#'+group+'-palette .pal-item').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
-  if(group==='global'){ S.globalPalette = el.dataset.pid; debouncedLP(); }
+  if(group==='global'){
+    S.globalPalette = el.dataset.pid;
+    var notice = document.getElementById('auto-color-notice');
+    if(notice) notice.style.display='none';
+    debouncedLP();
+  }
   buildPageColorPanels();
 }
 function setCustomColor(type, val){
@@ -1403,7 +1446,91 @@ function selFont(el, type){
   debouncedLP();
 }
 
-// ===== IMAGE UPLOAD WITH PLACEMENT =====
+// ===== SUGGESTED IMAGES BY INDUSTRY =====
+var INDUSTRY_PROMPTS = {
+  '飲食・食品':    ['cozy cafe interior warm lighting','fresh japanese food restaurant','artisan bread bakery morning light','ramen shop authentic japanese','coffee cup latte art close up'],
+  '美容・健康':    ['beauty salon interior elegant','massage therapy relaxing spa','nail art studio pastel colors','yoga studio natural light','skincare products minimalist'],
+  '製造業・工業':  ['modern factory production line','precision metal manufacturing','industrial machinery professional','quality control inspection','factory workers professional'],
+  '建設・不動産':  ['modern architecture building exterior','construction site professional','interior design living room','real estate luxury home','renovation before after'],
+  'クリエイティブ':['photography studio professional lighting','graphic design workspace','creative studio colorful','portfolio artwork display','designer working laptop'],
+  'IT・テクノロジー':['modern tech office workspace','coding programming laptop','startup office team','technology digital abstract','software development team'],
+  '小売・EC':      ['retail store interior modern','product display elegant','online shopping lifestyle','boutique fashion store','product photography minimal'],
+  '教育・学習':    ['classroom modern bright','students learning together','library books study','online learning laptop','teacher students education'],
+  '士業・専門職':  ['professional office corporate','lawyer office elegant','business meeting professional','consulting firm modern','accountant office clean'],
+  '医療・介護':    ['hospital clinic clean modern','doctor patient consultation','medical equipment professional','nursing care warm','pharmacy interior clean'],
+  '物流・運輸':    ['logistics warehouse modern','delivery truck fleet','supply chain operations','shipping container port','transportation professional'],
+  'その他・一般':  ['professional business office','team meeting modern','community event people','local business storefront','professional service smiling'],
+};
+
+function generateSuggestedImages(){
+  var btn = document.getElementById('suggest-btn');
+  var container = document.getElementById('suggested-images');
+  var industry = S.industryCat||'その他・一般';
+  var vibe = S.vibe||'';
+  var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
+
+  btn.disabled=true;
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/></svg> 生成中...';
+  container.innerHTML='<div style="font-family:Space Mono,monospace;font-size:10px;color:var(--lime);">AIが5枚生成中... しばらくお待ちください</div>';
+
+  var loaded = 0;
+  var imgs = [];
+  container.innerHTML = '';
+
+  prompts.forEach(function(prompt, i){
+    var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
+    var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
+    var seed = Math.floor(Math.random()*999999);
+    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true';
+
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;cursor:pointer;';
+
+    var img = document.createElement('img');
+    img.style.cssText = 'width:130px;height:100px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
+    img.src = url;
+
+    var label = document.createElement('div');
+    label.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);font-family:Space Mono,monospace;font-size:8px;color:var(--lime);padding:3px 6px;opacity:0;transition:opacity .2s;';
+    label.textContent = '✓ 追加';
+
+    img.onload = function(){
+      loaded++;
+      if(loaded>=prompts.length){
+        btn.disabled=false;
+        btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> もう5枚提案する';
+      }
+    };
+    img.onerror = function(){loaded++;};
+
+    wrap.addEventListener('mouseenter',function(){label.style.opacity='1';img.style.borderColor='var(--lime)';});
+    wrap.addEventListener('mouseleave',function(){
+      if(!wrap.classList.contains('selected')){label.style.opacity='0';img.style.borderColor='var(--border)';}
+    });
+
+    wrap.onclick = function(){
+      if(wrap.classList.contains('selected')){
+        wrap.classList.remove('selected');
+        img.style.borderColor='var(--border)';
+        label.textContent='✓ 追加';
+        label.style.background='rgba(0,0,0,.7)';
+        S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
+      } else {
+        wrap.classList.add('selected');
+        img.style.borderColor='var(--lime)';
+        img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
+        label.textContent='✓ 選択済み';
+        label.style.background='rgba(0,255,170,.3)';
+        label.style.opacity='1';
+        S.selectedImages.push(url);
+      }
+    };
+
+    wrap.appendChild(img);
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  });
+}
 var PLACEMENT_SECTIONS = [
   {id:'hero',    label:'🖼 ヒーロー背景'},
   {id:'about',   label:'👤 About写真'},
