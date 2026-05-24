@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Neural Overflow — AIでHPを作る</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Exo+2:ital,wght@1,900&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#04060a;--s1:#080d14;--s2:#0e1825;--s3:#141e2e;
@@ -254,6 +254,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .img-thumb{width:80px;height:80px;object-fit:cover;border:1px solid var(--border);position:relative;}
 .img-thumb-wrap{position:relative;display:inline-block;}
 .img-thumb-del{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--red);color:#fff;border:none;cursor:none;font-size:10px;display:flex;align-items:center;justify-content:center;}
+
+/* IMAGE PLACEMENT */
+.img-placement-list{display:flex;flex-direction:column;gap:12px;margin-top:12px;}
+.img-placement-item{background:var(--s2);border:1px solid var(--border);padding:12px;display:flex;gap:12px;align-items:flex-start;}
+.img-placement-thumb{width:64px;height:64px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+.img-placement-controls{flex:1;display:flex;flex-direction:column;gap:8px;}
+.img-placement-name{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;margin-bottom:2px;}
+.img-placement-row{display:flex;gap:8px;flex-wrap:wrap;}
+.placement-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;padding:5px 10px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .15s;}
+.placement-btn:hover{border-color:var(--b2);color:var(--text);}
+.placement-btn.active{background:rgba(0,255,170,.1);border-color:var(--lime);color:var(--lime);}
+.style-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;padding:4px 8px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .15s;}
+.style-btn:hover{border-color:var(--b2);color:var(--text);}
+.style-btn.active{background:rgba(56,184,255,.1);border-color:var(--blue);color:var(--blue);}
+.img-placement-del{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:4px;transition:color .15s;flex-shrink:0;}
+.img-placement-del:hover{color:var(--red);}
 
 /* AI IMAGE GEN */
 .ai-img-panel{background:var(--s1);border:1px solid var(--border);padding:20px;margin-bottom:12px;}
@@ -693,7 +709,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 7: 画像 ===== -->
     <div class="step-content" id="step-7">
       <div class="sc-title">画像<em>設定</em></div>
-      <p class="sc-desc">写真をアップロードするか、AIで画像を生成してください</p>
+      <p class="sc-desc">画像をアップロードして「どこに・どう使うか」を指定してください</p>
 
       <!-- UPLOAD -->
       <div class="img-section">
@@ -701,10 +717,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="upload-zone" id="upload-zone">
           <input type="file" id="img-upload" accept="image/*" multiple onchange="handleUpload(this.files)">
           <div class="upload-icon">📁</div>
-          <div class="upload-text">クリックまたはドラッグ＆ドロップで画像を追加</div>
+          <div class="upload-text">タップして画像を追加</div>
           <div class="upload-sub">JPG / PNG / WEBP — 複数枚対応</div>
         </div>
-        <div class="img-preview-grid" id="upload-preview"></div>
+
+        <!-- 画像配置リスト -->
+        <div id="img-placement-list" class="img-placement-list"></div>
       </div>
 
       <!-- AI IMAGE GEN -->
@@ -941,7 +959,7 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
   setTimeout(function(){ produced.classList.add('show'); }, 500);
 
   // Phase 2: "produced by" ゆっくりフェードアウト
-  setTimeout(function(){ produced.style.transition='opacity 1.8s'; produced.style.opacity = '0'; }, 4200);
+  setTimeout(function(){ produced.style.transition='opacity 1.8s'; produced.style.opacity = '0'; }, 3200);
 
   // Phase 3: "PRIORITY CREATIVE WORKS" ゆっくりフェードイン
   setTimeout(function(){ brand.classList.add('show'); }, 5200);
@@ -1377,29 +1395,113 @@ function selFont(el, type){
   debouncedLP();
 }
 
-// ===== IMAGE UPLOAD =====
+// ===== IMAGE UPLOAD WITH PLACEMENT =====
+var PLACEMENT_SECTIONS = [
+  {id:'hero',    label:'🖼 ヒーロー背景'},
+  {id:'about',   label:'👤 About写真'},
+  {id:'service', label:'🛠 サービス'},
+  {id:'gallery', label:'🎨 ギャラリー'},
+  {id:'cta',     label:'📣 CTA背景'},
+  {id:'other',   label:'📌 その他'},
+];
+var PLACEMENT_STYLES = [
+  {id:'bg',      label:'背景'},
+  {id:'card',    label:'カード'},
+  {id:'circle',  label:'丸型'},
+  {id:'full',    label:'全幅'},
+];
+
 function handleUpload(files){
-  [...files].forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = e=>{
-      const dataUrl = e.target.result;
-      S.uploadedImages.push(dataUrl);
-      addThumb(dataUrl, 'upload');
+  var arr = Array.prototype.slice.call(files);
+  arr.forEach(function(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var dataUrl = e.target.result;
+      var imgData = {src: dataUrl, section: 'hero', style: 'bg', name: file.name};
+      S.uploadedImages.push(imgData);
+      renderPlacementList();
     };
     reader.readAsDataURL(file);
   });
 }
-function addThumb(src, type){
-  const grid = document.getElementById('upload-preview');
-  const wrap = document.createElement('div');
-  wrap.className='img-thumb-wrap';
-  const img = document.createElement('img');
-  img.src=src; img.className='img-thumb';
-  const del = document.createElement('button');
-  del.className='img-thumb-del'; del.textContent='×';
-  del.onclick=()=>{wrap.remove();S.uploadedImages=S.uploadedImages.filter(i=>i!==src);};
-  wrap.appendChild(img); wrap.appendChild(del);
-  grid.appendChild(wrap);
+
+function renderPlacementList(){
+  var list = document.getElementById('img-placement-list');
+  if(!list) return;
+  list.innerHTML = '';
+  S.uploadedImages.forEach(function(img, idx){
+    var item = document.createElement('div');
+    item.className = 'img-placement-item';
+
+    // サムネイル
+    var thumb = document.createElement('img');
+    thumb.className = 'img-placement-thumb';
+    thumb.src = img.src;
+
+    // コントロール
+    var ctrl = document.createElement('div');
+    ctrl.className = 'img-placement-controls';
+
+    var name = document.createElement('div');
+    name.className = 'img-placement-name';
+    name.textContent = img.name || '画像'+(idx+1);
+
+    // セクション選択
+    var secLabel = document.createElement('div');
+    secLabel.style.cssText = 'font-size:9px;color:var(--muted2);font-family:Space Mono,monospace;margin-bottom:4px;';
+    secLabel.textContent = '使用場所：';
+
+    var secRow = document.createElement('div');
+    secRow.className = 'img-placement-row';
+    PLACEMENT_SECTIONS.forEach(function(sec){
+      var btn = document.createElement('button');
+      btn.className = 'placement-btn' + (img.section===sec.id?' active':'');
+      btn.textContent = sec.label;
+      btn.onclick = (function(i, sid){ return function(){
+        S.uploadedImages[i].section = sid;
+        renderPlacementList();
+      };})(idx, sec.id);
+      secRow.appendChild(btn);
+    });
+
+    // スタイル選択
+    var styleLabel = document.createElement('div');
+    styleLabel.style.cssText = 'font-size:9px;color:var(--muted2);font-family:Space Mono,monospace;margin-bottom:4px;margin-top:6px;';
+    styleLabel.textContent = '表示方法：';
+
+    var styleRow = document.createElement('div');
+    styleRow.className = 'img-placement-row';
+    PLACEMENT_STYLES.forEach(function(st){
+      var btn = document.createElement('button');
+      btn.className = 'style-btn' + (img.style===st.id?' active':'');
+      btn.textContent = st.label;
+      btn.onclick = (function(i, stid){ return function(){
+        S.uploadedImages[i].style = stid;
+        renderPlacementList();
+      };})(idx, st.id);
+      styleRow.appendChild(btn);
+    });
+
+    ctrl.appendChild(name);
+    ctrl.appendChild(secLabel);
+    ctrl.appendChild(secRow);
+    ctrl.appendChild(styleLabel);
+    ctrl.appendChild(styleRow);
+
+    // 削除ボタン
+    var del = document.createElement('button');
+    del.className = 'img-placement-del';
+    del.textContent = '×';
+    del.onclick = (function(i){ return function(){
+      S.uploadedImages.splice(i,1);
+      renderPlacementList();
+    };})(idx);
+
+    item.appendChild(thumb);
+    item.appendChild(ctrl);
+    item.appendChild(del);
+    list.appendChild(item);
+  });
 }
 
 // Drag & drop
@@ -1481,10 +1583,10 @@ function buildSummary(){
     <div class="sum-item"><div class="sum-key">本文F</div><div class="sum-val">${S.bodyFont||'未選択'}</div></div>
     <div class="sum-item"><div class="sum-key">画像数</div><div class="sum-val">${S.uploadedImages.length + S.selectedImages.length} 枚</div></div>
   `;
-  const allImgs = [...S.uploadedImages, ...S.selectedImages];
+  var allImgs = S.uploadedImages.map(function(img){return typeof img==='string'?img:img.src;}).concat(S.selectedImages);
   if(allImgs.length){
     document.getElementById('sum-images-wrap').style.display='block';
-    document.getElementById('sum-images').innerHTML = allImgs.map(src=>`<img src="${src}" class="sum-img">`).join('');
+    document.getElementById('sum-images').innerHTML = allImgs.map(function(src){return '<img src="'+src+'" class="sum-img">';}).join('');
   }
 }
 
@@ -1629,10 +1731,30 @@ function generateSite(){
     });
   }
 
-  var allImgs = S.uploadedImages.concat(S.selectedImages);
-  var imgInstructions = allImgs.length
-    ? '【使用画像】\n以下の画像データを実際に使用してください:\n'+allImgs.slice(0,5).map(function(img,i){return '画像'+(i+1)+': '+(img.indexOf('data:')===0?'[アップロード画像 - img要素のsrcに直接このdata URIを使用]':img);}).join('\n')
-    : '※画像はプレースホルダーを使用';
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  var aiImgOnly = S.selectedImages.concat(S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('http')===0;}).map(function(img){return img.src;}));
+
+  var imgInstructions = '';
+  if(uploadedOnly.length || aiImgOnly.length){
+    imgInstructions = '【画像配置指定】\n以下の配置指定でimg要素・背景画像のプレースホルダーを設置してください:\n\n';
+    uploadedOnly.slice(0,8).forEach(function(img,i){
+      var section = img.section||'gallery';
+      var style = img.style||'card';
+      var sectionNames = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',gallery:'ギャラリーセクション',cta:'CTAセクション',other:'適切なセクション'};
+      var styleNames = {bg:'背景画像（background-size:cover）',card:'カード画像',circle:'丸型プロフィール写真',full:'全幅画像'};
+      imgInstructions += '画像'+(i+1)+' → '+(sectionNames[section]||section)+' / '+(styleNames[style]||style)+'\n';
+      imgInstructions += '  → img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
+    });
+    if(aiImgOnly.length){
+      imgInstructions += '\nAI生成画像（直接URLを使用）:\n';
+      aiImgOnly.slice(0,4).forEach(function(url,i){
+        imgInstructions += '画像URL'+(i+1)+': '+url+'\n';
+      });
+    }
+    imgInstructions += '\n【重要】アップロード画像はdata-upload-index属性のあるimg要素に、ページ末尾のscriptタグで自動挿入されます。';
+  } else {
+    imgInstructions = '※ 画像はCSSグラデーション・SVGパターン・絵文字で美しく代替してください';
+  }
 
   var prompt = 'あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。\n\n'
     +'【基本情報】\n'
@@ -1709,10 +1831,26 @@ function generateSite(){
 }
 
 function showResult(html){
+  // アップロード画像をHTMLに注入
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  if(uploadedOnly.length){
+    // data-upload-index属性のimg要素に画像を挿入するscriptを末尾に追加
+    var injectScript = '<script>window.addEventListener("load",function(){';
+    uploadedOnly.forEach(function(img,i){
+      injectScript += 'var el=document.querySelector(\'[data-upload-index="'+i+'"]\');if(el){el.src="'+img.src+'";}';
+      if(img.style==='bg'){
+        injectScript += 'var pel=document.querySelector(\'[data-upload-bg="'+i+'"]\');if(pel){pel.style.backgroundImage="url('+img.src+')";}';
+      }
+    });
+    injectScript += '});<\/script>';
+    html = html.replace('</body>', injectScript+'</body>');
+  }
+
   var rs = document.getElementById('result-section');
   rs.classList.add('show');
   document.getElementById('preview-frame').srcdoc=html;
   document.getElementById('code-pre').textContent=html;
+  S.generatedHTML = html;
   setTimeout(function(){rs.scrollIntoView({behavior:'smooth'});},100);
 }
 function showPrev(){
