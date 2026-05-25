@@ -56,6 +56,40 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .h-scroll::after{content:'';width:1px;height:56px;background:var(--muted2);}
 @keyframes fup{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 
+
+/* SHINE EFFECT */
+.h-title{position:relative;overflow:hidden;}
+.h-title::after{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.35) 50%,transparent 100%);
+  transform:skewX(-20deg);
+  animation:shine 3s ease-in-out 1.5s infinite;
+  pointer-events:none;
+}
+@keyframes shine{
+  0%{left:-100%;}
+  40%,100%{left:150%;}
+}
+
+/* SHINE ON OVERFLOW (blue part) */
+.h-title em{
+  position:relative;
+  overflow:hidden;
+}
+.h-title em::after{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);
+  transform:skewX(-20deg);
+  animation:shine 3s ease-in-out 1.8s infinite;
+  pointer-events:none;
+}
+
 /* FEATURES BAR */
 .feat-bar{display:flex;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--s1);}
 .feat-item{flex:1;padding:20px 16px;border-right:1px solid var(--border);text-align:center;transition:background .2s;}
@@ -352,8 +386,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 /* DEVICE FRAME */
 .device-wrap{position:relative;display:flex;justify-content:center;align-items:flex-start;min-height:640px;transition:all .4s;}
 .device-wrap.pc-mode{align-items:stretch;}
-.device-frame-pc{width:100%;border:1px solid var(--border);background:#fff;box-shadow:0 0 40px rgba(0,180,255,.08);}
-.device-frame-pc .preview-frame{width:100%;height:640px;border:none;display:block;}
+.device-frame-pc{width:100%;border:1px solid var(--border);background:#fff;box-shadow:0 0 40px rgba(0,180,255,.08);overflow:hidden;}
+.device-frame-pc .preview-frame{width:100%;height:640px;border:none;display:block;pointer-events:auto;}
 .device-frame-tablet{width:768px;max-width:100%;margin:0 auto;}
 .device-frame-tablet .preview-frame{width:100%;height:600px;border:none;display:block;}
 .device-shell{background:#1a1a2e;border-radius:40px;padding:16px 12px;box-shadow:0 0 0 2px #2a2a4a,0 20px 60px rgba(0,0,0,.6);width:375px;max-width:100%;margin:0 auto;}
@@ -370,6 +404,26 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .code-view{display:none;background:var(--s1);border:1px solid var(--border);padding:24px;max-height:600px;overflow-y:auto;}
 .code-view.show{display:block;}
 .code-view pre{font-family:'Space Mono',monospace;font-size:10px;line-height:1.75;color:#7affcc;white-space:pre-wrap;word-break:break-word;}
+
+
+/* MOBILE OPTIMIZATIONS */
+@media(max-width:640px){
+  .industry-tree{grid-template-columns:1fr 1fr;}
+  .vibe-grid{grid-template-columns:1fr 1fr;}
+  .layout-grid{grid-template-columns:1fr 1fr;}
+  .pages-grid{grid-template-columns:1fr;}
+  .row2{grid-template-columns:1fr;}
+  .font-grid{grid-template-columns:1fr 1fr;}
+  .pricing-grid{grid-template-columns:1fr;}
+  .palette-row{gap:8px;}
+  .pal-swatch{width:36px;height:36px;}
+  .pb-label{display:none;}
+  .pb-dot{width:26px;height:26px;font-size:9px;}
+  .pb-line{width:16px;}
+  .result-actions{flex-direction:column;align-items:stretch;}
+  .device-toggle,.view-toggle{width:100%;}
+  .tog-btn,.dev-btn{flex:1;justify-content:center;}
+}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px;height:4px;}
@@ -922,10 +976,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <button class="tog-btn active" id="prev-btn" onclick="showPrev()">PREVIEW</button>
         <button class="tog-btn" id="code-btn-tog" onclick="showCode()">CODE</button>
       </div>
+      <button class="btn btn-ghost" onclick="regenSite()" style="display:flex;align-items:center;gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        別パターンを生成
+      </button>
       <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード</button>
       <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
     </div>
   </div>
+  <!-- プレビューを直接操作できるように -->
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;letter-spacing:.1em;">// プレビューは直接スクロール・操作できます</div>
   <div class="device-wrap pc-mode" id="device-wrap">
     <div class="device-frame-pc" id="device-pc">
       <iframe id="preview-frame" class="preview-frame" title="preview"></iframe>
@@ -1850,7 +1910,9 @@ function generateSite(){
   var gen = document.getElementById('generating');
   var st = document.getElementById('gen-status');
   btn.style.display='none'; gen.classList.add('show');
-  var msgs=['analyzing requirements...','building layout structure...','applying design tokens...','generating copy & content...','assembling sections...','optimizing responsive layout...','finalizing HTML output...'];
+  var industryMsg = S.industryCat ? S.industryCat+'に最適化中...' : 'analyzing requirements...';
+  var layoutMsg = S.layout ? S.layout.split('：')[0]+' レイアウト構築中...' : 'building layout structure...';
+  var msgs=[industryMsg,layoutMsg,'カラー・フォントを適用中...','テキストコンテンツを生成中...','各セクションを組み立て中...','スマホ対応を最適化中...','HTMLを最終調整中...'];
   var mi=0;
   var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
 
@@ -1891,6 +1953,24 @@ function generateSite(){
     imgInstructions = '※ 画像はCSSグラデーション・SVGパターン・絵文字で美しく代替してください';
   }
 
+  // 業種×レイアウト×雰囲気専用プロンプト強化
+  var layoutGuide = {
+    'FULL SCREEN HERO': '全画面背景画像またはグラデーション上に中央配置の大きなテキストとCTAボタン。ナビは透明でスティッキー。',
+    'SPLIT LAYOUT': '左50%にテキスト・右50%に画像のフレックスレイアウト。モバイルでは縦積み。',
+    'BOLD TYPOGRAPHY': '超大きなタイポグラフィ（vw単位）がメインビジュアル。テキスト自体がアート。画像は補助的。',
+    'MAGAZINE STYLE': 'CSS Gridで非対称な雑誌風レイアウト。複数の画像とテキストブロックが混在。',
+    'MINIMAL CENTER': '大量の余白。中央揃え。フォントサイズの差でヒエラルキー。装飾は最小限。',
+    'CARD GRID': 'ヒーロー下にすぐサービスカードが3列グリッドで並ぶ。視認性重視。',
+    'JAPANESE STYLE': '和紙テクスチャ風背景。縦書き風テキスト。和柄SVGパターン。落ち着いた配色。',
+    'EDITORIAL': '非対称グリッド。大小混在の画像配置。タイポグラフィ重視。ファッション誌風。',
+    'CORPORATE': 'スライダー風ヒーロー。下部に3カラムの特徴セクション。信頼感・誠実さを重視。',
+    'LANDING PAGE': '縦長LP。セクション毎にCTAボタン。お客様の声・実績数字を前面に。',
+  };
+  var selectedLayout = S.layout ? S.layout.split('：')[0] : 'FULL SCREEN HERO';
+  var layoutInstruction = '';
+  for(var lk in layoutGuide){ if(S.layout && S.layout.indexOf(lk)>=0){ layoutInstruction = layoutGuide[lk]; break; } }
+  if(!layoutInstruction) layoutInstruction = layoutGuide['FULL SCREEN HERO'];
+
   var prompt = 'あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。\n\n'
     +'【基本情報】\n'
     +'- サイト名：'+S.siteName+'\n'
@@ -1919,6 +1999,7 @@ function generateSite(){
     +'【デザイン仕様】\n'
     +'- 雰囲気・テイスト：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
     +'- レイアウトパターン：'+(S.layout||'FULL SCREEN HERO')+'\n'
+    +'- レイアウト実装指示：'+layoutInstruction+'\n'
     +'- 全体背景色：'+(S.customBg||pal.bg)+'\n'
     +'- 全体テキスト色：'+pal.text+'\n'
     +'- アクセントカラー：'+(S.customAccent||pal.accent)+'\n'
@@ -2148,6 +2229,20 @@ document.addEventListener('input', e=>{
 // Initial build
 setTimeout(buildLivePreview, 500);
 
+
+// ===== REGENERATE =====
+function regenSite(){
+  var rs = document.getElementById('result-section');
+  rs.classList.remove('show');
+  var btn = document.getElementById('gen-btn');
+  if(btn) btn.style.display='flex';
+  var gen = document.getElementById('generating');
+  if(gen) gen.classList.remove('show');
+  // scroll back to step 9
+  document.getElementById('app').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){ generateSite(); }, 500);
+}
+
 // ===== DEVICE TOGGLE =====
 dlHTML = function(){
   const blob=new Blob([S.generatedHTML],{type:'text/html'});
@@ -2164,3 +2259,4 @@ document.querySelectorAll('.pb-step[data-step="4"]').forEach(el=>{
 </script>
 </body>
 </html>
+
