@@ -464,6 +464,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
   <div class="splash-brand" id="splash-brand">Priority Creative Works</div>
 </div>
 
+<!-- RESTORE MODAL -->
+<div id="restore-modal" style="display:none;position:fixed;inset:0;background:rgba(2,4,8,.92);z-index:9500;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0e1825;border:1px solid rgba(0,255,170,.3);padding:36px;max-width:440px;width:100%;text-align:center;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--lime);margin-bottom:16px;">// SAVE DATA FOUND</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.05em;margin-bottom:12px;">前回の続きから<br>再開しますか？</div>
+    <div id="restore-info" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:28px;line-height:1.6;"></div>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button onclick="confirmRestore()" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:12px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;">続きから再開</button>
+      <button onclick="dismissRestore()" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:12px 32px;background:transparent;color:var(--muted2);border:1px solid var(--border);cursor:pointer;">最初から</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE NOTICE -->
+<div id="save-notice" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,255,170,.15);border:1px solid rgba(0,255,170,.4);color:var(--lime);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;padding:10px 20px;z-index:9400;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;">✦ 進捗を保存しました</div>
+
 <!-- LOADER -->
 <div id="loader">
   <canvas id="loader-canvas"></canvas>
@@ -524,6 +540,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="pb-step" data-step="8"><div class="pb-dot">08</div><div class="pb-label">テキスト</div></div>
     <div class="pb-line"></div>
     <div class="pb-step" data-step="9"><div class="pb-dot">09</div><div class="pb-label">生成</div></div>
+    <button onclick="saveProgress()" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">💾 保存</button>
   </div>
 
   <div class="wizard-outer">
@@ -532,7 +549,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 1: 業種 ===== -->
     <div class="step-content active" id="step-1">
       <div class="sc-title">業種 &amp; <em>基本情報</em></div>
-      <p class="sc-desc">業種を選んで、さらに細かい分類まで指定できます</p>
+      <p class="sc-desc">まずお店や会社の種類を選んでください。細かい分類まで選ぶほど、AIがより適切なHPを作ります</p>
       <div class="row2">
         <div class="field"><label>店舗名 / サービス名</label><input type="text" id="site-name" placeholder="例：風の谷のカフェ"></div>
         <div class="field"><label>キャッチコピー（任意）</label><input type="text" id="catchcopy" placeholder="例：手作りにこだわる、小さなお店"></div>
@@ -563,7 +580,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 2: ページ構成 ===== -->
     <div class="step-content" id="step-2">
       <div class="sc-title">ページ<em>構成</em></div>
-      <p class="sc-desc">必要なセクションを選んでください（複数選択可）</p>
+      <p class="sc-desc">HPに載せたいページを選んでください。わからなければデフォルトのままでOK！</p>
       <div class="pages-grid" id="pages-grid">
         <div class="page-card checked"><input type="checkbox" class="page-cb" value="トップページ（ヒーロービジュアル）" checked><div class="page-card-info"><div class="page-card-name">トップページ</div><div class="page-card-desc">ヒーローバナー・キャッチコピー</div></div><span class="page-tag">必須</span></div>
         <div class="page-card"><input type="checkbox" class="page-cb" value="私たちについて・店舗紹介"><div class="page-card-info"><div class="page-card-name">私たちについて</div><div class="page-card-desc">理念・歴史・スタッフ紹介</div></div><span class="page-tag">ABOUT</span></div>
@@ -584,7 +601,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 3: 雰囲気 ===== -->
     <div class="step-content" id="step-3">
       <div class="sc-title">雰囲気 &amp; <em>テイスト</em></div>
-      <p class="sc-desc">HPの世界観を1つ選んでください</p>
+      <p class="sc-desc">どんな雰囲気のHPにしたいですか？お店のイメージに近いものを1つ選んでください</p>
       <div class="vibe-grid" id="vibe-grid">
         <div class="vibe-card" data-vibe="ラグジュアリー・高級感・洗練された" onclick="selVibe(this)"><div class="vibe-icon">🖤</div><div class="vibe-name">ラグジュアリー</div><div class="vibe-kw">高級感・洗練・上品</div></div>
         <div class="vibe-card" data-vibe="ミニマル・シンプル・余白重視" onclick="selVibe(this)"><div class="vibe-icon">⬜</div><div class="vibe-name">ミニマル</div><div class="vibe-kw">シンプル・余白・清潔感</div></div>
@@ -609,7 +626,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 4: レイアウト ===== -->
     <div class="step-content" id="step-4">
       <div class="sc-title">レイアウト<em>選択</em></div>
-      <p class="sc-desc">トップページのレイアウトパターンを選んでください</p>
+      <p class="sc-desc">トップページのデザインの形を選んでください。ミニプレビューを参考にどうぞ！</p>
       <div class="layout-grid" id="layout-grid">
         <div class="layout-card" data-layout="FULL SCREEN HERO：全画面ビジュアル＋中央に大きなテキストとCTAボタン" onclick="selLayout(this)">
           <div class="layout-preview"><div class="lp-nav"></div><div class="lp-hero-full"><span class="lp-big-text">FULL</span></div></div>
@@ -658,7 +675,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 5: カラー ===== -->
     <div class="step-content" id="step-5">
       <div class="sc-title">カラー<em>設定</em></div>
-      <p class="sc-desc">全体テーマを選んだあと、ページ毎に細かく変更できます</p>
+      <p class="sc-desc">HPの色を選んでください。選ばなくても業種に合った色が自動で選ばれます！</p>
       <div id="auto-color-notice" style="display:none;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);background:rgba(0,255,170,.08);border:1px solid rgba(0,255,170,.3);padding:10px 14px;margin-bottom:16px;letter-spacing:.05em;"></div>
 
       <!-- GLOBAL PALETTE -->
@@ -699,7 +716,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 6: フォント ===== -->
     <div class="step-content" id="step-6">
       <div class="sc-title">フォント<em>選択</em></div>
-      <p class="sc-desc">見出しと本文のフォントを選んでください</p>
+      <p class="sc-desc">文字のデザインを選んでください。上が大きなタイトル用、下が本文用です</p>
 
       <!-- 見出しフォント -->
       <div class="field"><label>見出しフォント（タイトル・大きな文字）</label></div>
@@ -764,7 +781,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 7: 画像 ===== -->
     <div class="step-content" id="step-7">
       <div class="sc-title">画像<em>設定</em></div>
-      <p class="sc-desc">画像をアップロードして「どこに・どう使うか」を指定してください</p>
+      <p class="sc-desc">お店や商品の写真をアップロードしてください。写真がなくてもAIが自動で画像を提案します！</p>
 
       <!-- UPLOAD -->
       <div class="img-section">
@@ -815,7 +832,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 8: テキスト ===== -->
     <div class="step-content" id="step-8">
       <div class="sc-title">テキスト<em>入力</em></div>
-      <p class="sc-desc">各セクションに載せたい内容を入力（空欄はAIが補完します）</p>
+      <p class="sc-desc">HPに載せたい文章を入力してください。「全項目をAIで自動生成」ボタンを押すと全部自動で入ります！</p>
 
       <!-- 一括AI生成ボタン -->
       <button class="ai-assist-all-btn" id="ai-all-btn" onclick="aiAssistAll()">
@@ -902,7 +919,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <!-- ===== STEP 9: 生成 ===== -->
     <div class="step-content" id="step-9">
       <div class="sc-title">生成 &amp; <em>出力</em></div>
-      <p class="sc-desc">設定を確認してAIに鍛造させましょう</p>
+      <p class="sc-desc">設定内容を確認してください。問題なければ「AIでHP生成」ボタンを押してください！約30秒で完成します</p>
 
       <!-- API KEY 不要（Vercelバックエンドで管理） -->
 
@@ -981,7 +998,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         別パターンを生成
       </button>
       <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード</button>
-      <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
+      <button class="btn btn-ghost" onclick="toggleEditSection()">✏️ 部分修正</button><button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
     </div>
   </div>
   <!-- プレビューを直接操作できるように -->
@@ -991,7 +1008,31 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <iframe id="preview-frame" class="preview-frame" title="preview"></iframe>
     </div>
   </div>
-  <div class="code-view" id="code-view"><pre id="code-pre"></pre></div>
+  
+<!-- 部分修正UI -->
+<div id="edit-section" style="display:none;padding:24px;background:var(--s1);border:1px solid var(--border);margin-top:20px;">
+  <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:16px;">// 部分修正</div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="edit-section-btn" onclick="editSection('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🖼 ヒーロー</button>
+      <button class="edit-section-btn" onclick="editSection('about',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">👤 About</button>
+      <button class="edit-section-btn" onclick="editSection('service',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🛠 サービス</button>
+      <button class="edit-section-btn" onclick="editSection('price',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">💰 料金</button>
+      <button class="edit-section-btn" onclick="editSection('color',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🎨 カラー変更</button>
+      <button class="edit-section-btn" onclick="editSection('font',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🔤 フォント変更</button>
+      <button class="edit-section-btn" onclick="editSection('all',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">✦ 全体を修正</button>
+    </div>
+    <div id="edit-input-area" style="display:none;">
+      <textarea id="edit-instruction" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:12px;font-family:Noto Sans JP,sans-serif;font-size:13px;min-height:80px;outline:none;resize:vertical;" placeholder="修正の指示を入力（例：もっとシンプルに、テキストを短く、青系の色に変えて）"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="applyEdit()" style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:.1em;padding:10px 24px;background:var(--lime);color:#000;border:none;cursor:pointer;">修正を適用</button>
+        <button onclick="document.getElementById('edit-section').style.display='none';" style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:.1em;padding:10px 24px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;">キャンセル</button>
+      </div>
+    </div>
+    <div id="edit-loading" style="display:none;font-family:Space Mono,monospace;font-size:11px;color:var(--lime);">AIが修正中...</div>
+  </div>
+</div>
+<div class="code-view" id="code-view"><pre id="code-pre"></pre></div>
 </section>
 
 <script>
@@ -1015,7 +1056,7 @@ const S = {
 const cur = document.getElementById('cur');
 const curR = document.getElementById('cur-ring');
 let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+document.addEventListener('mousemove',efunction(){mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
 (function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
 
 // ===== SPLASH SEQUENCE =====
@@ -1305,20 +1346,20 @@ document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.le
 
 
 // ===== SCROLL =====
-document.getElementById('start-btn').addEventListener('click',e=>{e.preventDefault();document.getElementById('app').scrollIntoView({behavior:'smooth'});});
+document.getElementById('start-btn').addEventListener('click',efunction(){e.preventDefault();document.getElementById('app').scrollIntoView({behavior:'smooth'});});
 
 // ===== STEP NAV =====
 function goToStep(n){
-  document.querySelectorAll('.step-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.step-content').forEach(function(el){ return el.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   // progress
-  document.querySelectorAll('.pb-step').forEach(el=>{
+  document.querySelectorAll('.pb-step').forEach(function(el){
     const s=parseInt(el.dataset.step);
     el.classList.toggle('active',s===n);
     el.querySelector('.pb-dot').classList.toggle('active',s===n);
     el.querySelector('.pb-dot').classList.toggle('done',s<n);
   });
-  document.querySelectorAll('.pb-line').forEach((el,i)=>{
+  document.querySelectorAll('.pb-line').forEach((el,i)function(){
     el.classList.toggle('done',(i+1)<n-1);
   });
   S.step=n;
@@ -1329,16 +1370,17 @@ function goToStep(n){
 }
 function nextStep(from){
   if(from===8) buildSummary();
+  saveProgress();
   goToStep(from+1);
 }
 function prevStep(from){if(from>1)goToStep(from-1);}
-document.querySelectorAll('.pb-step').forEach(el=>{
-  el.addEventListener('click',()=>goToStep(parseInt(el.dataset.step)));
+document.querySelectorAll('.pb-step').forEach(function(el){
+  el.addEventListener('click',function(){goToStep(parseInt(el.dataset.step));});
 });
 
 // ===== INDUSTRY =====
 function selectCat(el){
-  document.querySelectorAll('.ind-cat').forEach(e=>{e.classList.remove('selected');});
+  document.querySelectorAll('.ind-cat').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   S.industryCat = el.dataset.cat;
   S.industrySub = '';
@@ -1346,7 +1388,7 @@ function selectCat(el){
 }
 function selectSub(el, e){
   e.stopPropagation();
-  el.closest('.ind-cat').querySelectorAll('.ind-sub-item').forEach(i=>i.classList.remove('active'));
+  el.closest('.ind-cat').querySelectorAll('.ind-sub-item').forEach(function(i){i.classList.remove('active');});
   el.classList.add('active');
   S.industrySub = el.textContent;
   updateIndustryDisplay();
@@ -1355,13 +1397,13 @@ function updateIndustryDisplay(){
   const d = document.getElementById('selected-industry-display');
   if(S.industryCat){
     d.style.display='block';
-    d.innerHTML = `<span style="color:var(--lime);font-family:'Space Mono',monospace;font-size:10px;">選択中：</span> ${S.industryCat}${S.industrySub?' / <strong>'+S.industrySub+'</strong>':''}`;
+    d.innerHTML = '<span style="color:var(--lime);font-family:\'Space Mono\',monospace;font-size:10px;">選択中：</span> '+S.industryCat+(S.industrySub?' / <strong>'+S.industrySub+'</strong>':'');
   }
 }
 
 // ===== PAGE CHECKBOXES =====
-document.querySelectorAll('.page-cb').forEach(cb=>{
-  cb.addEventListener('change',()=>{
+document.querySelectorAll('.page-cb').forEach(cbfunction(){
+  cb.addEventListener('change',()function(){
     cb.closest('.page-card').classList.toggle('checked',cb.checked);
   });
 });
@@ -1403,15 +1445,228 @@ function autoSelectColor(){
   }
   debouncedLP();
 }
+
+
+// ===== PARTIAL EDIT =====
+var currentEditTarget = '';
+function editSection(target, btn){
+  currentEditTarget = target;
+  var labels = {
+    hero:'ヒーローセクション（トップの大きなビジュアル）',
+    about:'Aboutセクション（店舗・会社紹介）',
+    service:'サービスセクション（サービス・商品紹介）',
+    price:'料金セクション（料金表・プラン）',
+    color:'サイト全体のカラー',
+    font:'サイト全体のフォント',
+    all:'サイト全体'
+  };
+  var area = document.getElementById('edit-input-area');
+  var input = document.getElementById('edit-instruction');
+  area.style.display='block';
+  input.placeholder = (labels[target]||target)+'の修正指示を入力してください
+例：もっとシンプルに、テキストを短く、色を変えて';
+  input.focus();
+  document.querySelectorAll('.edit-section-btn').forEach(function(b){
+    b.style.borderColor='var(--border)';b.style.color='var(--muted2)';
+  });
+  if(btn){btn.style.borderColor='var(--lime)';btn.style.color='var(--lime);';}
+}
+
+function applyEdit(){
+  var instruction = document.getElementById('edit-instruction').value.trim();
+  if(!instruction || !S.generatedHTML) return;
+  var loading = document.getElementById('edit-loading');
+  loading.style.display='block';
+  document.getElementById('edit-input-area').style.display='none';
+
+  var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
+  var target = sectionLabels[currentEditTarget]||'サイト全体';
+
+  var prompt = '以下のHTMLの「'+target+'」を指示に従って修正してください。\n\n'
+    +'修正指示：'+instruction+'\n\n'
+    +'【重要】修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'
+    +'現在のHTML：\n'+S.generatedHTML.substring(0, 12000);
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens:16000,
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    loading.style.display='none';
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    document.getElementById('preview-frame').srcdoc = html;
+    document.getElementById('code-pre').textContent = html;
+    document.getElementById('edit-instruction').value='';
+    document.getElementById('edit-input-area').style.display='none';
+  }).catch(function(err){
+    loading.style.display='none';
+    alert('修正エラー: '+err.message);
+    document.getElementById('edit-input-area').style.display='block';
+  });
+}
+
+// ===== SAVE & RESTORE PROGRESS =====
+function saveProgress(){
+  var data = {
+    step: S.step,
+    siteName: document.getElementById('site-name').value,
+    catchcopy: document.getElementById('catchcopy').value,
+    location: document.getElementById('location').value,
+    founded: document.getElementById('founded').value,
+    industryCat: S.industryCat,
+    industrySub: S.industrySub,
+    pages: Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;}),
+    vibe: S.vibe,
+    layout: S.layout,
+    globalPalette: S.globalPalette,
+    headingFont: S.headingFont,
+    bodyFont: S.bodyFont,
+    texts: {
+      top: document.getElementById('t-top') ? document.getElementById('t-top').value : '',
+      about: document.getElementById('t-about') ? document.getElementById('t-about').value : '',
+      staff: document.getElementById('t-staff') ? document.getElementById('t-staff').value : '',
+      service: document.getElementById('t-service') ? document.getElementById('t-service').value : '',
+      price: document.getElementById('t-price') ? document.getElementById('t-price').value : '',
+      hours: document.getElementById('t-hours') ? document.getElementById('t-hours').value : '',
+      tel: document.getElementById('t-tel') ? document.getElementById('t-tel').value : '',
+      email: document.getElementById('t-email') ? document.getElementById('t-email').value : '',
+      access: document.getElementById('t-access') ? document.getElementById('t-access').value : '',
+      line: document.getElementById('t-line') ? document.getElementById('t-line').value : '',
+      instagram: document.getElementById('t-instagram') ? document.getElementById('t-instagram').value : '',
+      twitter: document.getElementById('t-twitter') ? document.getElementById('t-twitter').value : '',
+      facebook: document.getElementById('t-facebook') ? document.getElementById('t-facebook').value : '',
+      faq: document.getElementById('t-faq') ? document.getElementById('t-faq').value : '',
+      extra: document.getElementById('t-extra') ? document.getElementById('t-extra').value : ''
+    },
+    savedAt: new Date().toLocaleString('ja-JP')
+  };
+  localStorage.setItem('neural_overflow_progress', JSON.stringify(data));
+  showSaveNotice();
+}
+
+function showSaveNotice(){
+  var notice = document.getElementById('save-notice');
+  if(!notice) return;
+  notice.style.opacity='1';
+  notice.style.transform='translateY(0)';
+  setTimeout(function(){
+    notice.style.opacity='0';
+    notice.style.transform='translateY(20px)';
+  }, 2000);
+}
+
+function restoreProgress(data){
+  if(data.siteName) document.getElementById('site-name').value = data.siteName;
+  if(data.catchcopy) document.getElementById('catchcopy').value = data.catchcopy;
+  if(data.location) document.getElementById('location').value = data.location;
+  if(data.founded) document.getElementById('founded').value = data.founded;
+  if(data.industryCat){
+    S.industryCat = data.industryCat;
+    S.industrySub = data.industrySub||'';
+    document.querySelectorAll('.ind-cat').forEach(function(el){
+      if(el.dataset.cat===data.industryCat){
+        el.classList.add('selected');
+        if(data.industrySub){
+          el.querySelectorAll('.ind-sub-item').forEach(function(sub){
+            if(sub.textContent===data.industrySub) sub.classList.add('active');
+          });
+        }
+      }
+    });
+    updateIndustryDisplay();
+  }
+  if(data.pages && data.pages.length){
+    document.querySelectorAll('.page-cb').forEach(function(cb){
+      cb.checked = data.pages.indexOf(cb.value) >= 0;
+      cb.closest('.page-card').classList.toggle('checked', cb.checked);
+    });
+  }
+  if(data.vibe){
+    S.vibe = data.vibe;
+    document.querySelectorAll('.vibe-card').forEach(function(el){
+      el.classList.toggle('selected', el.dataset.vibe===data.vibe);
+    });
+  }
+  if(data.layout){
+    S.layout = data.layout;
+    document.querySelectorAll('.layout-card').forEach(function(el){
+      el.classList.toggle('selected', el.dataset.layout===data.layout);
+    });
+  }
+  if(data.globalPalette){
+    S.globalPalette = data.globalPalette;
+    document.querySelectorAll('#global-palette .pal-item').forEach(function(el){
+      el.classList.toggle('selected', el.dataset.pid===data.globalPalette);
+    });
+  }
+  if(data.headingFont){
+    S.headingFont = data.headingFont;
+    document.querySelectorAll('#heading-font-grid .font-card').forEach(function(el){
+      el.classList.toggle('selected', el.dataset.fname===data.headingFont);
+    });
+  }
+  if(data.bodyFont){
+    S.bodyFont = data.bodyFont;
+    document.querySelectorAll('#body-font-grid .font-card').forEach(function(el){
+      el.classList.toggle('selected', el.dataset.fname===data.bodyFont);
+    });
+  }
+  setTimeout(function(){
+    if(data.texts){
+      var fields = ['top','about','staff','service','price','hours','tel','email','access','line','instagram','twitter','facebook','faq','extra'];
+      fields.forEach(function(f){
+        var el = document.getElementById('t-'+f);
+        if(el && data.texts[f]) el.value = data.texts[f];
+      });
+    }
+  }, 300);
+  goToStep(data.step||1);
+  debouncedLP();
+}
+
+function checkSavedProgress(){
+  try {
+    var saved = localStorage.getItem('neural_overflow_progress');
+    if(!saved) return;
+    var data = JSON.parse(saved);
+    if(!data.siteName && !data.industryCat) return;
+    var modal = document.getElementById('restore-modal');
+    if(!modal) return;
+    document.getElementById('restore-info').textContent = (data.siteName||'名称未設定')+' — STEP '+(data.step||1)+' — '+(data.savedAt||'');
+    modal.style.display='flex';
+  } catch(e){}
+}
+
+function confirmRestore(){
+  try {
+    var saved = localStorage.getItem('neural_overflow_progress');
+    if(saved) restoreProgress(JSON.parse(saved));
+  } catch(e){}
+  document.getElementById('restore-modal').style.display='none';
+}
+
+function dismissRestore(){
+  document.getElementById('restore-modal').style.display='none';
+}
+
 function selLayout(el){
   document.querySelectorAll('.layout-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   S.layout = el.dataset.layout;
+  debouncedLP();
 }
 
 // ===== VIBE =====
 function selVibe(el){
-  document.querySelectorAll('.vibe-card').forEach(e=>e.classList.remove('selected'));
+  document.querySelectorAll('.vibe-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   S.vibe = el.dataset.vibe;
   debouncedLP();
@@ -1450,7 +1705,7 @@ function setCustomColor(type, val){
 
 // PAGE COLOR PANELS
 function buildPageColorPanels(){
-  const pages = [...document.querySelectorAll('.page-cb:checked')].map(c=>c.value);
+  const pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
   const tabs = document.getElementById('page-color-tabs');
   const panels = document.getElementById('page-color-panels');
   if(!pages.length){tabs.innerHTML='';panels.innerHTML='';return;}
@@ -1468,25 +1723,24 @@ function buildPageColorPanels(){
     'お問い合わせフォーム':'CONTACT',
     'プライバシーポリシー・特定商取引法':'LEGAL',
   };
-  tabs.innerHTML = pages.map((p,i)=>`<button class="pct-tab${i===0?' active':''}" onclick="selPctTab(this,'pcp-${i}')">${shortNames[p]||p.slice(0,6)}</button>`).join('');
-  panels.innerHTML = pages.map((p,i)=>`
-    <div class="pct-panel${i===0?' active':''}" id="pcp-${i}">
-      <div style="font-size:11px;color:var(--muted2);margin-bottom:10px;">${p}</div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-        <label style="font-size:10px;color:var(--muted2);">背景色：</label>
-        <input type="color" value="#ffffff" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);cursor:none;padding:2px;" onchange="setPageColor('${p}','bg',this.value)">
-        <label style="font-size:10px;color:var(--muted2);">テキスト色：</label>
-        <input type="color" value="#111111" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);cursor:none;padding:2px;" onchange="setPageColor('${p}','text',this.value)">
-        <label style="font-size:10px;color:var(--muted2);">アクセント：</label>
-        <input type="color" value="#0066cc" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);cursor:none;padding:2px;" onchange="setPageColor('${p}','accent',this.value)">
-        <button class="btn btn-ghost" style="font-size:10px;padding:6px 10px;" onclick="resetPageColor('${p}')">リセット</button>
-      </div>
-    </div>
-  `).join('');
+  tabs.innerHTML = pages.map(function(p,i){return '<button class="pct-tab'+(i===0?' active':'')+\'" onclick="selPctTab(this,\"pcp-'+i+'\")">'+(shortNames[p]||p.slice(0,6))+'</button>';}).join('');
+  panels.innerHTML = pages.map(function(p,i){
+    return '<div class="pct-panel'+(i===0?' active':'')+'" id="pcp-'+i+'">'
+      +'<div style="font-size:11px;color:var(--muted2);margin-bottom:10px;">'+p+'</div>'
+      +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'
+      +'<label style="font-size:10px;color:var(--muted2);">背景色：</label>'
+      +'<input type="color" value="#ffffff" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','bg',this.value)">'
+      +'<label style="font-size:10px;color:var(--muted2);">テキスト色：</label>'
+      +'<input type="color" value="#111111" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','text',this.value)">'
+      +'<label style="font-size:10px;color:var(--muted2);">アクセント：</label>'
+      +'<input type="color" value="#0066cc" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','accent',this.value)">'
+      +'<button class="btn btn-ghost" style="font-size:10px;padding:6px 10px;" onclick="resetPageColor(''+p+'')">リセット</button>'
+      +'</div></div>';
+  }).join('');
 }
 function selPctTab(el, panelId){
-  el.closest('.color-section').querySelectorAll('.pct-tab').forEach(t=>t.classList.remove('active'));
-  el.closest('.color-section').querySelectorAll('.pct-panel').forEach(p=>p.classList.remove('active'));
+  el.closest('.color-section').querySelectorAll('.pct-tab').forEach(function(t){t.classList.remove('active');});
+  el.closest('.color-section').querySelectorAll('.pct-panel').forEach(function(p){p.classList.remove('active');});
   el.classList.add('active');
   document.getElementById(panelId).classList.add('active');
 }
@@ -1499,7 +1753,7 @@ function resetPageColor(page){delete S.pageColors[page];}
 // ===== FONT =====
 function selFont(el, type){
   const grid = el.closest('.font-grid');
-  grid.querySelectorAll('.font-card').forEach(e=>e.classList.remove('selected'));
+  grid.querySelectorAll('.font-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   if(type==='heading') S.headingFont = el.dataset.fname;
   else S.bodyFont = el.dataset.fname;
@@ -1701,9 +1955,9 @@ function renderPlacementList(){
 
 // Drag & drop
 const uz = document.getElementById('upload-zone');
-uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag-over');});
-uz.addEventListener('dragleave',()=>uz.classList.remove('drag-over'));
-uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('drag-over');handleUpload(e.dataTransfer.files);});
+uz.addEventListener('dragover',efunction(){e.preventDefault();uz.classList.add('drag-over');});
+uz.addEventListener('dragleave',function(){uz.classList.remove('drag-over');});
+uz.addEventListener('drop',efunction(){e.preventDefault();uz.classList.remove('drag-over');handleUpload(e.dataTransfer.files);});
 
 // ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
@@ -1736,8 +1990,8 @@ function generateImage(){
 
 // ===== TEXT TABS =====
 function selTxtTab(el){
-  document.querySelectorAll('.ptt-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.ptt-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ptt-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.ptt-panel').forEach(function(p){p.classList.remove('active');});
   el.classList.add('active');
   document.getElementById(el.dataset.panel).classList.add('active');
 }
@@ -1748,7 +2002,7 @@ function buildSummary(){
   S.catchcopy = document.getElementById('catchcopy').value;
   S.location = document.getElementById('location').value;
   S.founded = document.getElementById('founded').value;
-  S.pages = [...document.querySelectorAll('.page-cb:checked')].map(c=>c.value);
+  S.pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
   S.texts = {
     top:    document.getElementById('t-top').value,
     about:  document.getElementById('t-about').value,
@@ -1768,16 +2022,15 @@ function buildSummary(){
     extra:  document.getElementById('t-extra').value,
   };
   const pal = palData[S.globalPalette]||palData['mono-light'];
-  document.getElementById('summary-grid').innerHTML = `
-    <div class="sum-item"><div class="sum-key">サイト名</div><div class="sum-val">${S.siteName}</div></div>
-    <div class="sum-item"><div class="sum-key">業種</div><div class="sum-val">${S.industryCat}${S.industrySub?' / '+S.industrySub:''}</div></div>
-    <div class="sum-item"><div class="sum-key">ページ数</div><div class="sum-val">${S.pages.length} セクション</div></div>
-    <div class="sum-item"><div class="sum-key">雰囲気</div><div class="sum-val">${S.vibe||'未選択'}</div></div>
-    <div class="sum-item"><div class="sum-key">カラー</div><div class="sum-val">${S.globalPalette||'未選択'}</div></div>
-    <div class="sum-item"><div class="sum-key">見出しF</div><div class="sum-val">${S.headingFont||'未選択'}</div></div>
-    <div class="sum-item"><div class="sum-key">本文F</div><div class="sum-val">${S.bodyFont||'未選択'}</div></div>
-    <div class="sum-item"><div class="sum-key">画像数</div><div class="sum-val">${S.uploadedImages.length + S.selectedImages.length} 枚</div></div>
-  `;
+  document.getElementById('summary-grid').innerHTML =
+    '<div class="sum-item"><div class="sum-key">サイト名</div><div class="sum-val">'+S.siteName+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">業種</div><div class="sum-val">'+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">ページ数</div><div class="sum-val">'+S.pages.length+' セクション</div></div>'
+    +'<div class="sum-item"><div class="sum-key">雰囲気</div><div class="sum-val">'+(S.vibe||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">カラー</div><div class="sum-val">'+(S.globalPalette||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">見出しF</div><div class="sum-val">'+(S.headingFont||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">本文F</div><div class="sum-val">'+(S.bodyFont||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">画像数</div><div class="sum-val">'+(S.uploadedImages.length + S.selectedImages.length)+' 枚</div></div>';
   var allImgs = S.uploadedImages.map(function(img){return typeof img==='string'?img:img.src;}).concat(S.selectedImages);
   if(allImgs.length){
     document.getElementById('sum-images-wrap').style.display='block';
@@ -2088,7 +2341,7 @@ function setDevice(d){
   currentDevice = d;
   const wrap = document.getElementById('device-wrap');
   const frame = document.getElementById('preview-frame');
-  document.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.dev-btn').forEach(function(b){b.classList.remove('active');});
   document.getElementById('dev-'+d).classList.add('active');
 
   // Remove current shell
@@ -2097,21 +2350,11 @@ function setDevice(d){
 
   if(d==='pc'){
     wrap.classList.add('pc-mode');
-    wrap.innerHTML = `<div class="device-frame-pc"><iframe id="preview-frame" class="preview-frame" title="preview"></iframe></div>`;
+    wrap.innerHTML = '<div class="device-frame-pc"><iframe id="preview-frame" class="preview-frame" title="preview"></iframe></div>';
   } else if(d==='tablet'){
-    wrap.innerHTML = `
-      <div class="device-frame-tablet">
-        <div style="background:#1a1a2e;border-radius:20px;padding:14px 10px;box-shadow:0 0 0 2px #2a2a4a,0 20px 60px rgba(0,0,0,.6);">
-          <iframe id="preview-frame" class="preview-frame" style="border-radius:8px;" title="preview"></iframe>
-        </div>
-      </div>`;
+    wrap.innerHTML = '<div class="device-frame-tablet"><div style="background:#1a1a2e;border-radius:20px;padding:14px 10px;box-shadow:0 0 0 2px #2a2a4a,0 20px 60px rgba(0,0,0,.6);"><iframe id="preview-frame" class="preview-frame" style="border-radius:8px;" title="preview"></iframe></div></div>';
   } else {
-    wrap.innerHTML = `
-      <div class="device-shell">
-        <div class="device-shell-bar"><div class="device-shell-notch"></div></div>
-        <iframe id="preview-frame" class="preview-frame" title="preview"></iframe>
-        <div class="device-shell-home"></div>
-      </div>`;
+    wrap.innerHTML = '<div class="device-shell"><div class="device-shell-bar"><div class="device-shell-notch"></div></div><iframe id="preview-frame" class="preview-frame" title="preview"></iframe><div class="device-shell-home"></div></div>';
   }
   // Re-inject HTML
   if(S.generatedHTML){
@@ -2147,69 +2390,89 @@ const LP_FONTS = {
 };
 
 function buildLivePreview(){
-  const pal = LP_PALETTES[S.globalPalette] || LP_PALETTES['mono-light'];
-  const hFont = LP_FONTS[S.headingFont] || {h:"'Noto Sans JP',sans-serif",b:"'Noto Sans JP',sans-serif"};
-  const bFont = LP_FONTS[S.bodyFont] || hFont;
-  const siteName = document.getElementById('site-name').value || 'SITE NAME';
-  const catchcopy = document.getElementById('catchcopy').value || 'キャッチコピーがここに入ります';
-  const vibe = S.vibe ? S.vibe.split('・')[0] : '';
-  const pages = [...document.querySelectorAll('.page-cb:checked')].map(c=>{
-    const n = c.value.split('・')[0].split('（')[0];
-    return `<a href="#" style="color:${pal.text};opacity:.8;font-size:12px;text-decoration:none;padding:0 10px;">${n}</a>`;
+  var pal = LP_PALETTES[S.globalPalette] || LP_PALETTES['mono-light'];
+  var hFont = LP_FONTS[S.headingFont] || {h:"'Noto Sans JP',sans-serif",b:"'Noto Sans JP',sans-serif"};
+  var bFont = LP_FONTS[S.bodyFont] || hFont;
+  var siteName = document.getElementById('site-name').value || 'SITE NAME';
+  var catchcopy = document.getElementById('catchcopy').value || 'キャッチコピーがここに入ります';
+  var vibe = S.vibe ? S.vibe.split('・')[0] : '';
+  var layout = S.layout ? S.layout.split('：')[0] : 'FULL SCREEN HERO';
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){
+    var n = c.value.split('・')[0].split('（')[0];
+    return '<a href="#" style="color:'+pal.text+';opacity:.8;font-size:12px;text-decoration:none;padding:0 10px;">'+n+'</a>';
   }).join('');
 
-  const html = `<!DOCTYPE html><html><head>
-<meta charset="UTF-8">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=Noto+Serif+JP:wght@400;700&family=Zen+Kaku+Gothic+New:wght@900&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:${pal.bg};color:${pal.text};font-family:${bFont.b};font-size:13px;}
-nav{background:${pal.nav};padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);}
-.nav-logo{font-family:${hFont.h};font-size:20px;color:${pal.accent};letter-spacing:.05em;}
-.nav-links{display:flex;flex-wrap:wrap;}
-.hero{min-height:300px;display:flex;flex-direction:column;justify-content:center;padding:48px 32px;background:linear-gradient(135deg,${pal.bg} 0%,${pal.accent}22 100%);}
-.hero-tag{font-size:10px;letter-spacing:.3em;color:${pal.accent};margin-bottom:12px;opacity:.8;}
-.hero-title{font-family:${hFont.h};font-size:clamp(32px,8vw,60px);line-height:.95;letter-spacing:.02em;margin-bottom:16px;}
-.hero-title em{color:${pal.accent};font-style:normal;}
-.hero-sub{font-size:13px;opacity:.7;max-width:400px;line-height:1.7;margin-bottom:24px;}
-.hero-btn{display:inline-block;background:${pal.accent};color:${pal.bg};font-family:${hFont.h};font-size:16px;padding:12px 32px;letter-spacing:.1em;text-decoration:none;}
-.section{padding:36px 32px;border-top:1px solid ${pal.text}18;}
-.section-label{font-size:9px;letter-spacing:.3em;color:${pal.accent};margin-bottom:8px;opacity:.8;}
-.section-title{font-family:${hFont.h};font-size:28px;letter-spacing:.03em;margin-bottom:16px;}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.card{background:${pal.accent}12;padding:14px;border-left:2px solid ${pal.accent};}
-.card-title{font-family:${hFont.h};font-size:14px;letter-spacing:.05em;margin-bottom:4px;}
-.card-body{font-size:11px;opacity:.65;line-height:1.5;}
-.vibe-badge{display:inline-block;font-size:9px;letter-spacing:.2em;padding:3px 10px;border:1px solid ${pal.accent}66;color:${pal.accent};margin-bottom:16px;}
-footer{background:${pal.accent}18;padding:20px 32px;text-align:center;font-size:10px;opacity:.6;}
-</style></head><body>
-<nav>
-  <div class="nav-logo">${siteName.toUpperCase()}</div>
-  <div class="nav-links">${pages || '<a href="#" style="color:'+pal.text+';font-size:12px;text-decoration:none;padding:0 10px;">HOME</a>'}</div>
-</nav>
-<div class="hero">
-  ${vibe?`<div class="vibe-badge">${vibe.toUpperCase()}</div>`:''}
-  <div class="hero-tag">// WELCOME</div>
-  <h1 class="hero-title">${siteName.toUpperCase().replace('/','/<br>')}</h1>
-  <p class="hero-sub">${catchcopy}</p>
-  <a href="#" class="hero-btn">詳しく見る →</a>
-</div>
-<div class="section">
-  <div class="section-label">// SERVICE</div>
-  <h2 class="section-title">サービス紹介</h2>
-  <div class="cards">
-    <div class="card"><div class="card-title">サービス 01</div><div class="card-body">詳細な説明がここに入ります。</div></div>
-    <div class="card"><div class="card-title">サービス 02</div><div class="card-body">詳細な説明がここに入ります。</div></div>
-    <div class="card"><div class="card-title">サービス 03</div><div class="card-body">詳細な説明がここに入ります。</div></div>
-  </div>
-</div>
-<footer>© 2025 ${siteName} — All rights reserved</footer>
-</body></html>`;
+  // レイアウト別ヒーローHTML
+  var heroHTML = '';
+  if(layout==='SPLIT LAYOUT'){
+    heroHTML = '<div class="hero" style="display:flex;gap:0;padding:0;min-height:280px;">'
+      +'<div style="flex:1;padding:40px 28px;display:flex;flex-direction:column;justify-content:center;">'
+      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:10px;">'+vibe.toUpperCase()+'</div>':'')
+      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(24px,5vw,44px);line-height:.95;color:'+pal.text+';margin-bottom:12px;">'+siteName.toUpperCase()+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;margin-bottom:20px;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-family:'+hFont.h+';font-size:14px;padding:10px 24px;text-decoration:none;">詳しく見る →</a>'
+      +'</div>'
+      +'<div style="flex:1;background:linear-gradient(135deg,'+pal.accent+'44,'+pal.accent+'22);min-height:200px;"></div>'
+      +'</div>';
+  } else if(layout==='BOLD TYPE'){
+    heroHTML = '<div style="padding:32px 28px;background:'+pal.bg+';">'
+      +'<div style="font-family:'+hFont.h+';font-size:clamp(48px,12vw,90px);line-height:.85;color:'+pal.text+';letter-spacing:.01em;margin-bottom:16px;">'+siteName.toUpperCase()+'</div>'
+      +'<div style="font-family:'+hFont.h+';font-size:clamp(24px,6vw,48px);line-height:.85;color:'+pal.accent+';letter-spacing:.01em;margin-bottom:20px;">'+vibe.toUpperCase()+'</div>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.6;max-width:400px;">'+catchcopy+'</p>'
+      +'</div>';
+  } else if(layout==='MINIMAL CENTER'){
+    heroHTML = '<div style="padding:60px 28px;text-align:center;background:'+pal.bg+';">'
+      +'<div style="font-size:9px;letter-spacing:.4em;color:'+pal.accent+';margin-bottom:20px;opacity:.7;">'+(vibe||'WELCOME')+'</div>'
+      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(28px,6vw,52px);color:'+pal.text+';margin-bottom:16px;">'+siteName+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.55;max-width:360px;margin:0 auto 24px;line-height:1.8;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;border:1px solid '+pal.accent+';color:'+pal.accent+';font-size:11px;letter-spacing:.2em;padding:10px 28px;text-decoration:none;">VIEW MORE</a>'
+      +'</div>';
+  } else if(layout==='JAPANESE STYLE'){
+    heroHTML = '<div style="padding:40px 28px;background:'+pal.bg+';border-left:3px solid '+pal.accent+';">'
+      +'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:16px;writing-mode:horizontal-tb;">— '+vibe+' —</div>'
+      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(28px,6vw,52px);color:'+pal.text+';margin-bottom:12px;letter-spacing:.1em;">'+siteName+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;line-height:2;margin-bottom:20px;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;background:transparent;border:1px solid '+pal.accent+';color:'+pal.accent+';font-size:11px;letter-spacing:.25em;padding:8px 24px;text-decoration:none;">詳しく見る</a>'
+      +'</div>';
+  } else {
+    // FULL SCREEN HERO（デフォルト）
+    heroHTML = '<div class="hero" style="min-height:280px;display:flex;flex-direction:column;justify-content:center;padding:48px 28px;background:linear-gradient(135deg,'+pal.bg+' 0%,'+pal.accent+'22 100%);">'
+      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:10px;opacity:.8;">'+vibe.toUpperCase()+'</div>':'')
+      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(32px,8vw,60px);line-height:.95;color:'+pal.text+';margin-bottom:14px;">'+siteName.toUpperCase()+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;max-width:380px;line-height:1.7;margin-bottom:22px;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-family:'+hFont.h+';font-size:15px;padding:11px 28px;text-decoration:none;letter-spacing:.1em;">詳しく見る →</a>'
+      +'</div>';
+  }
 
-  const frame = document.getElementById('lp-frame');
+  var html = '<!DOCTYPE html><html><head>'
+    +'<meta charset="UTF-8">'
+    +'<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:'+pal.bg+';color:'+pal.text+';font-family:'+bFont.b+';font-size:13px;}'
+    +'nav{background:'+pal.nav+';padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;backdrop-filter:blur(10px);}'
+    +'.nav-logo{font-family:'+hFont.h+';font-size:18px;color:'+pal.accent+';letter-spacing:.05em;}'
+    +'.section{padding:32px 28px;border-top:1px solid '+pal.text+'18;}'
+    +'.section-label{font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:8px;opacity:.8;}'
+    +'.section-title{font-family:'+hFont.h+';font-size:24px;margin-bottom:14px;}'
+    +'.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}'
+    +'.card{background:'+pal.accent+'12;padding:12px;border-left:2px solid '+pal.accent+';}'
+    +'footer{background:'+pal.accent+'18;padding:16px 28px;text-align:center;font-size:10px;opacity:.6;}'
+    +'</style></head><body>'
+    +'<nav><div class="nav-logo">'+siteName.toUpperCase()+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;">'+(pages||'<a href="#" style="color:'+pal.text+';font-size:11px;text-decoration:none;padding:0 8px;">HOME</a>')+'</div></nav>'
+    +heroHTML
+    +'<div class="section"><div class="section-label">// SERVICE</div><h2 class="section-title">サービス紹介</h2>'
+    +'<div class="cards">'
+    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 01</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
+    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 02</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
+    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 03</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
+    +'</div></div>'
+    +'<footer>© 2025 '+siteName+' — All rights reserved</footer>'
+    +'</body></html>';
+
+  var frame = document.getElementById('lp-frame');
   if(frame) frame.srcdoc = html;
-  const label = document.getElementById('lp-step-label');
-  if(label) label.textContent = `STEP ${S.step}`;
+  var label = document.getElementById('lp-step-label');
+  if(label) label.textContent = 'STEP '+S.step+' / '+layout;
 }
 
 // Hook live preview updates into existing selection functions
@@ -2222,15 +2485,23 @@ let lpTimer;
 function debouncedLP(){ clearTimeout(lpTimer); lpTimer=setTimeout(buildLivePreview, 200); }
 
 // Patch all inputs to update preview
-document.addEventListener('input', e=>{
+document.addEventListener('input', efunction(){
   if(['site-name','catchcopy'].includes(e.target.id)) debouncedLP();
 });
 
 // Initial build
 setTimeout(buildLivePreview, 500);
+// Check saved progress
+setTimeout(checkSavedProgress, 1000);
 
 
 // ===== REGENERATE =====
+
+function toggleEditSection(){
+  var el = document.getElementById('edit-section');
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
 function regenSite(){
   var rs = document.getElementById('result-section');
   rs.classList.remove('show');
@@ -2253,10 +2524,9 @@ dlHTML = function(){
 }
 
 // On step 4 entry, build page color panels
-document.querySelectorAll('.pb-step[data-step="4"]').forEach(el=>{
-  el.addEventListener('click',()=>setTimeout(buildPageColorPanels,100));
+document.querySelectorAll('.pb-step[data-step="4"]').forEach(function(el){
+  el.addEventListener('click',function(){setTimeout(buildPageColorPanels,100);});
 });
 </script>
 </body>
 </html>
-
