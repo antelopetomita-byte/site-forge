@@ -1035,9 +1035,140 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 <div class="code-view" id="code-view"><pre id="code-pre"></pre></div>
 </section>
 
+<!-- SPLASH JS -->
+<script>
+(function(){
+  var splash = document.getElementById('splash');
+  var produced = document.getElementById('splash-produced');
+  var brand = document.getElementById('splash-brand');
+  if(!splash) return;
+
+  setTimeout(function(){ if(produced) produced.classList.add('show'); }, 400);
+  setTimeout(function(){ if(produced){ produced.style.transition='opacity 1.8s'; produced.style.opacity='0'; }}, 3200);
+  setTimeout(function(){ if(brand) brand.classList.add('show'); }, 4200);
+  setTimeout(function(){
+    if(brand){ brand.style.transition='opacity 1.5s,letter-spacing 1.5s'; brand.style.letterSpacing='1em'; brand.style.opacity='0'; }
+    setTimeout(function(){ splash.classList.add('hide'); startParticleIntro(); }, 1200);
+  }, 7000);
+
+  splash.addEventListener('click', function(){
+    splash.classList.add('hide');
+    startParticleIntro();
+  });
+})();
+
+// PARTICLE INTRO
+function startParticleIntro(){
+  var canvas = document.getElementById('loader-canvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W, H, particles=[], textPixels=[], animId;
+  var phase='scatter', phaseT=0, done=false, lastTime=0;
+  var LIME='#00ffaa', BLUE='#38b8ff';
+  var siteWords=['cafe.jp','salon.com','ramen','portfolio','shop.jp','design.co','dental','fitness','bakery','law-firm','it-company','ec-store','school','clinic','hotel','craftsman','photo.jp','music','agency','workshop'];
+
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize',function(){ resize(); textPixels=sampleText(); });
+
+  function sampleText(){
+    var oc=document.createElement('canvas'); oc.width=W; oc.height=H;
+    var c=oc.getContext('2d');
+    var fs=Math.min(W/4.5,180);
+    c.fillStyle='#fff';
+    c.font='900 '+fs+'px \'Bebas Neue\',sans-serif';
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillText('NEURAL OVERFLOW',W/2,H/2-fs*0.08);
+    var sub=Math.min(W/22,18);
+    c.font='700 '+sub+'px \'Space Mono\',monospace';
+    c.fillText('Chaos of Creation',W/2,H/2+fs*0.62);
+    var data=c.getImageData(0,0,W,H).data, pts=[];
+    var gap=Math.max(5,Math.floor(W/120));
+    for(var y=0;y<H;y+=gap) for(var x=0;x<W;x+=gap){ var idx=(y*W+x)*4; if(data[idx+3]>128) pts.push({x:x,y:y}); }
+    return pts;
+  }
+
+  function makeParticle(i){
+    var tp=textPixels.length?textPixels[i%textPixels.length]:{x:W/2,y:H/2};
+    var cols=Math.ceil(Math.sqrt((W/H)*1200)), rows=Math.ceil(1200/cols);
+    var px=((i%cols)/cols)*W+(Math.random()-.5)*(W/cols)*2;
+    var py=((Math.floor(i/cols)%rows)/rows)*H+(Math.random()-.5)*(H/rows)*2;
+    return {x:Math.max(-20,Math.min(W+20,px)),y:Math.max(-20,Math.min(H+20,py)),vx:(Math.random()-.5)*.8,vy:(Math.random()-.5)*.8,word:siteWords[Math.floor(Math.random()*siteWords.length)],size:9+Math.random()*8,alpha:.5+Math.random()*.4,color:Math.random()<.6?LIME:BLUE,tx:tp.x,ty:tp.y,gathered:false};
+  }
+
+  function init(){
+    textPixels=sampleText();
+    var count=Math.min(Math.max(textPixels.length,800),1200);
+    particles=[];
+    for(var i=0;i<count;i++) particles.push(makeParticle(i));
+    requestAnimationFrame(loop);
+  }
+
+  function loop(t){
+    if(done) return;
+    t=t||0; animId=requestAnimationFrame(loop);
+    var dt=Math.min(t-lastTime,32); lastTime=t; phaseT+=dt;
+    if(phase==='scatter'&&phaseT>2200){ phase='gather'; phaseT=0; for(var i=0;i<particles.length;i++) particles[i].gathered=false; }
+    else if(phase==='gather'&&phaseT>3500){ phase='hold'; phaseT=0; }
+    else if(phase==='hold'&&phaseT>1400){ phase='explode'; phaseT=0; for(var i=0;i<particles.length;i++){ particles[i].vx=(Math.random()-.5)*.5; particles[i].vy=(Math.random()-.5)*.5; } }
+    else if(phase==='explode'&&phaseT>1600){ done=true; cancelAnimationFrame(animId); hideLdr(); return; }
+    var bgA=phase==='hold'?.06:phase==='explode'?.18:.12;
+    ctx.fillStyle='rgba(2,4,8,'+bgA+')'; ctx.fillRect(0,0,W,H);
+    var prog=Math.min(1,phaseT/(phase==='gather'?3500:1));
+    for(var i=0;i<particles.length;i++) updateDraw(particles[i],prog);
+    if(phase==='hold'){
+      ctx.save();
+      var fs=Math.min(W/4.5,180);
+      ctx.fillStyle='rgba(2,4,8,.3)'; ctx.fillRect(0,0,W,H);
+      ctx.shadowColor=LIME; ctx.shadowBlur=70;
+      ctx.globalAlpha=.4+Math.sin(phaseT*.006)*.12;
+      ctx.fillStyle=LIME;
+      ctx.font='900 '+fs+'px \'Bebas Neue\',sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('NEURAL OVERFLOW',W/2,H/2-fs*.08);
+      ctx.shadowBlur=20; ctx.globalAlpha=.3;
+      ctx.fillStyle='#fff';
+      ctx.font='700 '+Math.min(W/22,18)+'px \'Space Mono\',monospace';
+      ctx.fillText('Chaos of Creation',W/2,H/2+fs*.62);
+      ctx.restore();
+    }
+    if(phase==='explode'&&phaseT<300){ ctx.save(); ctx.globalAlpha=(1-phaseT/300)*.55; ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.restore(); }
+  }
+
+  function updateDraw(p,prog){
+    if(phase==='scatter'){ p.x+=p.vx; p.y+=p.vy; p.vx+=(Math.random()-.5)*.04; p.vy+=(Math.random()-.5)*.04; p.vx*=.985; p.vy*=.985; if(p.x<-60)p.x=W+40; if(p.x>W+60)p.x=-40; if(p.y<-40)p.y=H+20; if(p.y>H+40)p.y=-20; }
+    else if(phase==='gather'){ var dx=p.tx-p.x,dy=p.ty-p.y,d=Math.sqrt(dx*dx+dy*dy),spd=.03+prog*.07; p.x+=dx*spd; p.y+=dy*spd; p.alpha=Math.min(1,p.alpha+.012); p.size=Math.max(3,p.size*.97); if(d<3)p.gathered=true; }
+    else if(phase==='hold'){ p.x=p.tx+(Math.random()-.5)*.6; p.y=p.ty+(Math.random()-.5)*.6; }
+    else if(phase==='explode'){ var angle=Math.atan2(p.ty-H/2,p.tx-W/2),burst=6+Math.random()*14; p.vx+=(Math.random()-.5)*5+Math.cos(angle)*burst*.6; p.vy+=(Math.random()-.5)*5+Math.sin(angle)*burst*.6; p.x+=p.vx; p.y+=p.vy; p.vx*=1.05; p.vy*=1.05; p.alpha-=.022; p.size*=.96; }
+    if(p.alpha<=.02) return;
+    ctx.save(); ctx.globalAlpha=Math.max(0,Math.min(1,p.alpha));
+    if((phase==='gather'&&p.gathered)||phase==='hold'){
+      ctx.shadowColor=p.color; ctx.shadowBlur=10; ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.tx,p.ty,3,0,Math.PI*2); ctx.fill();
+    } else if(phase==='explode'){
+      var rr=Math.max(1,p.size*.4); ctx.shadowColor=p.color; ctx.shadowBlur=14; ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,rr,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha*=.4; ctx.beginPath(); ctx.arc(p.x-p.vx*3,p.y-p.vy*3,rr*.6,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.fillStyle=p.color; ctx.font=p.size+'px \'Space Mono\',monospace'; ctx.fillText(p.word,p.x,p.y);
+    }
+    ctx.restore();
+  }
+
+  function hideLdr(){
+    var el=document.getElementById('loader');
+    if(el){ el.style.transition='opacity .8s'; el.style.opacity='0'; setTimeout(function(){ el.classList.add('hide'); },800); }
+  }
+
+  window.skipIntro=function(){ splash.classList.add('hide'); done=true; cancelAnimationFrame(animId); hideLdr(); };
+
+  try{ if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(init); } else { setTimeout(init,300); } } catch(e){ setTimeout(init,300); }
+}
+</script>
+
 <script>
 // ===== STATE =====
-const S = {
+var S = {
   step: 1,
   siteName:'', catchcopy:'', location:'', founded:'',
   industryCat:'', industrySub:'',
@@ -1053,320 +1184,33 @@ const S = {
 };
 
 // ===== CURSOR =====
-const cur = document.getElementById('cur');
-const curR = document.getElementById('cur-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',efunction(){mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+var cur = document.getElementById('cur');
+var curR = document.getElementById('cur-ring');
+var mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
 (function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
 
-// ===== SPLASH SEQUENCE =====
-(function(){
-  var splash = document.getElementById('splash');
-  var produced = document.getElementById('splash-produced');
-  var brand = document.getElementById('splash-brand');
-
-  // Phase 1: "produced by" ゆっくりフェードイン
-  setTimeout(function(){ produced.classList.add('show'); }, 500);
-
-  // Phase 2: "produced by" ゆっくりフェードアウト
-  setTimeout(function(){ produced.style.transition='opacity 1.8s'; produced.style.opacity = '0'; }, 3200);
-
-  // Phase 3: "PRIORITY CREATIVE WORKS" ゆっくりフェードイン
-  setTimeout(function(){ brand.classList.add('show'); }, 5200);
-
-  // Phase 4: ゆっくり文字が広がりながらフェードアウト → パーティクルへ
-  setTimeout(function(){
-    brand.style.transition = 'opacity 1.5s, letter-spacing 1.5s';
-    brand.style.letterSpacing = '1em';
-    brand.style.opacity = '0';
-    setTimeout(function(){
-      splash.classList.add('hide');
-    }, 1200);
-  }, 8000);
-
-  // タップでスキップ
-  splash.addEventListener('click', function(){
-    splash.classList.add('hide');
-    // パーティクルを即開始
-    if(typeof startParticlesNow === 'function') startParticlesNow();
-  });
-})();
-
-// ===== PARTICLE INTRO =====
-(function(){
-  var canvas = document.getElementById('loader-canvas');
-  if(!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W, H, particles = [], textPixels = [], animId;
-  var phase = 'scatter';
-  var phaseT = 0;
-  var done = false;
-  var lastTime = 0;
-  var LIME = '#00ffaa';
-  var BLUE = '#38b8ff';
-  var WHITE = '#eef4ff';
-
-  var siteWords = [
-    'cafe.jp','salon.com','ramen-shop','portfolio','shop.jp',
-    'design.co','dental','fitness','bakery','law-firm',
-    'it-company','ec-store','school','clinic','hotel',
-    'craftsman','photo.jp','music','agency','workshop',
-    'restaurant','studio','factory','web','creative'
-  ];
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function sampleText() {
-    var oc = document.createElement('canvas');
-    oc.width = W; oc.height = H;
-    var c = oc.getContext('2d');
-    var fs = Math.min(W/4.5, 180);
-    c.fillStyle = '#fff';
-    c.font = '900 '+fs+"px 'Bebas Neue',sans-serif";
-    c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('NEURAL OVERFLOW', W/2, H/2 - fs*0.08);
-    var sub = Math.min(W/22, 18);
-    c.font = '700 '+sub+"px 'Space Mono',monospace";
-    c.fillText('Chaos of Creation', W/2, H/2 + fs*0.62);
-    var data = c.getImageData(0,0,W,H).data;
-    var pts = [];
-    var gap = Math.max(5, Math.floor(W/120));
-    for(var y=0;y<H;y+=gap){
-      for(var x=0;x<W;x+=gap){
-        var idx=(y*W+x)*4;
-        if(data[idx+3]>128) pts.push({x:x,y:y});
-      }
-    }
-    return pts;
-  }
-
-  function makeParticle(i) {
-    var tp = textPixels.length ? textPixels[i % textPixels.length] : {x:W/2,y:H/2};
-    var cols = Math.ceil(Math.sqrt((W/H) * 1200));
-    var rows = Math.ceil(1200 / cols);
-    var col = i % cols;
-    var row = Math.floor(i / cols) % rows;
-    var px = (col / cols) * W + (Math.random()-0.5) * (W/cols) * 2;
-    var py = (row / rows) * H + (Math.random()-0.5) * (H/rows) * 2;
-    px = Math.max(-20, Math.min(W+20, px));
-    py = Math.max(-20, Math.min(H+20, py));
-    return {
-      x: px, y: py,
-      vx: (Math.random()-0.5)*0.8,
-      vy: (Math.random()-0.5)*0.8,
-      word: siteWords[Math.floor(Math.random()*siteWords.length)],
-      size: 9 + Math.random()*8,
-      alpha: 0.5 + Math.random()*0.4,
-      baseAlpha: 0.6 + Math.random()*0.4,
-      color: Math.random()<0.6 ? LIME : BLUE,
-      tx: tp.x, ty: tp.y,
-      gathered: false
-    };
-  }
-
-  var loopCount = 0;
-
-  function updateParticle(p, prog) {
-    if(phase==='scatter'){
-      p.x+=p.vx; p.y+=p.vy;
-      p.vx+=(Math.random()-0.5)*0.04;
-      p.vy+=(Math.random()-0.5)*0.04;
-      p.vx*=0.985; p.vy*=0.985;
-      if(p.x<-60) p.x=W+40;
-      if(p.x>W+60) p.x=-40;
-      if(p.y<-40) p.y=H+20;
-      if(p.y>H+40) p.y=-20;
-    } else if(phase==='gather'){
-      var dx=p.tx-p.x, dy=p.ty-p.y;
-      var d=Math.sqrt(dx*dx+dy*dy);
-      var spd=0.03+prog*0.07;
-      p.x+=dx*spd; p.y+=dy*spd;
-      p.alpha=Math.min(1,p.alpha+0.012);
-      p.size=Math.max(3,p.size*0.97);
-      if(d<3) p.gathered=true;
-    } else if(phase==='hold'){
-      p.x=p.tx+(Math.random()-0.5)*0.6;
-      p.y=p.ty+(Math.random()-0.5)*0.6;
-      p.alpha=Math.min(1,p.alpha+0.03);
-    } else if(phase==='explode'){
-      var angle=Math.atan2(p.ty-H/2, p.tx-W/2);
-      var burst=6+Math.random()*14;
-      p.vx+=(Math.random()-0.5)*5 + Math.cos(angle)*burst*0.6;
-      p.vy+=(Math.random()-0.5)*5 + Math.sin(angle)*burst*0.6;
-      p.x+=p.vx; p.y+=p.vy;
-      p.vx*=1.05; p.vy*=1.05;
-      p.alpha-=0.022;
-      p.size*=0.96;
-    }
-  }
-
-  function drawParticle(p) {
-    if(p.alpha<=0.02) return;
-    ctx.save();
-    ctx.globalAlpha=Math.max(0,Math.min(1,p.alpha));
-    if((phase==='gather'&&p.gathered)||phase==='hold'){
-      var r = 3;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.tx, p.ty, r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha *= 0.2;
-      ctx.shadowBlur = 20;
-      ctx.beginPath();
-      ctx.arc(p.tx, p.ty, r*3, 0, Math.PI*2);
-      ctx.fill();
-    } else if(phase==='explode'){
-      var rr = Math.max(1, p.size*0.4);
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 14;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, rr, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha *= 0.4;
-      ctx.beginPath();
-      ctx.arc(p.x-p.vx*3, p.y-p.vy*3, rr*0.6, 0, Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha *= 0.5;
-      ctx.beginPath();
-      ctx.arc(p.x-p.vx*6, p.y-p.vy*6, rr*0.3, 0, Math.PI*2);
-      ctx.fill();
-    } else {
-      ctx.fillStyle=p.color;
-      ctx.font=p.size+"px 'Space Mono',monospace";
-      ctx.fillText(p.word,p.x,p.y);
-    }
-    ctx.restore();
-  }
-
-  function init() {
-    resize();
-    setTimeout(function(){
-      textPixels=sampleText();
-      var count=Math.min(Math.max(textPixels.length, 800), 1200);
-      particles=[];
-      for(var i=0;i<count;i++) particles.push(makeParticle(i));
-      requestAnimationFrame(loop);
-    },100);
-  }
-
-  function loop(t) {
-    if(done) return;
-    t=t||0;
-    animId=requestAnimationFrame(loop);
-    var dt=Math.min(t-lastTime,32);
-    lastTime=t; phaseT+=dt;
-
-    if(phase==='scatter'&&phaseT>2200){
-      phase='gather'; phaseT=0;
-      for(var i=0;i<particles.length;i++) particles[i].gathered=false;
-    }
-    else if(phase==='gather'&&phaseT>3500){phase='hold';phaseT=0;}
-    else if(phase==='hold'&&phaseT>1400){
-      phase='explode'; phaseT=0;
-      for(var i=0;i<particles.length;i++){
-        particles[i].vx=(Math.random()-0.5)*0.5;
-        particles[i].vy=(Math.random()-0.5)*0.5;
-      }
-    }
-    else if(phase==='explode'&&phaseT>1600){phase='done';hideLdr();return;}
-
-    var bgA = phase==='hold' ? 0.06 : phase==='explode' ? 0.18 : 0.12;
-    ctx.fillStyle='rgba(2,4,8,'+bgA+')';
-    ctx.fillRect(0,0,W,H);
-
-    var prog=Math.min(1,phaseT/(phase==='gather'?3500:1));
-    for(var i=0;i<particles.length;i++){
-      updateParticle(particles[i],prog);
-      drawParticle(particles[i]);
-    }
-
-    if(phase==='hold'){
-      ctx.save();
-      var fs=Math.min(W/4.5,180);
-      ctx.fillStyle='rgba(2,4,8,0.3)';
-      ctx.fillRect(0,0,W,H);
-      ctx.shadowColor=LIME;
-      ctx.shadowBlur=70;
-      ctx.globalAlpha=0.4+Math.sin(phaseT*0.006)*0.12;
-      ctx.fillStyle=LIME;
-      ctx.font='900 '+fs+"px 'Bebas Neue',sans-serif";
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('NEURAL OVERFLOW',W/2,H/2-fs*0.08);
-      ctx.shadowBlur=20;
-      ctx.globalAlpha=0.3+Math.sin(phaseT*0.006)*0.06;
-      var sub=Math.min(W/22,18);
-      ctx.font='700 '+sub+"px 'Space Mono',monospace";
-      ctx.fillStyle='#fff';
-      ctx.fillText('Chaos of Creation',W/2,H/2+fs*0.62);
-      ctx.restore();
-    }
-
-    if(phase==='explode'&&phaseT<300){
-      ctx.save();
-      ctx.globalAlpha=(1-phaseT/300)*0.55;
-      ctx.fillStyle='#fff';
-      ctx.fillRect(0,0,W,H);
-      ctx.restore();
-    }
-  }
-  function hideLdr(){
-    done=true; cancelAnimationFrame(animId);
-    var el=document.getElementById('loader');
-    if(el) el.classList.add('hide');
-  }
-
-  window.skipIntro=hideLdr;
-  window.addEventListener('resize',function(){resize();textPixels=sampleText();});
-
-  function startParticlesNow(){
-    try{
-      if(document.fonts&&document.fonts.ready){document.fonts.ready.then(init);}
-      else{setTimeout(init,200);}
-    }catch(e){setTimeout(init,200);}
-  }
-  window.startParticlesNow = startParticlesNow;
-
-  // スプラッシュが終わった後（9.5秒後）に自動開始
-  setTimeout(startParticlesNow, 9500);
-
-  window.skipIntro = function(){
-    hideLdr();
-    var splash = document.getElementById('splash');
-    if(splash) splash.classList.add('hide');
-    startParticlesNow();
-  };
-})();
-
-
-
 // ===== SCROLL =====
-document.getElementById('start-btn').addEventListener('click',efunction(){e.preventDefault();document.getElementById('app').scrollIntoView({behavior:'smooth'});});
+document.getElementById('start-btn').addEventListener('click',function(e){e.preventDefault();document.getElementById('app').scrollIntoView({behavior:'smooth'});});
 
 // ===== STEP NAV =====
 function goToStep(n){
-  document.querySelectorAll('.step-content').forEach(function(el){ return el.classList.remove('active'));
+  document.querySelectorAll('.step-content').forEach(function(el){el.classList.remove('active');});
   document.getElementById('step-'+n).classList.add('active');
-  // progress
   document.querySelectorAll('.pb-step').forEach(function(el){
-    const s=parseInt(el.dataset.step);
+    var s=parseInt(el.dataset.step);
     el.classList.toggle('active',s===n);
     el.querySelector('.pb-dot').classList.toggle('active',s===n);
     el.querySelector('.pb-dot').classList.toggle('done',s<n);
   });
-  document.querySelectorAll('.pb-line').forEach((el,i)function(){
+  document.querySelectorAll('.pb-line').forEach(function(el,i){
     el.classList.toggle('done',(i+1)<n-1);
   });
   S.step=n;
   document.getElementById('app').scrollIntoView({behavior:'smooth',block:'start'});
   debouncedLP();
   if(n===5) setTimeout(autoSelectColor, 100);
-  if(n===8) setTimeout(loadApiKey, 50);
+  if(n===9) setTimeout(loadApiKey, 50);
 }
 function nextStep(from){
   if(from===8) buildSummary();
@@ -1394,7 +1238,7 @@ function selectSub(el, e){
   updateIndustryDisplay();
 }
 function updateIndustryDisplay(){
-  const d = document.getElementById('selected-industry-display');
+  var d = document.getElementById('selected-industry-display');
   if(S.industryCat){
     d.style.display='block';
     d.innerHTML = '<span style="color:var(--lime);font-family:\'Space Mono\',monospace;font-size:10px;">選択中：</span> '+S.industryCat+(S.industrySub?' / <strong>'+S.industrySub+'</strong>':'');
@@ -1402,267 +1246,11 @@ function updateIndustryDisplay(){
 }
 
 // ===== PAGE CHECKBOXES =====
-document.querySelectorAll('.page-cb').forEach(cbfunction(){
-  cb.addEventListener('change',()function(){
+document.querySelectorAll('.page-cb').forEach(function(cb){
+  cb.addEventListener('change',function(){
     cb.closest('.page-card').classList.toggle('checked',cb.checked);
   });
 });
-
-// ===== AUTO COLOR BY INDUSTRY & VIBE =====
-var AUTO_COLOR_MAP = {
-  '飲食・食品':     {default:'earth',   vibe:{'ナチュラル':'forest','ラグジュアリー':'black-gold','ポップ':'fire','和風':'navy','ミニマル':'mono-light'}},
-  '美容・健康':     {default:'rose',    vibe:{'ラグジュアリー':'black-gold','ナチュラル':'mint','ミニマル':'mono-light','キュート':'rose','エレガント':'purple'}},
-  '製造業・工業':   {default:'charcoal',vibe:{'コーポレート':'navy','インダストリアル':'charcoal','ミニマル':'mono-dark','テック':'sky'}},
-  '建設・不動産':   {default:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ナチュラル':'earth','ミニマル':'mono-light'}},
-  'クリエイティブ': {default:'mono-dark',vibe:{'ストリート':'charcoal','ラグジュアリー':'black-gold','ボールド':'fire','テック':'mono-dark','エレガント':'purple'}},
-  'IT・テクノロジー':{default:'sky',    vibe:{'テック':'sky','ミニマル':'mono-dark','コーポレート':'navy','ストリート':'charcoal'}},
-  '小売・EC':       {default:'mono-light',vibe:{'ラグジュアリー':'black-gold','キュート':'rose','ナチュラル':'earth','ポップ':'fire','ミニマル':'mono-light'}},
-  '教育・学習':     {default:'sky',     vibe:{'ナチュラル':'forest','キュート':'rose','コーポレート':'navy','ミニマル':'mono-light'}},
-  '士業・専門職':   {default:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ミニマル':'mono-light'}},
-  '医療・介護':     {default:'sky',     vibe:{'ナチュラル':'mint','ミニマル':'mono-light','コーポレート':'sky'}},
-  '物流・運輸':     {default:'navy',    vibe:{'コーポレート':'navy','インダストリアル':'charcoal','テック':'sky'}},
-  'その他・一般':   {default:'mono-light',vibe:{}},
-};
-
-function autoSelectColor(){
-  if(S.globalPalette) return; // 既に選択済みなら何もしない
-  var industry = S.industryCat||'その他・一般';
-  var vibe = S.vibe||'';
-  var map = AUTO_COLOR_MAP[industry] || AUTO_COLOR_MAP['その他・一般'];
-  var vibeKey = Object.keys(map.vibe||{}).find(function(k){return vibe.indexOf(k)>=0;});
-  var palId = (vibeKey && map.vibe[vibeKey]) || map.default || 'mono-light';
-  S.globalPalette = palId;
-  // UIも更新
-  document.querySelectorAll('#global-palette .pal-item').forEach(function(el){
-    el.classList.toggle('selected', el.dataset.pid===palId);
-  });
-  // 通知表示
-  var notice = document.getElementById('auto-color-notice');
-  if(notice){
-    var palNames = {'black-gold':'BLACK GOLD','mono-dark':'MONO DARK','mono-light':'MONO LIGHT','navy':'NAVY','forest':'FOREST','rose':'ROSE','fire':'FIRE','sky':'SKY','earth':'EARTH','purple':'VIOLET','mint':'MINT','charcoal':'CHARCOAL RED'};
-    notice.textContent = '✦ 業種・雰囲気から「'+(palNames[palId]||palId)+'」を自動選択しました';
-    notice.style.display='block';
-  }
-  debouncedLP();
-}
-
-
-// ===== PARTIAL EDIT =====
-var currentEditTarget = '';
-function editSection(target, btn){
-  currentEditTarget = target;
-  var labels = {
-    hero:'ヒーローセクション（トップの大きなビジュアル）',
-    about:'Aboutセクション（店舗・会社紹介）',
-    service:'サービスセクション（サービス・商品紹介）',
-    price:'料金セクション（料金表・プラン）',
-    color:'サイト全体のカラー',
-    font:'サイト全体のフォント',
-    all:'サイト全体'
-  };
-  var area = document.getElementById('edit-input-area');
-  var input = document.getElementById('edit-instruction');
-  area.style.display='block';
-  input.placeholder = (labels[target]||target)+'の修正指示を入力してください
-例：もっとシンプルに、テキストを短く、色を変えて';
-  input.focus();
-  document.querySelectorAll('.edit-section-btn').forEach(function(b){
-    b.style.borderColor='var(--border)';b.style.color='var(--muted2)';
-  });
-  if(btn){btn.style.borderColor='var(--lime)';btn.style.color='var(--lime);';}
-}
-
-function applyEdit(){
-  var instruction = document.getElementById('edit-instruction').value.trim();
-  if(!instruction || !S.generatedHTML) return;
-  var loading = document.getElementById('edit-loading');
-  loading.style.display='block';
-  document.getElementById('edit-input-area').style.display='none';
-
-  var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
-  var target = sectionLabels[currentEditTarget]||'サイト全体';
-
-  var prompt = '以下のHTMLの「'+target+'」を指示に従って修正してください。\n\n'
-    +'修正指示：'+instruction+'\n\n'
-    +'【重要】修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'
-    +'現在のHTML：\n'+S.generatedHTML.substring(0, 12000);
-
-  fetch('https://site-forge-api.vercel.app/api/generate',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-5',
-      max_tokens:16000,
-      messages:[{role:'user',content:prompt}]
-    })
-  }).then(function(r){return r.json();})
-  .then(function(data){
-    loading.style.display='none';
-    if(data.error) throw new Error(data.error.message);
-    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
-    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
-    S.generatedHTML = html;
-    document.getElementById('preview-frame').srcdoc = html;
-    document.getElementById('code-pre').textContent = html;
-    document.getElementById('edit-instruction').value='';
-    document.getElementById('edit-input-area').style.display='none';
-  }).catch(function(err){
-    loading.style.display='none';
-    alert('修正エラー: '+err.message);
-    document.getElementById('edit-input-area').style.display='block';
-  });
-}
-
-// ===== SAVE & RESTORE PROGRESS =====
-function saveProgress(){
-  var data = {
-    step: S.step,
-    siteName: document.getElementById('site-name').value,
-    catchcopy: document.getElementById('catchcopy').value,
-    location: document.getElementById('location').value,
-    founded: document.getElementById('founded').value,
-    industryCat: S.industryCat,
-    industrySub: S.industrySub,
-    pages: Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;}),
-    vibe: S.vibe,
-    layout: S.layout,
-    globalPalette: S.globalPalette,
-    headingFont: S.headingFont,
-    bodyFont: S.bodyFont,
-    texts: {
-      top: document.getElementById('t-top') ? document.getElementById('t-top').value : '',
-      about: document.getElementById('t-about') ? document.getElementById('t-about').value : '',
-      staff: document.getElementById('t-staff') ? document.getElementById('t-staff').value : '',
-      service: document.getElementById('t-service') ? document.getElementById('t-service').value : '',
-      price: document.getElementById('t-price') ? document.getElementById('t-price').value : '',
-      hours: document.getElementById('t-hours') ? document.getElementById('t-hours').value : '',
-      tel: document.getElementById('t-tel') ? document.getElementById('t-tel').value : '',
-      email: document.getElementById('t-email') ? document.getElementById('t-email').value : '',
-      access: document.getElementById('t-access') ? document.getElementById('t-access').value : '',
-      line: document.getElementById('t-line') ? document.getElementById('t-line').value : '',
-      instagram: document.getElementById('t-instagram') ? document.getElementById('t-instagram').value : '',
-      twitter: document.getElementById('t-twitter') ? document.getElementById('t-twitter').value : '',
-      facebook: document.getElementById('t-facebook') ? document.getElementById('t-facebook').value : '',
-      faq: document.getElementById('t-faq') ? document.getElementById('t-faq').value : '',
-      extra: document.getElementById('t-extra') ? document.getElementById('t-extra').value : ''
-    },
-    savedAt: new Date().toLocaleString('ja-JP')
-  };
-  localStorage.setItem('neural_overflow_progress', JSON.stringify(data));
-  showSaveNotice();
-}
-
-function showSaveNotice(){
-  var notice = document.getElementById('save-notice');
-  if(!notice) return;
-  notice.style.opacity='1';
-  notice.style.transform='translateY(0)';
-  setTimeout(function(){
-    notice.style.opacity='0';
-    notice.style.transform='translateY(20px)';
-  }, 2000);
-}
-
-function restoreProgress(data){
-  if(data.siteName) document.getElementById('site-name').value = data.siteName;
-  if(data.catchcopy) document.getElementById('catchcopy').value = data.catchcopy;
-  if(data.location) document.getElementById('location').value = data.location;
-  if(data.founded) document.getElementById('founded').value = data.founded;
-  if(data.industryCat){
-    S.industryCat = data.industryCat;
-    S.industrySub = data.industrySub||'';
-    document.querySelectorAll('.ind-cat').forEach(function(el){
-      if(el.dataset.cat===data.industryCat){
-        el.classList.add('selected');
-        if(data.industrySub){
-          el.querySelectorAll('.ind-sub-item').forEach(function(sub){
-            if(sub.textContent===data.industrySub) sub.classList.add('active');
-          });
-        }
-      }
-    });
-    updateIndustryDisplay();
-  }
-  if(data.pages && data.pages.length){
-    document.querySelectorAll('.page-cb').forEach(function(cb){
-      cb.checked = data.pages.indexOf(cb.value) >= 0;
-      cb.closest('.page-card').classList.toggle('checked', cb.checked);
-    });
-  }
-  if(data.vibe){
-    S.vibe = data.vibe;
-    document.querySelectorAll('.vibe-card').forEach(function(el){
-      el.classList.toggle('selected', el.dataset.vibe===data.vibe);
-    });
-  }
-  if(data.layout){
-    S.layout = data.layout;
-    document.querySelectorAll('.layout-card').forEach(function(el){
-      el.classList.toggle('selected', el.dataset.layout===data.layout);
-    });
-  }
-  if(data.globalPalette){
-    S.globalPalette = data.globalPalette;
-    document.querySelectorAll('#global-palette .pal-item').forEach(function(el){
-      el.classList.toggle('selected', el.dataset.pid===data.globalPalette);
-    });
-  }
-  if(data.headingFont){
-    S.headingFont = data.headingFont;
-    document.querySelectorAll('#heading-font-grid .font-card').forEach(function(el){
-      el.classList.toggle('selected', el.dataset.fname===data.headingFont);
-    });
-  }
-  if(data.bodyFont){
-    S.bodyFont = data.bodyFont;
-    document.querySelectorAll('#body-font-grid .font-card').forEach(function(el){
-      el.classList.toggle('selected', el.dataset.fname===data.bodyFont);
-    });
-  }
-  setTimeout(function(){
-    if(data.texts){
-      var fields = ['top','about','staff','service','price','hours','tel','email','access','line','instagram','twitter','facebook','faq','extra'];
-      fields.forEach(function(f){
-        var el = document.getElementById('t-'+f);
-        if(el && data.texts[f]) el.value = data.texts[f];
-      });
-    }
-  }, 300);
-  goToStep(data.step||1);
-  debouncedLP();
-}
-
-function checkSavedProgress(){
-  try {
-    var saved = localStorage.getItem('neural_overflow_progress');
-    if(!saved) return;
-    var data = JSON.parse(saved);
-    if(!data.siteName && !data.industryCat) return;
-    var modal = document.getElementById('restore-modal');
-    if(!modal) return;
-    document.getElementById('restore-info').textContent = (data.siteName||'名称未設定')+' — STEP '+(data.step||1)+' — '+(data.savedAt||'');
-    modal.style.display='flex';
-  } catch(e){}
-}
-
-function confirmRestore(){
-  try {
-    var saved = localStorage.getItem('neural_overflow_progress');
-    if(saved) restoreProgress(JSON.parse(saved));
-  } catch(e){}
-  document.getElementById('restore-modal').style.display='none';
-}
-
-function dismissRestore(){
-  document.getElementById('restore-modal').style.display='none';
-}
-
-function selLayout(el){
-  document.querySelectorAll('.layout-card').forEach(function(e){e.classList.remove('selected');});
-  el.classList.add('selected');
-  S.layout = el.dataset.layout;
-  debouncedLP();
-}
 
 // ===== VIBE =====
 function selVibe(el){
@@ -1672,8 +1260,16 @@ function selVibe(el){
   debouncedLP();
 }
 
+// ===== LAYOUT =====
+function selLayout(el){
+  document.querySelectorAll('.layout-card').forEach(function(e){e.classList.remove('selected');});
+  el.classList.add('selected');
+  S.layout = el.dataset.layout;
+  debouncedLP();
+}
+
 // ===== PALETTE =====
-const palData = {
+var palData = {
   'black-gold':{bg:'#0a0a0a',text:'#f5f0e0',accent:'#c9a84c',nav:'#000000'},
   'mono-dark':  {bg:'#111111',text:'#f5f5f5',accent:'#ffffff',nav:'#0a0a0a'},
   'mono-light': {bg:'#f8f8f8',text:'#111111',accent:'#111111',nav:'#ffffff'},
@@ -1687,6 +1283,7 @@ const palData = {
   'mint':        {bg:'#f0fff8',text:'#003d2a',accent:'#00b894',nav:'#f0fff8'},
   'charcoal':    {bg:'#2c2c2c',text:'#f0f0f0',accent:'#ff4444',nav:'#222222'},
 };
+
 function selPal(el, group){
   document.querySelectorAll('#'+group+'-palette .pal-item').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
@@ -1705,11 +1302,11 @@ function setCustomColor(type, val){
 
 // PAGE COLOR PANELS
 function buildPageColorPanels(){
-  const pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
-  const tabs = document.getElementById('page-color-tabs');
-  const panels = document.getElementById('page-color-panels');
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
+  var tabs = document.getElementById('page-color-tabs');
+  var panels = document.getElementById('page-color-panels');
   if(!pages.length){tabs.innerHTML='';panels.innerHTML='';return;}
-  const shortNames = {
+  var shortNames = {
     'トップページ（ヒーロービジュアル）':'TOP',
     '私たちについて・店舗紹介':'ABOUT',
     'サービス・メニュー・商品紹介':'SERVICE',
@@ -1723,18 +1320,20 @@ function buildPageColorPanels(){
     'お問い合わせフォーム':'CONTACT',
     'プライバシーポリシー・特定商取引法':'LEGAL',
   };
-  tabs.innerHTML = pages.map(function(p,i){return '<button class="pct-tab'+(i===0?' active':'')+\'" onclick="selPctTab(this,\"pcp-'+i+'\")">'+(shortNames[p]||p.slice(0,6))+'</button>';}).join('');
+  tabs.innerHTML = pages.map(function(p,i){
+    return '<button class="pct-tab'+(i===0?' active':'')+'" onclick="selPctTab(this,\'pcp-'+i+'\')">'+(shortNames[p]||p.slice(0,6))+'</button>';
+  }).join('');
   panels.innerHTML = pages.map(function(p,i){
     return '<div class="pct-panel'+(i===0?' active':'')+'" id="pcp-'+i+'">'
       +'<div style="font-size:11px;color:var(--muted2);margin-bottom:10px;">'+p+'</div>'
       +'<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">'
       +'<label style="font-size:10px;color:var(--muted2);">背景色：</label>'
-      +'<input type="color" value="#ffffff" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','bg',this.value)">'
+      +'<input type="color" value="#ffffff" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(\''+p+'\',\'bg\',this.value)">'
       +'<label style="font-size:10px;color:var(--muted2);">テキスト色：</label>'
-      +'<input type="color" value="#111111" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','text',this.value)">'
+      +'<input type="color" value="#111111" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(\''+p+'\',\'text\',this.value)">'
       +'<label style="font-size:10px;color:var(--muted2);">アクセント：</label>'
-      +'<input type="color" value="#0066cc" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(''+p+'','accent',this.value)">'
-      +'<button class="btn btn-ghost" style="font-size:10px;padding:6px 10px;" onclick="resetPageColor(''+p+'')">リセット</button>'
+      +'<input type="color" value="#0066cc" style="width:36px;height:36px;border:1px solid var(--border);background:var(--s2);padding:2px;" onchange="setPageColor(\''+p+'\',\'accent\',this.value)">'
+      +'<button class="btn btn-ghost" style="font-size:10px;padding:6px 10px;" onclick="resetPageColor(\''+p+'\')">リセット</button>'
       +'</div></div>';
   }).join('');
 }
@@ -1752,7 +1351,7 @@ function resetPageColor(page){delete S.pageColors[page];}
 
 // ===== FONT =====
 function selFont(el, type){
-  const grid = el.closest('.font-grid');
+  var grid = el.closest('.font-grid');
   grid.querySelectorAll('.font-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   if(type==='heading') S.headingFont = el.dataset.fname;
@@ -1760,91 +1359,22 @@ function selFont(el, type){
   debouncedLP();
 }
 
-// ===== SUGGESTED IMAGES BY INDUSTRY =====
-var INDUSTRY_PROMPTS = {
-  '飲食・食品':    ['cozy cafe interior warm lighting','fresh japanese food restaurant','artisan bread bakery morning light','ramen shop authentic japanese','coffee cup latte art close up'],
-  '美容・健康':    ['beauty salon interior elegant','massage therapy relaxing spa','nail art studio pastel colors','yoga studio natural light','skincare products minimalist'],
-  '製造業・工業':  ['modern factory production line','precision metal manufacturing','industrial machinery professional','quality control inspection','factory workers professional'],
-  '建設・不動産':  ['modern architecture building exterior','construction site professional','interior design living room','real estate luxury home','renovation before after'],
-  'クリエイティブ':['photography studio professional lighting','graphic design workspace','creative studio colorful','portfolio artwork display','designer working laptop'],
-  'IT・テクノロジー':['modern tech office workspace','coding programming laptop','startup office team','technology digital abstract','software development team'],
-  '小売・EC':      ['retail store interior modern','product display elegant','online shopping lifestyle','boutique fashion store','product photography minimal'],
-  '教育・学習':    ['classroom modern bright','students learning together','library books study','online learning laptop','teacher students education'],
-  '士業・専門職':  ['professional office corporate','lawyer office elegant','business meeting professional','consulting firm modern','accountant office clean'],
-  '医療・介護':    ['hospital clinic clean modern','doctor patient consultation','medical equipment professional','nursing care warm','pharmacy interior clean'],
-  '物流・運輸':    ['logistics warehouse modern','delivery truck fleet','supply chain operations','shipping container port','transportation professional'],
-  'その他・一般':  ['professional business office','team meeting modern','community event people','local business storefront','professional service smiling'],
-};
-
-function generateSuggestedImages(){
-  var btn = document.getElementById('suggest-btn');
-  var container = document.getElementById('suggested-images');
-  var industry = S.industryCat||'その他・一般';
-  var vibe = S.vibe||'';
-  var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
-
-  btn.disabled=true;
-  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/></svg> 生成中...';
-  container.innerHTML='<div style="font-family:Space Mono,monospace;font-size:10px;color:var(--lime);">AIが5枚生成中... しばらくお待ちください</div>';
-
-  var loaded = 0;
-  var imgs = [];
-  container.innerHTML = '';
-
-  prompts.forEach(function(prompt, i){
-    var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
-    var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
-    var seed = Math.floor(Math.random()*999999);
-    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true';
-
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;cursor:pointer;';
-
-    var img = document.createElement('img');
-    img.style.cssText = 'width:130px;height:100px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
-    img.src = url;
-
-    var label = document.createElement('div');
-    label.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);font-family:Space Mono,monospace;font-size:8px;color:var(--lime);padding:3px 6px;opacity:0;transition:opacity .2s;';
-    label.textContent = '✓ 追加';
-
-    img.onload = function(){
-      loaded++;
-      if(loaded>=prompts.length){
-        btn.disabled=false;
-        btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> もう5枚提案する';
-      }
-    };
-    img.onerror = function(){loaded++;};
-
-    wrap.addEventListener('mouseenter',function(){label.style.opacity='1';img.style.borderColor='var(--lime)';});
-    wrap.addEventListener('mouseleave',function(){
-      if(!wrap.classList.contains('selected')){label.style.opacity='0';img.style.borderColor='var(--border)';}
-    });
-
-    wrap.onclick = function(){
-      if(wrap.classList.contains('selected')){
-        wrap.classList.remove('selected');
-        img.style.borderColor='var(--border)';
-        label.textContent='✓ 追加';
-        label.style.background='rgba(0,0,0,.7)';
-        S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
-      } else {
-        wrap.classList.add('selected');
-        img.style.borderColor='var(--lime)';
-        img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
-        label.textContent='✓ 選択済み';
-        label.style.background='rgba(0,255,170,.3)';
-        label.style.opacity='1';
-        S.selectedImages.push(url);
-      }
-    };
-
-    wrap.appendChild(img);
-    wrap.appendChild(label);
-    container.appendChild(wrap);
-  });
+// ===== FONT EXPAND =====
+function toggleFontExtra(type) {
+  var extraId = type === 'heading' ? 'heading-font-extra' : 'body-font-extra';
+  var btnId   = type === 'heading' ? 'h-expand-btn' : 'b-expand-btn';
+  var extra = document.getElementById(extraId);
+  var btn   = document.getElementById(btnId);
+  var isOpen = extra.classList.contains('open');
+  extra.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  var count = type === 'heading' ? 15 : 10;
+  btn.querySelector('span').textContent = isOpen
+    ? '▼ もっと見る（+' + count + '種）'
+    : '▲ 閉じる';
 }
+
+// ===== IMAGE PLACEMENT =====
 var PLACEMENT_SECTIONS = [
   {id:'hero',    label:'🖼 ヒーロー背景'},
   {id:'about',   label:'👤 About写真'},
@@ -1881,25 +1411,17 @@ function renderPlacementList(){
   S.uploadedImages.forEach(function(img, idx){
     var item = document.createElement('div');
     item.className = 'img-placement-item';
-
-    // サムネイル
     var thumb = document.createElement('img');
     thumb.className = 'img-placement-thumb';
     thumb.src = img.src;
-
-    // コントロール
     var ctrl = document.createElement('div');
     ctrl.className = 'img-placement-controls';
-
     var name = document.createElement('div');
     name.className = 'img-placement-name';
     name.textContent = img.name || '画像'+(idx+1);
-
-    // セクション選択
     var secLabel = document.createElement('div');
     secLabel.style.cssText = 'font-size:9px;color:var(--muted2);font-family:Space Mono,monospace;margin-bottom:4px;';
     secLabel.textContent = '使用場所：';
-
     var secRow = document.createElement('div');
     secRow.className = 'img-placement-row';
     PLACEMENT_SECTIONS.forEach(function(sec){
@@ -1912,12 +1434,9 @@ function renderPlacementList(){
       };})(idx, sec.id);
       secRow.appendChild(btn);
     });
-
-    // スタイル選択
     var styleLabel = document.createElement('div');
     styleLabel.style.cssText = 'font-size:9px;color:var(--muted2);font-family:Space Mono,monospace;margin-bottom:4px;margin-top:6px;';
     styleLabel.textContent = '表示方法：';
-
     var styleRow = document.createElement('div');
     styleRow.className = 'img-placement-row';
     PLACEMENT_STYLES.forEach(function(st){
@@ -1927,17 +1446,14 @@ function renderPlacementList(){
       btn.onclick = (function(i, stid){ return function(){
         S.uploadedImages[i].style = stid;
         renderPlacementList();
-      };})(idx, st.id);
+      };})(idx, stid);
       styleRow.appendChild(btn);
     });
-
     ctrl.appendChild(name);
     ctrl.appendChild(secLabel);
     ctrl.appendChild(secRow);
     ctrl.appendChild(styleLabel);
     ctrl.appendChild(styleRow);
-
-    // 削除ボタン
     var del = document.createElement('button');
     del.className = 'img-placement-del';
     del.textContent = '×';
@@ -1945,7 +1461,6 @@ function renderPlacementList(){
       S.uploadedImages.splice(i,1);
       renderPlacementList();
     };})(idx);
-
     item.appendChild(thumb);
     item.appendChild(ctrl);
     item.appendChild(del);
@@ -1954,10 +1469,71 @@ function renderPlacementList(){
 }
 
 // Drag & drop
-const uz = document.getElementById('upload-zone');
-uz.addEventListener('dragover',efunction(){e.preventDefault();uz.classList.add('drag-over');});
+var uz = document.getElementById('upload-zone');
+uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('drag-over');});
 uz.addEventListener('dragleave',function(){uz.classList.remove('drag-over');});
-uz.addEventListener('drop',efunction(){e.preventDefault();uz.classList.remove('drag-over');handleUpload(e.dataTransfer.files);});
+uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('drag-over');handleUpload(e.dataTransfer.files);});
+
+// ===== SUGGESTED IMAGES =====
+var INDUSTRY_PROMPTS = {
+  '飲食・食品':['cozy cafe interior warm lighting','fresh japanese food restaurant','artisan bread bakery morning','ramen shop authentic japanese','coffee latte art close up'],
+  '美容・健康':['beauty salon interior elegant','massage therapy relaxing spa','nail art studio pastel','yoga studio natural light','skincare products minimalist'],
+  '製造業・工業':['modern factory production line','precision metal manufacturing','industrial machinery professional','quality control inspection','factory professional'],
+  '建設・不動産':['modern architecture building','construction site professional','interior design living room','real estate luxury home','renovation modern'],
+  'クリエイティブ':['photography studio professional','graphic design workspace','creative studio colorful','portfolio artwork display','designer working laptop'],
+  'IT・テクノロジー':['modern tech office workspace','coding programming laptop','startup office team','technology digital abstract','software development'],
+  '小売・EC':['retail store interior modern','product display elegant','online shopping lifestyle','boutique fashion store','product photography minimal'],
+  '教育・学習':['classroom modern bright','students learning together','library books study','online learning laptop','teacher students education'],
+  '士業・専門職':['professional office corporate','lawyer office elegant','business meeting professional','consulting firm modern','accountant office clean'],
+  '医療・介護':['hospital clinic clean modern','doctor patient consultation','medical equipment professional','nursing care warm','pharmacy interior clean'],
+  '物流・運輸':['logistics warehouse modern','delivery truck fleet','supply chain operations','shipping container port','transportation professional'],
+  'その他・一般':['professional business office','team meeting modern','community event people','local business storefront','professional service smiling'],
+};
+
+function generateSuggestedImages(){
+  var btn = document.getElementById('suggest-btn');
+  var container = document.getElementById('suggested-images');
+  var industry = S.industryCat||'その他・一般';
+  var vibe = S.vibe||'';
+  var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
+  btn.disabled=true;
+  btn.innerHTML='生成中...';
+  container.innerHTML='';
+  var loaded = 0;
+  prompts.forEach(function(prompt){
+    var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
+    var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
+    var seed = Math.floor(Math.random()*999999);
+    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;';
+    var img = document.createElement('img');
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
+    img.src = url;
+    img.onload = function(){
+      loaded++;
+      if(loaded>=prompts.length){
+        btn.disabled=false;
+        btn.innerHTML='もう5枚提案する';
+      }
+    };
+    img.onerror = function(){loaded++;};
+    wrap.onclick = function(){
+      if(wrap.classList.contains('selected')){
+        wrap.classList.remove('selected');
+        img.style.borderColor='var(--border)';
+        S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
+      } else {
+        wrap.classList.add('selected');
+        img.style.borderColor='var(--lime)';
+        img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
+        S.selectedImages.push(url);
+      }
+    };
+    wrap.appendChild(img);
+    container.appendChild(wrap);
+  });
+}
 
 // ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
@@ -1996,60 +1572,15 @@ function selTxtTab(el){
   document.getElementById(el.dataset.panel).classList.add('active');
 }
 
-// ===== SUMMARY =====
-function buildSummary(){
-  S.siteName = document.getElementById('site-name').value||'未入力';
-  S.catchcopy = document.getElementById('catchcopy').value;
-  S.location = document.getElementById('location').value;
-  S.founded = document.getElementById('founded').value;
-  S.pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
-  S.texts = {
-    top:    document.getElementById('t-top').value,
-    about:  document.getElementById('t-about').value,
-    staff:  document.getElementById('t-staff').value,
-    service:document.getElementById('t-service').value,
-    price:  document.getElementById('t-price').value,
-    hours:  document.getElementById('t-hours').value,
-    tel:    document.getElementById('t-tel').value,
-    email:  document.getElementById('t-email').value,
-    sns:    document.getElementById('t-other-sns') ? document.getElementById('t-other-sns').value : '',
-    access: document.getElementById('t-access') ? document.getElementById('t-access').value : '',
-    line:   document.getElementById('t-line') ? document.getElementById('t-line').value : '',
-    instagram: document.getElementById('t-instagram') ? document.getElementById('t-instagram').value : '',
-    twitter:   document.getElementById('t-twitter') ? document.getElementById('t-twitter').value : '',
-    facebook:  document.getElementById('t-facebook') ? document.getElementById('t-facebook').value : '',
-    faq:    document.getElementById('t-faq').value,
-    extra:  document.getElementById('t-extra').value,
-  };
-  const pal = palData[S.globalPalette]||palData['mono-light'];
-  document.getElementById('summary-grid').innerHTML =
-    '<div class="sum-item"><div class="sum-key">サイト名</div><div class="sum-val">'+S.siteName+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">業種</div><div class="sum-val">'+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">ページ数</div><div class="sum-val">'+S.pages.length+' セクション</div></div>'
-    +'<div class="sum-item"><div class="sum-key">雰囲気</div><div class="sum-val">'+(S.vibe||'未選択')+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">カラー</div><div class="sum-val">'+(S.globalPalette||'未選択')+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">見出しF</div><div class="sum-val">'+(S.headingFont||'未選択')+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">本文F</div><div class="sum-val">'+(S.bodyFont||'未選択')+'</div></div>'
-    +'<div class="sum-item"><div class="sum-key">画像数</div><div class="sum-val">'+(S.uploadedImages.length + S.selectedImages.length)+' 枚</div></div>';
-  var allImgs = S.uploadedImages.map(function(img){return typeof img==='string'?img:img.src;}).concat(S.selectedImages);
-  if(allImgs.length){
-    document.getElementById('sum-images-wrap').style.display='block';
-    document.getElementById('sum-images').innerHTML = allImgs.map(function(src){return '<img src="'+src+'" class="sum-img">';}).join('');
-  }
-}
-
-// ===== GENERATE =====
 // ===== AI TEXT ASSIST =====
 function aiAssistField(fieldId, fieldType) {
   var siteName = document.getElementById('site-name').value||'店舗名未入力';
   var industry = (S.industryCat||'') + (S.industrySub?' / '+S.industrySub:'');
   var vibe = S.vibe||'プロフェッショナル';
   var catchcopy = document.getElementById('catchcopy').value||'';
-  var existing = document.getElementById(fieldId).value||'';
-
+  var existing = document.getElementById(fieldId) ? document.getElementById(fieldId).value : '';
   var btn = document.querySelector('[onclick*="aiAssistField(\''+fieldId+'\'"]');
   if(btn){ btn.disabled=true; btn.textContent='生成中...'; btn.classList.add('loading'); }
-
   var prompt = '以下の情報をもとに、ウェブサイト用の「'+fieldType+'」テキストを日本語で生成してください。\n\n'
     +'店舗名/サービス名：'+siteName+'\n'
     +'業種：'+industry+'\n'
@@ -2057,22 +1588,16 @@ function aiAssistField(fieldId, fieldType) {
     +(catchcopy?'キャッチコピー：'+catchcopy+'\n':'')
     +(existing?'既存の入力内容（参考）：'+existing+'\n':'')
     +'\n出力形式：そのままHTMLに使える自然な日本語テキストのみ。説明や前置き不要。200文字以内が理想。';
-
   return fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify({
-      model:'claude-sonnet-4-5',
-      max_tokens:400,
-      messages:[{role:'user',content:prompt}]
-    })
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:400,messages:[{role:'user',content:prompt}]})
   }).then(function(res){ return res.json(); })
   .then(function(data){
     if(data.error) throw new Error(data.error.message);
     var text = data.content.map(function(b){return b.text||'';}).join('').trim();
     var el = document.getElementById(fieldId);
+    if(!el) return;
     el.value='';
     var i=0;
     var timer=setInterval(function(){
@@ -2089,8 +1614,7 @@ function aiAssistField(fieldId, fieldType) {
 function aiAssistAll() {
   var btn = document.getElementById('ai-all-btn');
   btn.disabled=true;
-  btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 生成中...';
-
+  btn.innerHTML='生成中...';
   var fields = [
     {id:'t-top',    type:'メインキャッチコピー・トップメッセージ（短く力強く）'},
     {id:'t-about',  type:'店舗・会社紹介文・理念・こだわり（温かみのある文体で）'},
@@ -2100,7 +1624,6 @@ function aiAssistAll() {
     {id:'t-faq',    type:'よくある質問3件（Q: A: 形式）'},
     {id:'t-extra',  type:'こだわりポイント・特徴・アピール文'},
   ];
-
   var chain = Promise.resolve();
   fields.forEach(function(f){
     chain = chain.then(function(){
@@ -2111,53 +1634,91 @@ function aiAssistAll() {
   });
   chain.then(function(){
     btn.disabled=false;
-    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 全項目をAIで自動生成';
+    btn.innerHTML='全項目をAIで自動生成';
   });
 }
 
-// ===== FONT EXPAND =====
-function toggleFontExtra(type) {
-  var extraId = type === 'heading' ? 'heading-font-extra' : 'body-font-extra';
-  var btnId   = type === 'heading' ? 'h-expand-btn' : 'b-expand-btn';
-  var extra = document.getElementById(extraId);
-  var btn   = document.getElementById(btnId);
-  var isOpen = extra.classList.contains('open');
-  extra.classList.toggle('open', !isOpen);
-  btn.classList.toggle('open', !isOpen);
-  var count = type === 'heading' ? 15 : 10;
-  btn.querySelector('span').textContent = isOpen
-    ? '▼ もっと見る（+' + count + '種）'
-    : '▲ 閉じる';
-}
-
-// ===== API KEY MANAGEMENT =====
-function saveApiKey(val){
-  val = val.trim();
-  if(val){
-    localStorage.setItem('sf_api_key', val);
-    document.getElementById('api-key-status').textContent = '// ✓ キーを保存しました';
-    document.getElementById('api-key-status').style.color = 'var(--lime)';
-  } else {
-    localStorage.removeItem('sf_api_key');
-    document.getElementById('api-key-status').textContent = '// キーが未入力です';
-    document.getElementById('api-key-status').style.color = 'var(--muted2)';
-  }
-}
-function toggleApiKeyVisibility(){
-  const inp = document.getElementById('api-key-input');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-// Load saved key on step 8
-function loadApiKey(){
-  const saved = localStorage.getItem('sf_api_key');
-  const inp = document.getElementById('api-key-input');
-  if(saved && inp){
-    inp.value = saved;
-    document.getElementById('api-key-status').textContent = '// ✓ 保存済みのキーを読み込みました';
-    document.getElementById('api-key-status').style.color = 'var(--lime)';
+// ===== SUMMARY =====
+function buildSummary(){
+  S.siteName = document.getElementById('site-name').value||'未入力';
+  S.catchcopy = document.getElementById('catchcopy').value;
+  S.location = document.getElementById('location').value;
+  S.founded = document.getElementById('founded').value;
+  S.pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;});
+  S.texts = {
+    top:    document.getElementById('t-top') ? document.getElementById('t-top').value : '',
+    about:  document.getElementById('t-about') ? document.getElementById('t-about').value : '',
+    staff:  document.getElementById('t-staff') ? document.getElementById('t-staff').value : '',
+    service:document.getElementById('t-service') ? document.getElementById('t-service').value : '',
+    price:  document.getElementById('t-price') ? document.getElementById('t-price').value : '',
+    hours:  document.getElementById('t-hours') ? document.getElementById('t-hours').value : '',
+    tel:    document.getElementById('t-tel') ? document.getElementById('t-tel').value : '',
+    email:  document.getElementById('t-email') ? document.getElementById('t-email').value : '',
+    access: document.getElementById('t-access') ? document.getElementById('t-access').value : '',
+    line:   document.getElementById('t-line') ? document.getElementById('t-line').value : '',
+    instagram: document.getElementById('t-instagram') ? document.getElementById('t-instagram').value : '',
+    twitter:   document.getElementById('t-twitter') ? document.getElementById('t-twitter').value : '',
+    facebook:  document.getElementById('t-facebook') ? document.getElementById('t-facebook').value : '',
+    faq:    document.getElementById('t-faq') ? document.getElementById('t-faq').value : '',
+    extra:  document.getElementById('t-extra') ? document.getElementById('t-extra').value : '',
+  };
+  var pal = palData[S.globalPalette]||palData['mono-light'];
+  document.getElementById('summary-grid').innerHTML =
+    '<div class="sum-item"><div class="sum-key">サイト名</div><div class="sum-val">'+S.siteName+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">業種</div><div class="sum-val">'+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">ページ数</div><div class="sum-val">'+S.pages.length+' セクション</div></div>'
+    +'<div class="sum-item"><div class="sum-key">雰囲気</div><div class="sum-val">'+(S.vibe||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">カラー</div><div class="sum-val">'+(S.globalPalette||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">見出しF</div><div class="sum-val">'+(S.headingFont||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">本文F</div><div class="sum-val">'+(S.bodyFont||'未選択')+'</div></div>'
+    +'<div class="sum-item"><div class="sum-key">画像数</div><div class="sum-val">'+(S.uploadedImages.length+S.selectedImages.length)+' 枚</div></div>';
+  var allImgs = S.uploadedImages.map(function(img){return typeof img==='string'?img:img.src;}).concat(S.selectedImages);
+  if(allImgs.length){
+    document.getElementById('sum-images-wrap').style.display='block';
+    document.getElementById('sum-images').innerHTML = allImgs.map(function(src){return '<img src="'+src+'" class="sum-img">';}).join('');
   }
 }
 
+// ===== AUTO COLOR =====
+var AUTO_COLOR_MAP = {
+  '飲食・食品':     {def:'earth',   vibe:{'ナチュラル':'forest','ラグジュアリー':'black-gold','ポップ':'fire','和風':'navy','ミニマル':'mono-light'}},
+  '美容・健康':     {def:'rose',    vibe:{'ラグジュアリー':'black-gold','ナチュラル':'mint','ミニマル':'mono-light','キュート':'rose','エレガント':'purple'}},
+  '製造業・工業':   {def:'charcoal',vibe:{'コーポレート':'navy','インダストリアル':'charcoal','ミニマル':'mono-dark','テック':'sky'}},
+  '建設・不動産':   {def:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ナチュラル':'earth','ミニマル':'mono-light'}},
+  'クリエイティブ': {def:'mono-dark',vibe:{'ストリート':'charcoal','ラグジュアリー':'black-gold','ボールド':'fire','テック':'mono-dark','エレガント':'purple'}},
+  'IT・テクノロジー':{def:'sky',    vibe:{'テック':'sky','ミニマル':'mono-dark','コーポレート':'navy','ストリート':'charcoal'}},
+  '小売・EC':       {def:'mono-light',vibe:{'ラグジュアリー':'black-gold','キュート':'rose','ナチュラル':'earth','ポップ':'fire','ミニマル':'mono-light'}},
+  '教育・学習':     {def:'sky',     vibe:{'ナチュラル':'forest','キュート':'rose','コーポレート':'navy','ミニマル':'mono-light'}},
+  '士業・専門職':   {def:'navy',    vibe:{'コーポレート':'navy','ラグジュアリー':'black-gold','ミニマル':'mono-light'}},
+  '医療・介護':     {def:'sky',     vibe:{'ナチュラル':'mint','ミニマル':'mono-light','コーポレート':'sky'}},
+  '物流・運輸':     {def:'navy',    vibe:{'コーポレート':'navy','インダストリアル':'charcoal','テック':'sky'}},
+  'その他・一般':   {def:'mono-light',vibe:{}},
+};
+
+function autoSelectColor(){
+  if(S.globalPalette) return;
+  var industry = S.industryCat||'その他・一般';
+  var vibe = S.vibe||'';
+  var map = AUTO_COLOR_MAP[industry] || AUTO_COLOR_MAP['その他・一般'];
+  var palId = map.def || 'mono-light';
+  var vibeKeys = Object.keys(map.vibe||{});
+  for(var i=0;i<vibeKeys.length;i++){
+    if(vibe.indexOf(vibeKeys[i])>=0){ palId = map.vibe[vibeKeys[i]]; break; }
+  }
+  S.globalPalette = palId;
+  document.querySelectorAll('#global-palette .pal-item').forEach(function(el){
+    el.classList.toggle('selected', el.dataset.pid===palId);
+  });
+  var notice = document.getElementById('auto-color-notice');
+  var palNames = {'black-gold':'BLACK GOLD','mono-dark':'MONO DARK','mono-light':'MONO LIGHT','navy':'NAVY','forest':'FOREST','rose':'ROSE','fire':'FIRE','sky':'SKY','earth':'EARTH','purple':'VIOLET','mint':'MINT','charcoal':'CHARCOAL RED'};
+  if(notice){
+    notice.textContent = '✦ 業種・雰囲気から「'+(palNames[palId]||palId)+'」を自動選択しました';
+    notice.style.display='block';
+  }
+  debouncedLP();
+}
+
+// ===== GENERATE =====
 function generateSite(){
   var btn = document.getElementById('gen-btn');
   var gen = document.getElementById('generating');
@@ -2170,9 +1731,28 @@ function generateSite(){
   var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
 
   var pal = palData[S.globalPalette]||palData['mono-light'];
+  var layoutGuide = {
+    'FULL SCREEN HERO':'全画面背景画像またはグラデーション上に中央配置の大きなテキストとCTAボタン。',
+    'SPLIT LAYOUT':'左50%にテキスト・右50%に画像のフレックスレイアウト。',
+    'BOLD TYPOGRAPHY':'超大きなタイポグラフィがメインビジュアル。',
+    'MAGAZINE STYLE':'CSS Gridで非対称な雑誌風レイアウト。',
+    'MINIMAL CENTER':'大量の余白。中央揃え。装飾は最小限。',
+    'CARD GRID':'ヒーロー下にサービスカードが3列グリッド。',
+    'JAPANESE STYLE':'和紙テクスチャ風背景。縦書き風テキスト。和柄SVGパターン。',
+    'EDITORIAL':'非対称グリッド。タイポグラフィ重視。ファッション誌風。',
+    'CORPORATE':'スライダー風ヒーロー。3カラムの特徴セクション。',
+    'LANDING PAGE':'縦長LP。セクション毎にCTAボタン。',
+  };
+  var layoutInstruction = layoutGuide['FULL SCREEN HERO'];
+  if(S.layout){
+    var lkeys = Object.keys(layoutGuide);
+    for(var li=0;li<lkeys.length;li++){
+      if(S.layout.indexOf(lkeys[li])>=0){ layoutInstruction = layoutGuide[lkeys[li]]; break; }
+    }
+  }
 
-  var pageColorInstructions = '';
   var pcKeys = Object.keys(S.pageColors);
+  var pageColorInstructions = '';
   if(pcKeys.length){
     pageColorInstructions = '【ページ毎カラー設定】\n';
     pcKeys.forEach(function(p){
@@ -2182,108 +1762,71 @@ function generateSite(){
   }
 
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
-  var aiImgOnly = S.selectedImages.concat(S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('http')===0;}).map(function(img){return img.src;}));
-
+  var aiImgOnly = S.selectedImages;
   var imgInstructions = '';
   if(uploadedOnly.length || aiImgOnly.length){
-    imgInstructions = '【画像配置指定】\n以下の配置指定でimg要素・背景画像のプレースホルダーを設置してください:\n\n';
+    imgInstructions = '【画像配置指定】\n';
     uploadedOnly.slice(0,8).forEach(function(img,i){
-      var section = img.section||'gallery';
-      var style = img.style||'card';
       var sectionNames = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',gallery:'ギャラリーセクション',cta:'CTAセクション',other:'適切なセクション'};
-      var styleNames = {bg:'背景画像（background-size:cover）',card:'カード画像',circle:'丸型プロフィール写真',full:'全幅画像'};
-      imgInstructions += '画像'+(i+1)+' → '+(sectionNames[section]||section)+' / '+(styleNames[style]||style)+'\n';
-      imgInstructions += '  → img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
+      var styleNames = {bg:'背景画像',card:'カード画像',circle:'丸型写真',full:'全幅画像'};
+      imgInstructions += '画像'+(i+1)+': '+(sectionNames[img.section]||img.section)+' / '+(styleNames[img.style]||img.style)+'\n';
+      imgInstructions += '  img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
     });
     if(aiImgOnly.length){
-      imgInstructions += '\nAI生成画像（直接URLを使用）:\n';
+      imgInstructions += 'AI生成画像（直接URLを使用）:\n';
       aiImgOnly.slice(0,4).forEach(function(url,i){
         imgInstructions += '画像URL'+(i+1)+': '+url+'\n';
       });
     }
-    imgInstructions += '\n【重要】アップロード画像はdata-upload-index属性のあるimg要素に、ページ末尾のscriptタグで自動挿入されます。';
   } else {
-    imgInstructions = '※ 画像はCSSグラデーション・SVGパターン・絵文字で美しく代替してください';
+    imgInstructions = '画像はCSSグラデーション・SVGパターンで美しく代替';
   }
-
-  // 業種×レイアウト×雰囲気専用プロンプト強化
-  var layoutGuide = {
-    'FULL SCREEN HERO': '全画面背景画像またはグラデーション上に中央配置の大きなテキストとCTAボタン。ナビは透明でスティッキー。',
-    'SPLIT LAYOUT': '左50%にテキスト・右50%に画像のフレックスレイアウト。モバイルでは縦積み。',
-    'BOLD TYPOGRAPHY': '超大きなタイポグラフィ（vw単位）がメインビジュアル。テキスト自体がアート。画像は補助的。',
-    'MAGAZINE STYLE': 'CSS Gridで非対称な雑誌風レイアウト。複数の画像とテキストブロックが混在。',
-    'MINIMAL CENTER': '大量の余白。中央揃え。フォントサイズの差でヒエラルキー。装飾は最小限。',
-    'CARD GRID': 'ヒーロー下にすぐサービスカードが3列グリッドで並ぶ。視認性重視。',
-    'JAPANESE STYLE': '和紙テクスチャ風背景。縦書き風テキスト。和柄SVGパターン。落ち着いた配色。',
-    'EDITORIAL': '非対称グリッド。大小混在の画像配置。タイポグラフィ重視。ファッション誌風。',
-    'CORPORATE': 'スライダー風ヒーロー。下部に3カラムの特徴セクション。信頼感・誠実さを重視。',
-    'LANDING PAGE': '縦長LP。セクション毎にCTAボタン。お客様の声・実績数字を前面に。',
-  };
-  var selectedLayout = S.layout ? S.layout.split('：')[0] : 'FULL SCREEN HERO';
-  var layoutInstruction = '';
-  for(var lk in layoutGuide){ if(S.layout && S.layout.indexOf(lk)>=0){ layoutInstruction = layoutGuide[lk]; break; } }
-  if(!layoutInstruction) layoutInstruction = layoutGuide['FULL SCREEN HERO'];
 
   var prompt = 'あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。\n\n'
     +'【基本情報】\n'
     +'- サイト名：'+S.siteName+'\n'
-    +'- 業種カテゴリ：'+S.industryCat+'\n'
-    +'- 業種詳細：'+(S.industrySub||'一般')+'\n'
+    +'- 業種：'+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'
     +'- キャッチコピー：'+(S.catchcopy||'（業種に合わせてAIが考案）')+'\n'
-    +'- 所在地：'+(S.location||'なし')+'\n'
-    +'- 設立：'+(S.founded||'なし')+'\n\n'
+    +'- 所在地：'+(S.location||'なし')+'\n\n'
     +'【コンテンツ】\n'
-    +'- メインメッセージ：'+(S.texts.top||'（AIが業種に合わせて生成）')+'\n'
-    +'- 紹介文：'+(S.texts.about||'（AIが生成）')+'\n'
-    +'- スタッフ：'+(S.texts.staff||'なし')+'\n'
-    +'- サービス：'+(S.texts.service||'（AIが業種に合わせて生成）')+'\n'
+    +'- メインメッセージ：'+(S.texts.top||'AIが生成')+'\n'
+    +'- 紹介文：'+(S.texts.about||'AIが生成')+'\n'
+    +'- サービス：'+(S.texts.service||'AIが生成')+'\n'
     +'- 料金：'+(S.texts.price||'なし')+'\n'
     +'- 営業時間：'+(S.texts.hours||'なし')+'\n'
     +'- 電話：'+(S.texts.tel||'なし')+'\n'
     +'- メール：'+(S.texts.email||'なし')+'\n'
-    +'- アクセス：'+(S.texts.access||'なし')+'\n'
     +'- LINE URL：'+(S.texts.line||'なし')+'\n'
     +'- Instagram：'+(S.texts.instagram||'なし')+'\n'
-    +'- X(Twitter)：'+(S.texts.twitter||'なし')+'\n'
-    +'- Facebook：'+(S.texts.facebook||'なし')+'\n'
-    +'- その他SNS：'+(S.texts.sns||'なし')+'\n'
-    +'- FAQ：'+(S.texts.faq||'なし')+'\n'
-    +'- その他：'+(S.texts.extra||'なし')+'\n\n'
+    +'- FAQ：'+(S.texts.faq||'なし')+'\n\n'
     +'【デザイン仕様】\n'
-    +'- 雰囲気・テイスト：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
-    +'- レイアウトパターン：'+(S.layout||'FULL SCREEN HERO')+'\n'
+    +'- 雰囲気：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
+    +'- レイアウト：'+(S.layout||'FULL SCREEN HERO')+'\n'
     +'- レイアウト実装指示：'+layoutInstruction+'\n'
-    +'- 全体背景色：'+(S.customBg||pal.bg)+'\n'
-    +'- 全体テキスト色：'+pal.text+'\n'
-    +'- アクセントカラー：'+(S.customAccent||pal.accent)+'\n'
-    +'- ナビ背景色：'+pal.nav+'\n'
+    +'- 背景色：'+(S.customBg||pal.bg)+'\n'
+    +'- テキスト色：'+pal.text+'\n'
+    +'- アクセント：'+(S.customAccent||pal.accent)+'\n'
     +'- 見出しフォント：'+(S.headingFont||'Noto Sans JP')+'\n'
     +'- 本文フォント：'+(S.bodyFont||'Noto Sans JP')+'\n'
     +pageColorInstructions+'\n'
-    +'【ページ構成（セクションとして実装）】\n'
-    +S.pages.join('\n')+'\n\n'
+    +'【ページ構成】\n'+S.pages.join('\n')+'\n\n'
     +imgInstructions+'\n\n'
     +'【技術要件】\n'
     +'- 完全なHTML/CSS/JSを1ファイル\n'
     +'- Google Fontsインポート\n'
-    +'- スマートフォン・タブレット対応（完全レスポンシブ）\n'
-    +'- スティッキーナビゲーション（スムーズスクロール付き）\n'
-    +'- スクロールアニメーション（IntersectionObserver使用）\n'
-    +'- ハンバーガーメニュー（モバイル用）\n'
-    +'- 各セクションにビジュアル装飾・区切り線・背景パターン等\n'
-    +'- フッターに著作権・連絡先情報\n'
-    +'- プロフェッショナルな品質のダミーコンテンツで充填\n'
-    +'- 画像がない場合はCSSグラデーション・SVGパターンで代替\n'
-    +'- LINE URLが入力されている場合：LINEの友達追加ボタン（緑色）とQRコードを設置。QRコードはhttps://api.qrserver.com/v1/create-qr-code/?size=150x150&data=【LINE URL】で生成\n'
-    +'- SNS URLが入力されている場合：各SNSのアイコンボタンをフッターまたは専用セクションに設置\n\n'
+    +'- 完全レスポンシブ\n'
+    +'- スティッキーナビゲーション\n'
+    +'- スクロールアニメーション\n'
+    +'- ハンバーガーメニュー（モバイル）\n'
+    +'- LINEのURLがある場合はQRコード（api.qrserver.com使用）とLINE友達追加ボタンを設置\n'
+    +'- SNS URLがある場合はアイコンボタンをフッターに設置\n'
+    +'- 画像なしの場合はCSSグラデーション・SVGパターンで代替\n\n'
     +'HTMLのみを出力。コードブロック記法・説明文不要。<!DOCTYPE html>から開始。';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json'
-    },
-    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:8000,messages:[{role:'user',content:prompt}]})
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:16000,messages:[{role:'user',content:prompt}]})
   }).then(function(res){return res.json();})
   .then(function(data){
     clearInterval(timer);
@@ -2300,28 +1843,23 @@ function generateSite(){
 }
 
 function showResult(html){
-  // アップロード画像をHTMLに注入
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
   if(uploadedOnly.length){
-    // data-upload-index属性のimg要素に画像を挿入するscriptを末尾に追加
-    var injectScript = '<script>window.addEventListener("load",function(){';
+    var injectScript = '<scr'+'ipt>window.addEventListener("load",function(){';
     uploadedOnly.forEach(function(img,i){
       injectScript += 'var el=document.querySelector(\'[data-upload-index="'+i+'"]\');if(el){el.src="'+img.src+'";}';
-      if(img.style==='bg'){
-        injectScript += 'var pel=document.querySelector(\'[data-upload-bg="'+i+'"]\');if(pel){pel.style.backgroundImage="url('+img.src+')";}';
-      }
     });
-    injectScript += '});<\/script>';
+    injectScript += '});<\/scr'+'ipt>';
     html = html.replace('</body>', injectScript+'</body>');
   }
-
+  S.generatedHTML = html;
   var rs = document.getElementById('result-section');
   rs.classList.add('show');
-  document.getElementById('preview-frame').srcdoc=html;
+  setDevice('pc');
   document.getElementById('code-pre').textContent=html;
-  S.generatedHTML = html;
   setTimeout(function(){rs.scrollIntoView({behavior:'smooth'});},100);
 }
+
 function showPrev(){
   document.getElementById('device-wrap').style.display='flex';
   document.getElementById('code-view').classList.remove('show');
@@ -2336,18 +1874,15 @@ function showCode(){
 }
 
 // ===== DEVICE TOGGLE =====
-let currentDevice = 'pc';
+var currentDevice = 'pc';
 function setDevice(d){
   currentDevice = d;
-  const wrap = document.getElementById('device-wrap');
-  const frame = document.getElementById('preview-frame');
+  var wrap = document.getElementById('device-wrap');
   document.querySelectorAll('.dev-btn').forEach(function(b){b.classList.remove('active');});
-  document.getElementById('dev-'+d).classList.add('active');
-
-  // Remove current shell
+  var devBtn = document.getElementById('dev-'+d);
+  if(devBtn) devBtn.classList.add('active');
   wrap.innerHTML = '';
   wrap.className = 'device-wrap';
-
   if(d==='pc'){
     wrap.classList.add('pc-mode');
     wrap.innerHTML = '<div class="device-frame-pc"><iframe id="preview-frame" class="preview-frame" title="preview"></iframe></div>';
@@ -2356,14 +1891,210 @@ function setDevice(d){
   } else {
     wrap.innerHTML = '<div class="device-shell"><div class="device-shell-bar"><div class="device-shell-notch"></div></div><iframe id="preview-frame" class="preview-frame" title="preview"></iframe><div class="device-shell-home"></div></div>';
   }
-  // Re-inject HTML
   if(S.generatedHTML){
-    document.getElementById('preview-frame').srcdoc = S.generatedHTML;
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = S.generatedHTML;
   }
 }
 
+dlHTML = function(){
+  var blob=new Blob([S.generatedHTML],{type:'text/html'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
+  a.click();
+};
+
+function regenSite(){
+  var rs = document.getElementById('result-section');
+  rs.classList.remove('show');
+  var btn = document.getElementById('gen-btn');
+  if(btn) btn.style.display='flex';
+  var gen = document.getElementById('generating');
+  if(gen) gen.classList.remove('show');
+  document.getElementById('app').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){ generateSite(); }, 500);
+}
+
+function toggleEditSection(){
+  var el = document.getElementById('edit-section');
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+function editSection(target, btn){
+  var currentEditTarget = target;
+  window._editTarget = target;
+  var labels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
+  var area = document.getElementById('edit-input-area');
+  var input = document.getElementById('edit-instruction');
+  if(area) area.style.display='block';
+  if(input) input.placeholder = (labels[target]||target)+'の修正指示を入力\n例：もっとシンプルに、テキストを短く';
+  document.querySelectorAll('.edit-section-btn').forEach(function(b){
+    b.style.borderColor='var(--border)';b.style.color='var(--muted2)';
+  });
+  if(btn){btn.style.borderColor='var(--lime)';btn.style.color='var(--lime)';}
+}
+
+function applyEdit(){
+  var instruction = document.getElementById('edit-instruction').value.trim();
+  if(!instruction || !S.generatedHTML) return;
+  var loading = document.getElementById('edit-loading');
+  loading.style.display='block';
+  document.getElementById('edit-input-area').style.display='none';
+  var target = window._editTarget || 'all';
+  var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
+  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'
+    +'修正指示：'+instruction+'\n\n'
+    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'
+    +'現在のHTML（先頭12000文字）：\n'+S.generatedHTML.substring(0, 12000);
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    loading.style.display='none';
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = html;
+    document.getElementById('code-pre').textContent = html;
+    document.getElementById('edit-instruction').value='';
+    document.getElementById('edit-input-area').style.display='none';
+  }).catch(function(err){
+    loading.style.display='none';
+    alert('修正エラー: '+err.message);
+    document.getElementById('edit-input-area').style.display='block';
+  });
+}
+
+// ===== SAVE & RESTORE =====
+function saveProgress(){
+  try {
+    var data = {
+      step: S.step,
+      siteName: document.getElementById('site-name').value,
+      catchcopy: document.getElementById('catchcopy').value,
+      location: document.getElementById('location').value,
+      founded: document.getElementById('founded').value,
+      industryCat: S.industryCat,
+      industrySub: S.industrySub,
+      pages: Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){return c.value;}),
+      vibe: S.vibe,
+      layout: S.layout,
+      globalPalette: S.globalPalette,
+      headingFont: S.headingFont,
+      bodyFont: S.bodyFont,
+      texts: {
+        top: document.getElementById('t-top') ? document.getElementById('t-top').value : '',
+        about: document.getElementById('t-about') ? document.getElementById('t-about').value : '',
+        service: document.getElementById('t-service') ? document.getElementById('t-service').value : '',
+        price: document.getElementById('t-price') ? document.getElementById('t-price').value : '',
+        hours: document.getElementById('t-hours') ? document.getElementById('t-hours').value : '',
+        tel: document.getElementById('t-tel') ? document.getElementById('t-tel').value : '',
+        email: document.getElementById('t-email') ? document.getElementById('t-email').value : '',
+        faq: document.getElementById('t-faq') ? document.getElementById('t-faq').value : '',
+      },
+      savedAt: new Date().toLocaleString('ja-JP')
+    };
+    localStorage.setItem('neural_overflow_progress', JSON.stringify(data));
+    showSaveNotice();
+  } catch(e){}
+}
+
+function showSaveNotice(){
+  var notice = document.getElementById('save-notice');
+  if(!notice) return;
+  notice.style.opacity='1';
+  notice.style.transform='translateY(0)';
+  setTimeout(function(){
+    notice.style.opacity='0';
+    notice.style.transform='translateY(20px)';
+  }, 2000);
+}
+
+function checkSavedProgress(){
+  try {
+    var saved = localStorage.getItem('neural_overflow_progress');
+    if(!saved) return;
+    var data = JSON.parse(saved);
+    if(!data.siteName && !data.industryCat) return;
+    var modal = document.getElementById('restore-modal');
+    if(!modal) return;
+    var info = document.getElementById('restore-info');
+    if(info) info.textContent = (data.siteName||'名称未設定')+' — STEP '+(data.step||1)+' — '+(data.savedAt||'');
+    modal.style.display='flex';
+  } catch(e){}
+}
+
+function confirmRestore(){
+  try {
+    var saved = localStorage.getItem('neural_overflow_progress');
+    if(!saved) return;
+    var data = JSON.parse(saved);
+    if(data.siteName) document.getElementById('site-name').value = data.siteName;
+    if(data.catchcopy) document.getElementById('catchcopy').value = data.catchcopy;
+    if(data.industryCat){
+      S.industryCat = data.industryCat;
+      S.industrySub = data.industrySub||'';
+      document.querySelectorAll('.ind-cat').forEach(function(el){
+        if(el.dataset.cat===data.industryCat){
+          el.classList.add('selected');
+          if(data.industrySub){
+            el.querySelectorAll('.ind-sub-item').forEach(function(sub){
+              if(sub.textContent===data.industrySub) sub.classList.add('active');
+            });
+          }
+        }
+      });
+      updateIndustryDisplay();
+    }
+    if(data.pages && data.pages.length){
+      document.querySelectorAll('.page-cb').forEach(function(cb){
+        cb.checked = data.pages.indexOf(cb.value) >= 0;
+        cb.closest('.page-card').classList.toggle('checked', cb.checked);
+      });
+    }
+    if(data.vibe){ S.vibe = data.vibe; document.querySelectorAll('.vibe-card').forEach(function(el){ el.classList.toggle('selected', el.dataset.vibe===data.vibe); }); }
+    if(data.layout){ S.layout = data.layout; document.querySelectorAll('.layout-card').forEach(function(el){ el.classList.toggle('selected', el.dataset.layout===data.layout); }); }
+    if(data.globalPalette){ S.globalPalette = data.globalPalette; document.querySelectorAll('#global-palette .pal-item').forEach(function(el){ el.classList.toggle('selected', el.dataset.pid===data.globalPalette); }); }
+    if(data.headingFont){ S.headingFont = data.headingFont; }
+    if(data.bodyFont){ S.bodyFont = data.bodyFont; }
+    setTimeout(function(){
+      if(data.texts){
+        var fields = ['top','about','service','price','hours','tel','email','faq'];
+        fields.forEach(function(f){ var el=document.getElementById('t-'+f); if(el&&data.texts[f]) el.value=data.texts[f]; });
+      }
+    }, 300);
+    goToStep(data.step||1);
+  } catch(e){}
+  document.getElementById('restore-modal').style.display='none';
+}
+
+function dismissRestore(){
+  document.getElementById('restore-modal').style.display='none';
+}
+
+// ===== API KEY =====
+function saveApiKey(val){
+  val = val.trim();
+  if(val) localStorage.setItem('sf_api_key', val);
+  else localStorage.removeItem('sf_api_key');
+}
+function toggleApiKeyVisibility(){
+  var inp = document.getElementById('api-key-input');
+  if(inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function loadApiKey(){
+  var saved = localStorage.getItem('sf_api_key');
+  var inp = document.getElementById('api-key-input');
+  if(saved && inp) inp.value = saved;
+}
+
 // ===== LIVE PREVIEW =====
-const LP_PALETTES = {
+var LP_PALETTES = {
   'black-gold':{bg:'#0a0a0a',text:'#f5f0e0',accent:'#c9a84c',nav:'rgba(0,0,0,.95)'},
   'mono-dark':  {bg:'#111',text:'#f5f5f5',accent:'#fff',nav:'rgba(10,10,10,.95)'},
   'mono-light': {bg:'#f8f8f8',text:'#111',accent:'#111',nav:'rgba(248,248,248,.95)'},
@@ -2377,16 +2108,18 @@ const LP_PALETTES = {
   'mint':       {bg:'#f0fff8',text:'#003d2a',accent:'#00b894',nav:'rgba(0,61,42,.95)'},
   'charcoal':   {bg:'#2c2c2c',text:'#f0f0f0',accent:'#ff4444',nav:'rgba(30,30,30,.95)'},
 };
-const LP_FONTS = {
-  'Bebas Neue / Noto Sans JP':{h:"'Bebas Neue',sans-serif",b:"'Noto Sans JP',sans-serif"},
-  'Zen Kaku Gothic New':      {h:"'Zen Kaku Gothic New',sans-serif",b:"'Zen Kaku Gothic New',sans-serif"},
-  'Noto Sans JP':              {h:"'Noto Sans JP',sans-serif",b:"'Noto Sans JP',sans-serif"},
-  'Shippori Mincho':           {h:"'Shippori Mincho',serif",b:"'Shippori Mincho',serif"},
-  'Noto Serif JP':             {h:"'Noto Serif JP',serif",b:"'Noto Serif JP',serif"},
-  'M PLUS Rounded 1c':         {h:"'M PLUS Rounded 1c',sans-serif",b:"'M PLUS Rounded 1c',sans-serif"},
-  'Kaisei Opti':               {h:"'Kaisei Opti',serif",b:"'Kaisei Opti',serif"},
-  'Space Mono':                {h:"'Space Mono',monospace",b:"'Space Mono',monospace"},
-  'Georgia':                   {h:"Georgia,serif",b:"Georgia,serif"},
+var LP_FONTS = {
+  'Bebas Neue':{h:"'Bebas Neue',sans-serif",b:"'Noto Sans JP',sans-serif"},
+  'Zen Kaku Gothic New':{h:"'Zen Kaku Gothic New',sans-serif",b:"'Zen Kaku Gothic New',sans-serif"},
+  'Noto Sans JP':{h:"'Noto Sans JP',sans-serif",b:"'Noto Sans JP',sans-serif"},
+  'Shippori Mincho':{h:"'Shippori Mincho',serif",b:"'Shippori Mincho',serif"},
+  'Noto Serif JP':{h:"'Noto Serif JP',serif",b:"'Noto Serif JP',serif"},
+  'M PLUS Rounded 1c':{h:"'M PLUS Rounded 1c',sans-serif",b:"'M PLUS Rounded 1c',sans-serif"},
+  'Kaisei Opti':{h:"'Kaisei Opti',serif",b:"'Kaisei Opti',serif"},
+  'Space Mono':{h:"'Space Mono',monospace",b:"'Space Mono',monospace"},
+  'Georgia':{h:"Georgia,serif",b:"Georgia,serif"},
+  'Dela Gothic One':{h:"'Dela Gothic One',sans-serif",b:"'Noto Sans JP',sans-serif"},
+  'Audiowide':{h:"'Audiowide',sans-serif",b:"'Noto Sans JP',sans-serif"},
 };
 
 function buildLivePreview(){
@@ -2396,78 +2129,60 @@ function buildLivePreview(){
   var siteName = document.getElementById('site-name').value || 'SITE NAME';
   var catchcopy = document.getElementById('catchcopy').value || 'キャッチコピーがここに入ります';
   var vibe = S.vibe ? S.vibe.split('・')[0] : '';
-  var layout = S.layout ? S.layout.split('：')[0] : 'FULL SCREEN HERO';
+  var layout = S.layout ? S.layout.split('：')[0] : 'FULL SCREEN';
   var pages = Array.prototype.slice.call(document.querySelectorAll('.page-cb:checked')).map(function(c){
-    var n = c.value.split('・')[0].split('（')[0];
-    return '<a href="#" style="color:'+pal.text+';opacity:.8;font-size:12px;text-decoration:none;padding:0 10px;">'+n+'</a>';
+    return '<a href="#" style="color:'+pal.text+';opacity:.8;font-size:11px;text-decoration:none;padding:0 8px;">'+c.value.split('・')[0].split('（')[0]+'</a>';
   }).join('');
 
-  // レイアウト別ヒーローHTML
   var heroHTML = '';
-  if(layout==='SPLIT LAYOUT'){
-    heroHTML = '<div class="hero" style="display:flex;gap:0;padding:0;min-height:280px;">'
-      +'<div style="flex:1;padding:40px 28px;display:flex;flex-direction:column;justify-content:center;">'
-      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:10px;">'+vibe.toUpperCase()+'</div>':'')
-      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(24px,5vw,44px);line-height:.95;color:'+pal.text+';margin-bottom:12px;">'+siteName.toUpperCase()+'</h1>'
-      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;margin-bottom:20px;">'+catchcopy+'</p>'
-      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-family:'+hFont.h+';font-size:14px;padding:10px 24px;text-decoration:none;">詳しく見る →</a>'
-      +'</div>'
-      +'<div style="flex:1;background:linear-gradient(135deg,'+pal.accent+'44,'+pal.accent+'22);min-height:200px;"></div>'
+  if(layout.indexOf('SPLIT')>=0){
+    heroHTML = '<div style="display:flex;min-height:200px;">'
+      +'<div style="flex:1;padding:32px 20px;display:flex;flex-direction:column;justify-content:center;">'
+      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:8px;">'+vibe.toUpperCase()+'</div>':'')
+      +'<h1 style="font-family:'+hFont.h+';font-size:28px;color:'+pal.text+';margin-bottom:10px;line-height:1;">'+siteName+'</h1>'
+      +'<p style="font-size:11px;color:'+pal.text+';opacity:.6;margin-bottom:16px;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-size:12px;padding:8px 20px;text-decoration:none;">詳しく →</a>'
+      +'</div><div style="flex:1;background:linear-gradient(135deg,'+pal.accent+'44,'+pal.accent+'11);"></div></div>';
+  } else if(layout.indexOf('MINIMAL')>=0){
+    heroHTML = '<div style="padding:60px 20px;text-align:center;">'
+      +'<h1 style="font-family:'+hFont.h+';font-size:32px;color:'+pal.text+';margin-bottom:12px;">'+siteName+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.55;margin-bottom:20px;">'+catchcopy+'</p>'
+      +'<a href="#" style="border:1px solid '+pal.accent+';color:'+pal.accent+';font-size:11px;padding:8px 24px;text-decoration:none;display:inline-block;">VIEW MORE</a>'
       +'</div>';
-  } else if(layout==='BOLD TYPE'){
-    heroHTML = '<div style="padding:32px 28px;background:'+pal.bg+';">'
-      +'<div style="font-family:'+hFont.h+';font-size:clamp(48px,12vw,90px);line-height:.85;color:'+pal.text+';letter-spacing:.01em;margin-bottom:16px;">'+siteName.toUpperCase()+'</div>'
-      +'<div style="font-family:'+hFont.h+';font-size:clamp(24px,6vw,48px);line-height:.85;color:'+pal.accent+';letter-spacing:.01em;margin-bottom:20px;">'+vibe.toUpperCase()+'</div>'
-      +'<p style="font-size:12px;color:'+pal.text+';opacity:.6;max-width:400px;">'+catchcopy+'</p>'
-      +'</div>';
-  } else if(layout==='MINIMAL CENTER'){
-    heroHTML = '<div style="padding:60px 28px;text-align:center;background:'+pal.bg+';">'
-      +'<div style="font-size:9px;letter-spacing:.4em;color:'+pal.accent+';margin-bottom:20px;opacity:.7;">'+(vibe||'WELCOME')+'</div>'
-      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(28px,6vw,52px);color:'+pal.text+';margin-bottom:16px;">'+siteName+'</h1>'
-      +'<p style="font-size:12px;color:'+pal.text+';opacity:.55;max-width:360px;margin:0 auto 24px;line-height:1.8;">'+catchcopy+'</p>'
-      +'<a href="#" style="display:inline-block;border:1px solid '+pal.accent+';color:'+pal.accent+';font-size:11px;letter-spacing:.2em;padding:10px 28px;text-decoration:none;">VIEW MORE</a>'
-      +'</div>';
-  } else if(layout==='JAPANESE STYLE'){
-    heroHTML = '<div style="padding:40px 28px;background:'+pal.bg+';border-left:3px solid '+pal.accent+';">'
-      +'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:16px;writing-mode:horizontal-tb;">— '+vibe+' —</div>'
-      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(28px,6vw,52px);color:'+pal.text+';margin-bottom:12px;letter-spacing:.1em;">'+siteName+'</h1>'
-      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;line-height:2;margin-bottom:20px;">'+catchcopy+'</p>'
-      +'<a href="#" style="display:inline-block;background:transparent;border:1px solid '+pal.accent+';color:'+pal.accent+';font-size:11px;letter-spacing:.25em;padding:8px 24px;text-decoration:none;">詳しく見る</a>'
+  } else if(layout.indexOf('BOLD')>=0){
+    heroHTML = '<div style="padding:28px 20px;">'
+      +'<div style="font-family:'+hFont.h+';font-size:52px;line-height:.85;color:'+pal.text+';letter-spacing:.01em;margin-bottom:10px;">'+siteName.toUpperCase()+'</div>'
+      +'<div style="font-family:'+hFont.h+';font-size:28px;color:'+pal.accent+';margin-bottom:12px;">'+vibe.toUpperCase()+'</div>'
+      +'<p style="font-size:11px;color:'+pal.text+';opacity:.6;">'+catchcopy+'</p>'
       +'</div>';
   } else {
-    // FULL SCREEN HERO（デフォルト）
-    heroHTML = '<div class="hero" style="min-height:280px;display:flex;flex-direction:column;justify-content:center;padding:48px 28px;background:linear-gradient(135deg,'+pal.bg+' 0%,'+pal.accent+'22 100%);">'
-      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:10px;opacity:.8;">'+vibe.toUpperCase()+'</div>':'')
-      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(32px,8vw,60px);line-height:.95;color:'+pal.text+';margin-bottom:14px;">'+siteName.toUpperCase()+'</h1>'
-      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;max-width:380px;line-height:1.7;margin-bottom:22px;">'+catchcopy+'</p>'
-      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-family:'+hFont.h+';font-size:15px;padding:11px 28px;text-decoration:none;letter-spacing:.1em;">詳しく見る →</a>'
+    heroHTML = '<div style="min-height:200px;display:flex;flex-direction:column;justify-content:center;padding:40px 20px;background:linear-gradient(135deg,'+pal.bg+' 0%,'+pal.accent+'22 100%);">'
+      +(vibe?'<div style="font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:8px;opacity:.8;">'+vibe.toUpperCase()+'</div>':'')
+      +'<h1 style="font-family:'+hFont.h+';font-size:clamp(28px,7vw,48px);line-height:.95;color:'+pal.text+';margin-bottom:10px;">'+siteName+'</h1>'
+      +'<p style="font-size:12px;color:'+pal.text+';opacity:.65;margin-bottom:18px;">'+catchcopy+'</p>'
+      +'<a href="#" style="display:inline-block;background:'+pal.accent+';color:'+pal.bg+';font-family:'+hFont.h+';font-size:14px;padding:10px 24px;text-decoration:none;letter-spacing:.08em;">詳しく見る →</a>'
       +'</div>';
   }
 
-  var html = '<!DOCTYPE html><html><head>'
-    +'<meta charset="UTF-8">'
-    +'<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">'
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=Space+Mono:wght@400;700&family=Audiowide&display=swap" rel="stylesheet">'
     +'<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:'+pal.bg+';color:'+pal.text+';font-family:'+bFont.b+';font-size:13px;}'
-    +'nav{background:'+pal.nav+';padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;backdrop-filter:blur(10px);}'
-    +'.nav-logo{font-family:'+hFont.h+';font-size:18px;color:'+pal.accent+';letter-spacing:.05em;}'
-    +'.section{padding:32px 28px;border-top:1px solid '+pal.text+'18;}'
-    +'.section-label{font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:8px;opacity:.8;}'
-    +'.section-title{font-family:'+hFont.h+';font-size:24px;margin-bottom:14px;}'
-    +'.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}'
-    +'.card{background:'+pal.accent+'12;padding:12px;border-left:2px solid '+pal.accent+';}'
-    +'footer{background:'+pal.accent+'18;padding:16px 28px;text-align:center;font-size:10px;opacity:.6;}'
+    +'nav{background:'+pal.nav+';padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;backdrop-filter:blur(10px);}'
+    +'.logo{font-family:'+hFont.h+';font-size:16px;color:'+pal.accent+';letter-spacing:.05em;}'
+    +'.section{padding:28px 20px;border-top:1px solid '+pal.text+'18;}'
+    +'.sec-label{font-size:9px;letter-spacing:.3em;color:'+pal.accent+';margin-bottom:6px;opacity:.8;}'
+    +'.sec-title{font-family:'+hFont.h+';font-size:22px;margin-bottom:12px;}'
+    +'.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}'
+    +'.card{background:'+pal.accent+'12;padding:10px;border-left:2px solid '+pal.accent+';}'
+    +'footer{background:'+pal.accent+'18;padding:14px 20px;text-align:center;font-size:10px;opacity:.6;}'
     +'</style></head><body>'
-    +'<nav><div class="nav-logo">'+siteName.toUpperCase()+'</div>'
-    +'<div style="display:flex;flex-wrap:wrap;">'+(pages||'<a href="#" style="color:'+pal.text+';font-size:11px;text-decoration:none;padding:0 8px;">HOME</a>')+'</div></nav>'
+    +'<nav><div class="logo">'+siteName+'</div><div>'+(pages||'')+'</div></nav>'
     +heroHTML
-    +'<div class="section"><div class="section-label">// SERVICE</div><h2 class="section-title">サービス紹介</h2>'
-    +'<div class="cards">'
-    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 01</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
-    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 02</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
-    +'<div class="card"><div style="font-family:'+hFont.h+';font-size:13px;margin-bottom:4px;">サービス 03</div><div style="font-size:11px;opacity:.65;">説明がここに入ります。</div></div>'
-    +'</div></div>'
-    +'<footer>© 2025 '+siteName+' — All rights reserved</footer>'
-    +'</body></html>';
+    +'<div class="section"><div class="sec-label">// SERVICE</div><h2 class="sec-title">サービス紹介</h2>'
+    +'<div class="cards"><div class="card"><b>サービス 01</b><p style="font-size:10px;opacity:.65;margin-top:4px;">説明テキスト</p></div>'
+    +'<div class="card"><b>サービス 02</b><p style="font-size:10px;opacity:.65;margin-top:4px;">説明テキスト</p></div>'
+    +'<div class="card"><b>サービス 03</b><p style="font-size:10px;opacity:.65;margin-top:4px;">説明テキスト</p></div></div></div>'
+    +'<footer>© 2025 '+siteName+'</footer></body></html>';
 
   var frame = document.getElementById('lp-frame');
   if(frame) frame.srcdoc = html;
@@ -2475,58 +2190,23 @@ function buildLivePreview(){
   if(label) label.textContent = 'STEP '+S.step+' / '+layout;
 }
 
-// Hook live preview updates into existing selection functions
-const _origSelVibe = window.selVibe;
-const _origSelPal = window.selPal;
-const _origSelFont = window.selFont;
-
-// Debounce helper
-let lpTimer;
+var lpTimer;
 function debouncedLP(){ clearTimeout(lpTimer); lpTimer=setTimeout(buildLivePreview, 200); }
 
-// Patch all inputs to update preview
-document.addEventListener('input', efunction(){
-  if(['site-name','catchcopy'].includes(e.target.id)) debouncedLP();
+document.addEventListener('input', function(e){
+  if(['site-name','catchcopy'].indexOf(e.target.id)>=0) debouncedLP();
 });
-
-// Initial build
-setTimeout(buildLivePreview, 500);
-// Check saved progress
-setTimeout(checkSavedProgress, 1000);
-
-
-// ===== REGENERATE =====
-
-function toggleEditSection(){
-  var el = document.getElementById('edit-section');
-  el.style.display = el.style.display==='none' ? 'block' : 'none';
-}
-
-function regenSite(){
-  var rs = document.getElementById('result-section');
-  rs.classList.remove('show');
-  var btn = document.getElementById('gen-btn');
-  if(btn) btn.style.display='flex';
-  var gen = document.getElementById('generating');
-  if(gen) gen.classList.remove('show');
-  // scroll back to step 9
-  document.getElementById('app').scrollIntoView({behavior:'smooth'});
-  setTimeout(function(){ generateSite(); }, 500);
-}
-
-// ===== DEVICE TOGGLE =====
-dlHTML = function(){
-  const blob=new Blob([S.generatedHTML],{type:'text/html'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
-  a.click();
-}
 
 // On step 4 entry, build page color panels
-document.querySelectorAll('.pb-step[data-step="4"]').forEach(function(el){
+document.querySelectorAll('.pb-step[data-step="5"]').forEach(function(el){
   el.addEventListener('click',function(){setTimeout(buildPageColorPanels,100);});
 });
+
+// Initial
+setTimeout(buildLivePreview, 500);
+setTimeout(checkSavedProgress, 1000);
+
 </script>
+
 </body>
 </html>
