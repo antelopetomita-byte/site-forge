@@ -1446,7 +1446,7 @@ function renderPlacementList(){
       btn.onclick = (function(i, stid){ return function(){
         S.uploadedImages[i].style = stid;
         renderPlacementList();
-      };})(idx, stid);
+      };})(idx, st.id);
       styleRow.appendChild(btn);
     });
     ctrl.appendChild(name);
@@ -1497,42 +1497,65 @@ function generateSuggestedImages(){
   var vibe = S.vibe||'';
   var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
   btn.disabled=true;
-  btn.innerHTML='生成中...';
+  btn.innerHTML='生成中... (1/5)';
   container.innerHTML='';
-  var loaded = 0;
-  prompts.forEach(function(prompt){
+
+  function loadOne(index){
+    if(index >= prompts.length){
+      btn.disabled=false;
+      btn.innerHTML='もう5枚提案する';
+      return;
+    }
+    btn.innerHTML='生成中... ('+(index+1)+'/5)';
+    var prompt = prompts[index];
     var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
     var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
     var seed = Math.floor(Math.random()*999999);
     var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true';
+
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;';
-    var img = document.createElement('img');
-    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
-    img.src = url;
-    img.onload = function(){
-      loaded++;
-      if(loaded>=prompts.length){
-        btn.disabled=false;
-        btn.innerHTML='もう5枚提案する';
-      }
-    };
-    img.onerror = function(){loaded++;};
-    wrap.onclick = function(){
-      if(wrap.classList.contains('selected')){
-        wrap.classList.remove('selected');
-        img.style.borderColor='var(--border)';
-        S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
-      } else {
-        wrap.classList.add('selected');
-        img.style.borderColor='var(--lime)';
-        img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
-        S.selectedImages.push(url);
-      }
-    };
-    wrap.appendChild(img);
+    wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
+
+    // ローディング表示
+    var loading = document.createElement('div');
+    loading.style.cssText = 'width:120px;height:90px;background:var(--s2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:Space Mono,monospace;font-size:9px;color:var(--muted2);';
+    loading.textContent = '読み込み中...';
+    wrap.appendChild(loading);
     container.appendChild(wrap);
-  });
+
+    var img = document.createElement('img');
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:none;';
+    img.src = url;
+
+    img.onload = function(){
+      loading.style.display='none';
+      img.style.display='block';
+      wrap.appendChild(img);
+      img.onclick = function(){
+        if(wrap.classList.contains('selected')){
+          wrap.classList.remove('selected');
+          img.style.borderColor='var(--border)';
+          img.style.boxShadow='none';
+          S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
+        } else {
+          wrap.classList.add('selected');
+          img.style.borderColor='var(--lime)';
+          img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
+          S.selectedImages.push(url);
+        }
+      };
+      // 次の画像を1秒後に読み込む
+      setTimeout(function(){ loadOne(index+1); }, 1000);
+    };
+
+    img.onerror = function(){
+      loading.textContent = '読み込み失敗';
+      // エラーでも次に進む
+      setTimeout(function(){ loadOne(index+1); }, 500);
+    };
+  }
+
+  loadOne(0);
 }
 
 // ===== AI IMAGE GEN =====
