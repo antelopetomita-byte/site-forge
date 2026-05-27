@@ -1527,7 +1527,14 @@ function generateSuggestedImages(){
     img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:none;';
     img.src = url;
 
+    var timeoutId = setTimeout(function(){
+      loading.textContent = '読み込み失敗';
+      img.src = '';
+      setTimeout(function(){ loadOne(index+1); }, 500);
+    }, 12000);
+
     img.onload = function(){
+      clearTimeout(timeoutId);
       loading.style.display='none';
       img.style.display='block';
       wrap.appendChild(img);
@@ -1544,13 +1551,12 @@ function generateSuggestedImages(){
           S.selectedImages.push(url);
         }
       };
-      // 次の画像を1秒後に読み込む
-      setTimeout(function(){ loadOne(index+1); }, 1000);
+      setTimeout(function(){ loadOne(index+1); }, 800);
     };
 
     img.onerror = function(){
+      clearTimeout(timeoutId);
       loading.textContent = '読み込み失敗';
-      // エラーでも次に進む
       setTimeout(function(){ loadOne(index+1); }, 500);
     };
   }
