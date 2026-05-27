@@ -1488,68 +1488,48 @@ uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('d
 
 // ===== SUGGESTED IMAGES =====
 var INDUSTRY_PROMPTS = {
-  '飲食・食品':['cozy cafe interior warm lighting','fresh japanese food restaurant','artisan bread bakery morning','ramen shop authentic japanese','coffee latte art close up'],
-  '美容・健康':['beauty salon interior elegant','massage therapy relaxing spa','nail art studio pastel','yoga studio natural light','skincare products minimalist'],
-  '製造業・工業':['modern factory production line','precision metal manufacturing','industrial machinery professional','quality control inspection','factory professional'],
-  '建設・不動産':['modern architecture building','construction site professional','interior design living room','real estate luxury home','renovation modern'],
-  'クリエイティブ':['photography studio professional','graphic design workspace','creative studio colorful','portfolio artwork display','designer working laptop'],
-  'IT・テクノロジー':['modern tech office workspace','coding programming laptop','startup office team','technology digital abstract','software development'],
-  '小売・EC':['retail store interior modern','product display elegant','online shopping lifestyle','boutique fashion store','product photography minimal'],
-  '教育・学習':['classroom modern bright','students learning together','library books study','online learning laptop','teacher students education'],
-  '士業・専門職':['professional office corporate','lawyer office elegant','business meeting professional','consulting firm modern','accountant office clean'],
-  '医療・介護':['hospital clinic clean modern','doctor patient consultation','medical equipment professional','nursing care warm','pharmacy interior clean'],
-  '物流・運輸':['logistics warehouse modern','delivery truck fleet','supply chain operations','shipping container port','transportation professional'],
-  'その他・一般':['professional business office','team meeting modern','community event people','local business storefront','professional service smiling'],
+  '飲食・食品':    ['cafe interior','japanese food','bakery bread','ramen restaurant','coffee shop'],
+  '美容・健康':    ['beauty salon','spa massage','nail salon','yoga studio','skincare'],
+  '製造業・工業':  ['factory manufacturing','industrial machinery','metal workshop','production line','engineer working'],
+  '建設・不動産':  ['modern architecture','construction site','interior design','luxury home','renovation'],
+  'クリエイティブ':['photography studio','graphic design','creative workspace','art studio','designer laptop'],
+  'IT・テクノロジー':['tech office','coding laptop','startup team','technology','software developer'],
+  '小売・EC':      ['retail store','product display','shopping boutique','fashion store','product photography'],
+  '教育・学習':    ['classroom','students studying','library','online learning','teacher'],
+  '士業・専門職':  ['professional office','business meeting','lawyer office','consulting','corporate'],
+  '医療・介護':    ['clinic hospital','doctor consultation','medical','nursing care','pharmacy'],
+  '物流・運輸':    ['warehouse logistics','delivery truck','shipping','transportation','supply chain'],
+  'その他・一般':  ['business office','team meeting','professional','local business','service'],
 };
 
 function generateSuggestedImages(){
   var btn = document.getElementById('suggest-btn');
   var container = document.getElementById('suggested-images');
   var industry = S.industryCat||'その他・一般';
-  var vibe = S.vibe||'';
   var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
   btn.disabled=true;
-  btn.innerHTML='生成中... (1/5)';
+  btn.innerHTML='読み込み中...';
   container.innerHTML='';
 
-  function loadOne(index){
-    if(index >= prompts.length){
-      btn.disabled=false;
-      btn.innerHTML='もう5枚提案する';
-      return;
-    }
-    btn.innerHTML='生成中... ('+(index+1)+'/5)';
-    var prompt = prompts[index];
-    var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
-    var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
-    var seed = Math.floor(Math.random()*999999) + (index * 100000);
-    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true&model=flux';
+  var page = Math.floor(Math.random()*3)+1;
+
+  prompts.forEach(function(keyword, index){
+    var seed = (index + 1) * 100 + Math.floor(Math.random()*50);
+    var url = 'https://source.unsplash.com/400x300/?'+encodeURIComponent(keyword)+'&sig='+seed;
 
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
 
-    // ローディング表示
-    var loading = document.createElement('div');
-    loading.style.cssText = 'width:120px;height:90px;background:var(--s2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:Space Mono,monospace;font-size:9px;color:var(--muted2);';
-    loading.textContent = '読み込み中...';
-    wrap.appendChild(loading);
-    container.appendChild(wrap);
-
     var img = document.createElement('img');
-    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:none;';
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
     img.src = url;
-
-    var timeoutId = setTimeout(function(){
-      loading.textContent = '読み込み失敗';
-      img.src = '';
-      setTimeout(function(){ loadOne(index+1); }, 1000);
-    }, 20000);
+    img.crossOrigin = 'anonymous';
 
     img.onload = function(){
-      clearTimeout(timeoutId);
-      loading.style.display='none';
-      img.style.display='block';
-      wrap.appendChild(img);
+      if(index === prompts.length-1){
+        btn.disabled=false;
+        btn.innerHTML='もう5枚提案する';
+      }
       img.onclick = function(){
         if(wrap.classList.contains('selected')){
           wrap.classList.remove('selected');
@@ -1563,17 +1543,19 @@ function generateSuggestedImages(){
           S.selectedImages.push(url);
         }
       };
-      setTimeout(function(){ loadOne(index+1); }, 3000);
     };
 
     img.onerror = function(){
-      clearTimeout(timeoutId);
-      loading.textContent = '読み込み失敗';
-      setTimeout(function(){ loadOne(index+1); }, 500);
+      wrap.style.display='none';
+      if(index === prompts.length-1){
+        btn.disabled=false;
+        btn.innerHTML='もう5枚提案する';
+      }
     };
-  }
 
-  loadOne(0);
+    wrap.appendChild(img);
+    container.appendChild(wrap);
+  });
 }
 
 // ===== AI IMAGE GEN =====
