@@ -1363,8 +1363,13 @@ function resetPageColor(page){delete S.pageColors[page];}
 
 // ===== FONT =====
 function selFont(el, type){
-  var grid = el.closest('.font-grid');
-  grid.querySelectorAll('.font-card').forEach(function(e){e.classList.remove('selected');});
+  var gridId = type==='heading' ? 'heading-font-grid' : 'body-font-grid';
+  var extraId = type==='heading' ? 'heading-font-extra' : 'body-font-extra';
+  // メインgridと展開エリア両方の選択を解除
+  var grid = document.getElementById(gridId);
+  var extra = document.getElementById(extraId);
+  if(grid) grid.querySelectorAll('.font-card').forEach(function(e){e.classList.remove('selected');});
+  if(extra) extra.querySelectorAll('.font-card').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
   if(type==='heading') S.headingFont = el.dataset.fname;
   else S.bodyFont = el.dataset.fname;
@@ -1935,7 +1940,7 @@ function setDevice(d){
   }
 }
 
-dlHTML = function(){
+function dlHTML(){
   var blob=new Blob([S.generatedHTML],{type:'text/html'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
