@@ -1511,11 +1511,27 @@ function generateSuggestedImages(){
   btn.innerHTML='読み込み中...';
   container.innerHTML='';
 
-  var page = Math.floor(Math.random()*3)+1;
+  // Pexels APIの代わりにPicsumを使用（確実に動く）
+  var baseSeeds = {
+    '飲食・食品':    [431,312,225,326,429],
+    '美容・健康':    [403,416,453,377,485],
+    '製造業・工業':  [211,375,188,267,343],
+    '建設・不動産':  [164,177,195,281,395],
+    'クリエイティブ':[180,193,206,219,232],
+    'IT・テクノロジー':[0,1,2,3,4],
+    '小売・EC':      [349,362,375,388,401],
+    '教育・学習':    [424,437,450,463,476],
+    '士業・専門職':  [499,512,525,538,551],
+    '医療・介護':    [574,587,600,613,626],
+    '物流・運輸':    [649,662,675,688,701],
+    'その他・一般':  [724,737,750,763,776],
+  };
+  var seeds = baseSeeds[industry] || baseSeeds['その他・一般'];
+  var offset = Math.floor(Math.random()*800);
 
-  prompts.forEach(function(keyword, index){
-    var seed = (index + 1) * 100 + Math.floor(Math.random()*50);
-    var url = 'https://source.unsplash.com/400x300/?'+encodeURIComponent(keyword)+'&sig='+seed;
+  seeds.forEach(function(seed, index){
+    var id = ((seed + offset) % 1000) + 1;
+    var url = 'https://picsum.photos/seed/'+id+'/400/300';
 
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
@@ -1523,10 +1539,9 @@ function generateSuggestedImages(){
     var img = document.createElement('img');
     img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
     img.src = url;
-    img.crossOrigin = 'anonymous';
 
     img.onload = function(){
-      if(index === prompts.length-1){
+      if(index === seeds.length-1){
         btn.disabled=false;
         btn.innerHTML='もう5枚提案する';
       }
@@ -1547,7 +1562,7 @@ function generateSuggestedImages(){
 
     img.onerror = function(){
       wrap.style.display='none';
-      if(index === prompts.length-1){
+      if(index === seeds.length-1){
         btn.disabled=false;
         btn.innerHTML='もう5枚提案する';
       }
