@@ -57,37 +57,49 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 @keyframes fup{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 
 
-/* SHINE EFFECT */
-.h-title{position:relative;overflow:hidden;}
-.h-title::after{
-  content:'';
-  position:absolute;
-  top:0;left:-100%;
-  width:60%;height:100%;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.35) 50%,transparent 100%);
-  transform:skewX(-20deg);
-  animation:shine 3s ease-in-out 1.5s infinite;
-  pointer-events:none;
+/* SHINE + COLOR CHANGE */
+.h-title{position:relative;}
+.h-title .line1{
+  display:block;
+  animation:fup .7s .5s forwards, colorCycleWhite 6s 1.5s infinite;
+  opacity:0;
 }
-@keyframes shine{
-  0%{left:-100%;}
-  40%,100%{left:150%;}
-}
-
-/* SHINE ON OVERFLOW (blue part) */
 .h-title em{
-  position:relative;
-  overflow:hidden;
+  display:block;
+  font-style:italic;
+  font-weight:900;
+  animation:colorCycleBlue 6s 1.8s infinite;
+  background:none !important;
+  -webkit-text-fill-color:unset !important;
 }
-.h-title em::after{
+@keyframes colorCycleWhite{
+  0%,30%{color:#ffffff;}
+  33%,36%{color:#00ffaa;}
+  39%,65%{color:#ffffff;}
+  68%,71%{color:#38b8ff;}
+  74%,100%{color:#ffffff;}
+}
+@keyframes colorCycleBlue{
+  0%,30%{color:#4d7fff;}
+  33%,36%{color:#00ffaa;}
+  39%,65%{color:#4d7fff;}
+  68%,71%{color:#ffffff;}
+  74%,100%{color:#4d7fff;}
+}
+.h-title::after{
   content:'';
   position:absolute;
   top:0;left:-100%;
   width:60%;height:100%;
   background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);
   transform:skewX(-20deg);
-  animation:shine 3s ease-in-out 1.8s infinite;
+  animation:shine 3s ease-in-out 1.5s infinite;
   pointer-events:none;
+  z-index:1;
+}
+@keyframes shine{
+  0%{left:-100%;}
+  40%,100%{left:150%;}
 }
 
 /* FEATURES BAR */
@@ -490,7 +502,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 <section id="hero">
   <div class="h-bgtxt">OVERFLOW</div>
   <div class="h-tag">AI-POWERED HP BUILDER</div>
-  <h1 class="h-title">NEURAL<br><em>OVERFLOW</em></h1>
+  <h1 class="h-title"><span class="line1">NEURAL</span><br><em>OVERFLOW</em></h1>
   <p style="font-family:'Space Mono',monospace;font-size:clamp(10px,1.5vw,13px);letter-spacing:.3em;color:var(--muted2);margin-top:-20px;margin-bottom:28px;opacity:0;animation:fup .7s .7s forwards;">— Chaos of Creation —</p>
   <p class="h-sub">質問に答えるだけで、AIがあなただけのHPを生成する。<br>画像生成・アップロード・細かいカラー設定まで思うがままに！</p>
   <a href="#app" class="h-cta" id="start-btn">
