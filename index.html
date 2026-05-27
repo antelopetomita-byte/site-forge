@@ -1530,8 +1530,8 @@ function generateSuggestedImages(){
     var timeoutId = setTimeout(function(){
       loading.textContent = '読み込み失敗';
       img.src = '';
-      setTimeout(function(){ loadOne(index+1); }, 500);
-    }, 12000);
+      setTimeout(function(){ loadOne(index+1); }, 1000);
+    }, 20000);
 
     img.onload = function(){
       clearTimeout(timeoutId);
@@ -1551,7 +1551,7 @@ function generateSuggestedImages(){
           S.selectedImages.push(url);
         }
       };
-      setTimeout(function(){ loadOne(index+1); }, 800);
+      setTimeout(function(){ loadOne(index+1); }, 3000);
     };
 
     img.onerror = function(){
