@@ -1522,8 +1522,8 @@ function generateSuggestedImages(){
     var prompt = prompts[index];
     var vibePrompt = vibe ? prompt+', '+vibe.split('・')[0]+' style' : prompt;
     var encoded = encodeURIComponent(vibePrompt+', professional photography, high quality');
-    var seed = Math.floor(Math.random()*999999);
-    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true';
+    var seed = Math.floor(Math.random()*999999) + (index * 100000);
+    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=400&height=300&seed='+seed+'&nologo=true&model=flux';
 
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
