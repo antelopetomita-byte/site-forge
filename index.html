@@ -3,7 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neural Overflow — AIでHPを作る</title>
+<title>Neural Overflow — AI HP Builder</title>
+
+<!-- PWA / ホーム画面アイコン設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neural Overflow">
+<meta name="theme-color" content="#04060a">
+<meta name="description" content="AIがあなただけのHPを生成。業種・雰囲気・レイアウト・カラーを選ぶだけ。">
+
+<!-- OGP -->
+<meta property="og:title" content="Neural Overflow — AI HP Builder">
+<meta property="og:description" content="質問に答えるだけでプロ級のHPが完成。細かいカラー設定まで思うがままに！">
+<meta property="og:type" content="website">
+
+<!-- アイコン（SVGをBase64でインライン） -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzA0MDYwYSIgcng9IjgwIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDBmZmFhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMzhiOGZmIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnbCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iOCIgcmVzdWx0PSJibHVyIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJibHVyIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48cmVjdCB4PSI0MCIgeT0iNDAiIHdpZHRoPSI0MzIiIGhlaWdodD0iNDMyIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zIiByeD0iNDAiLz48dGV4dCB4PSIyNTYiIHk9IjI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIwIiBmb250LXdlaWdodD0iOTAwIiBmb250LXN0eWxlPSJpdGFsaWMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZpbHRlcj0idXJsKCNnbCkiPk48L3RleHQ+PHRleHQgeD0iMjU2IiB5PSIzODAiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0IiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjciIGxldHRlci1zcGFjaW5nPSIyIj5PVkVSRkxPVzwvdGV4dD48cmVjdCB4PSI4MCIgeT0iNDIwIiB3aWR0aD0iMzUyIiBoZWlnaHQ9IjMiIGZpbGw9InVybCgjZykiIG9wYWNpdHk9IjAuNiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjQ1MCIgcj0iOCIgZmlsbD0iIzAwZmZhYSIgZmlsdGVyPSJ1cmwoI2dsKSIvPjwvc3ZnPg==">
+
+<!-- manifest -->
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmV1cmFsIE92ZXJmbG93IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0F3SURFM01UWWlQand2Yzlkc0kzZHVhWFE5SWpFd01DSWlJSHNpWW5WcGJIUTlJakl3SWlCd2FXNTBhVzVuUFNJeElpOCtQQzl6ZG1jKyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA0MDYwYSIsInRoZW1lX2NvbG9yIjoiIzAwZmZhYSIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQifQ==">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Exo+2:ital,wght@1,900&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -798,8 +816,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <!-- UPLOAD -->
       <div class="img-section">
         <div class="img-section-title">// 画像をアップロード</div>
-        <div class="upload-zone" id="upload-zone">
-          <input type="file" id="img-upload" accept="image/*" multiple onchange="handleUpload(this.files)">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('img-upload').click();">
+          <input type="file" id="img-upload" accept="image/*" multiple style="display:none;" onchange="handleUpload(this.files)">
           <div class="upload-icon">📁</div>
           <div class="upload-text">タップして画像を追加</div>
           <div class="upload-sub">JPG / PNG / WEBP — 複数枚対応</div>
