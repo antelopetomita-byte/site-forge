@@ -967,6 +967,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="gen-label">AIがHPを鍛造中...</div>
         <div class="gen-status" id="gen-status">analyzing requirements...</div>
       </div>
+      <!-- 参照URLモード -->
+      <div style="margin-bottom:20px;background:var(--s1);border:1px solid var(--border);padding:20px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:6px;">// REFERENCE MODE <span style="color:var(--muted2);font-size:9px;">（任意）</span></div>
+        <div style="font-size:11px;color:var(--muted2);font-family:'Space Mono',monospace;margin-bottom:12px;">好きなサイトのURLを入れると、そのデザインを参考にHPを生成します</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="ref-url-input" type="url" placeholder="https://example.com" style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Space Mono',monospace;font-size:12px;outline:none;border-radius:4px;" oninput="checkRefUrl()">
+          <button id="ref-analyze-btn" onclick="analyzeRefUrl()" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;padding:10px 16px;background:transparent;border:1px solid var(--lime);color:var(--lime);cursor:pointer;border-radius:4px;white-space:nowrap;transition:all .2s;">解析</button>
+        </div>
+        <div id="ref-status" style="display:none;font-family:'Space Mono',monospace;font-size:10px;margin-top:10px;padding:10px;background:var(--s2);border-radius:4px;"></div>
+      </div>
+
       <button class="gen-btn" id="gen-btn" onclick="generateSite()">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         AIでHP生成
@@ -1225,7 +1236,7 @@ var S = {
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
-  uploadedImages:[], aiImages:[], selectedImages:[],
+  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null,
   texts:{},
   generatedHTML:''
 };
@@ -1797,6 +1808,65 @@ function autoSelectColor(){
 }
 
 // ===== GENERATE =====
+function checkRefUrl(){
+  var val = document.getElementById('ref-url-input').value.trim();
+  var btn = document.getElementById('ref-analyze-btn');
+  if(val && val.startsWith('http')){
+    btn.style.borderColor='var(--lime)'; btn.style.color='var(--lime)';
+  } else {
+    btn.style.borderColor='var(--border)'; btn.style.color='var(--muted2)';
+  }
+}
+
+function analyzeRefUrl(){
+  var url = document.getElementById('ref-url-input').value.trim();
+  if(!url || !url.startsWith('http')) return;
+  var btn = document.getElementById('ref-analyze-btn');
+  var status = document.getElementById('ref-status');
+  btn.disabled=true; btn.textContent='解析中...';
+  status.style.display='block';
+  status.style.color='var(--muted2)';
+  status.textContent='// サイトを解析中...';
+
+  var prompt = 'Analyze the design of this website URL and extract its design DNA in structured format.\n\nURL: '+url+'\n\nPlease fetch and analyze the page, then respond ONLY with a JSON object (no markdown) with these exact keys:\n{\n  "colors": {"primary": "#hex", "secondary": "#hex", "accent": "#hex", "text": "#hex", "bg": "#hex"},\n  "typography": {"heading": "font name", "body": "font name", "style": "description"},\n  "layout": "description of layout pattern",\n  "vibe": "1-3 word aesthetic description",\n  "animations": "description of animation style",\n  "designPrinciples": "3-5 key design principles observed",\n  "uniqueElements": "unique/distinctive UI elements"\n}';
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1200,
+      tools:[{type:'web_search_20250305',name:'web_search'}],
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    btn.disabled=false; btn.textContent='再解析';
+    if(data.error) throw new Error(data.error.message);
+    var text = data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var clean = text.replace(/```json|```/g,'').trim();
+    try {
+      var dna = JSON.parse(clean);
+      S.refDNA = dna;
+      S.refURL = url;
+      status.style.color='var(--lime)';
+      status.innerHTML = '// 解析完了！<br>'
+        +'カラー: '+dna.colors.bg+' / '+dna.colors.accent+'<br>'
+        +'フォント: '+dna.typography.heading+'<br>'
+        +'雰囲気: '+dna.vibe+'<br>'
+        +'<span style="color:var(--muted2)">このデザインDNAを参考にHPを生成します</span>';
+    } catch(e) {
+      S.refDNA = {raw: text};
+      status.style.color='var(--lime)';
+      status.textContent='// 解析完了！デザイン情報を取得しました';
+    }
+  }).catch(function(err){
+    btn.disabled=false; btn.textContent='解析';
+    status.style.color='#ff4444';
+    status.textContent='// 解析エラー: '+err.message;
+  });
+}
+
 function generateSite(){
   var btn = document.getElementById('gen-btn');
   var gen = document.getElementById('generating');
@@ -1897,7 +1967,26 @@ function generateSite(){
     return key ? '【' + key + '】\n' + sectionTemplates[key] : p;
   }).join('\n\n');
 
-  var prompt = '# MISSION\n'    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '    +'Every detail matters. The result must look like a $50,000 agency built it.\n\n'    +'# SITE INFO\n'    +'- Name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one based on industry]')+'\n'    +'- Location: '+(S.location||'Japan')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n\n'    +'# CONTENT\n'    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'    +'- Pricing: '+(S.texts.price||'none')+'\n'    +'- Hours: '+(S.texts.hours||'none')+'\n'    +'- Phone: '+(S.texts.tel||'none')+'\n'    +'- Email: '+(S.texts.email||'none')+'\n'    +'- LINE: '+(S.texts.line||'none')+'\n'    +'- Instagram: '+(S.texts.instagram||'none')+'\n'    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'    +'# DESIGN SYSTEM\n'    +'- Layout: '+S.layout+' → '+layoutInstruction+'\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +pageColorInstructions+'\n'    +'# SECTIONS\n'    +selectedSectionGuides+'\n\n'    +imgInstructions+'\n\n'    +'# MANDATORY TECHNICAL REQUIREMENTS\n'    +'1. Single HTML file — all CSS and JS inline\n'    +'2. Google Fonts import\n'    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'    +'5. IntersectionObserver for ALL section entrance animations\n'    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'    +'7. CSS custom properties: --color-bg, --color-text, --color-accent, --font-heading, --font-body\n'    +'8. Hover microinteractions on every interactive element\n'    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'    +'10. SNS URLs → SVG icon buttons in footer\n'    +'11. No images? Use intentional CSS gradients or SVG geometric art — not placeholders\n'    +'12. Page load fade-in animation\n'    +'13. Footer: site name, copyright, nav links\n\n'    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'    +'- Body line-height: 1.8–2.0\n'    +'- Heading letter-spacing: 0.05em–0.15em\n'    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'    +'- Harmonious color palette — no random colors\n'    +'- Clear visual hierarchy in every section\n'    +'- Mobile tap targets ≥ 44px\n'    +'- Animations: subtle, purposeful, not distracting (duration 0.4s–0.8s, ease-out)\n'    +'- Japanese text: use Noto Serif JP or Zen Kaku Gothic for headings if vibe is 和風/ラグジュアリー/エレガント\n\n'    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
+  var refDNAInstruction = '';
+  if(S.refDNA){
+    if(S.refDNA.raw){
+      refDNAInstruction = '# REFERENCE DESIGN DNA\nAnalysis of '+S.refURL+':\n'+S.refDNA.raw+'\n\nUse this as inspiration for the overall aesthetic, but adapt it for the client\'s brand.\n\n';
+    } else {
+      var d = S.refDNA;
+      refDNAInstruction = '# REFERENCE DESIGN DNA (from '+S.refURL+')\n'
+        +'Use this design DNA as the primary aesthetic inspiration:\n'
+        +'- Colors: bg='+d.colors.bg+', accent='+d.colors.accent+', text='+d.colors.text+'\n'
+        +'- Typography: heading='+d.typography.heading+', body='+d.typography.body+', style='+d.typography.style+'\n'
+        +'- Layout: '+d.layout+'\n'
+        +'- Vibe/Aesthetic: '+d.vibe+'\n'
+        +'- Animations: '+d.animations+'\n'
+        +'- Design principles: '+d.designPrinciples+'\n'
+        +'- Unique elements: '+d.uniqueElements+'\n'
+        +'Adapt these design choices to suit the client\'s industry and brand, but maintain the same level of quality and aesthetic direction.\n\n';
+    }
+  }
+
+  var prompt = '# MISSION\n'    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '    +'Every detail matters. The result must look like a $50,000 agency built it.\n\n'    +'# SITE INFO\n'    +'- Name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one based on industry]')+'\n'    +'- Location: '+(S.location||'Japan')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n\n'    +'# CONTENT\n'    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'    +'- Pricing: '+(S.texts.price||'none')+'\n'    +'- Hours: '+(S.texts.hours||'none')+'\n'    +'- Phone: '+(S.texts.tel||'none')+'\n'    +'- Email: '+(S.texts.email||'none')+'\n'    +'- LINE: '+(S.texts.line||'none')+'\n'    +'- Instagram: '+(S.texts.instagram||'none')+'\n'    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'    +'# DESIGN SYSTEM\n'    +'- Layout: '+S.layout+' → '+layoutInstruction+'\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +pageColorInstructions+'\n'    +'# SECTIONS\n'    +selectedSectionGuides+'\n\n'    +imgInstructions+'\n\n'    +refDNAInstruction    +'# MANDATORY TECHNICAL REQUIREMENTS\n'    +'1. Single HTML file — all CSS and JS inline\n'    +'2. Google Fonts import\n'    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'    +'5. IntersectionObserver for ALL section entrance animations\n'    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'    +'7. CSS custom properties: --color-bg, --color-text, --color-accent, --font-heading, --font-body\n'    +'8. Hover microinteractions on every interactive element\n'    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'    +'10. SNS URLs → SVG icon buttons in footer\n'    +'11. No images? Use intentional CSS gradients or SVG geometric art — not placeholders\n'    +'12. Page load fade-in animation\n'    +'13. Footer: site name, copyright, nav links\n\n'    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'    +'- Body line-height: 1.8–2.0\n'    +'- Heading letter-spacing: 0.05em–0.15em\n'    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'    +'- Harmonious color palette — no random colors\n'    +'- Clear visual hierarchy in every section\n'    +'- Mobile tap targets ≥ 44px\n'    +'- Animations: subtle, purposeful, not distracting (duration 0.4s–0.8s, ease-out)\n'    +'- Japanese text: use Noto Serif JP or Zen Kaku Gothic for headings if vibe is 和風/ラグジュアリー/エレガント\n\n'    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
