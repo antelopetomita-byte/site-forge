@@ -464,6 +464,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 @media(max-width:1100px){
   .wizard-outer{grid-template-columns:1fr;}
   .live-preview-panel{display:none;}
+  .live-preview-panel{display:none;}
 }
 @media(max-width:900px){
   .industry-tree{grid-template-columns:1fr 1fr;}
@@ -1668,7 +1669,7 @@ function aiAssistField(fieldId, fieldType) {
   return fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:400,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})
   }).then(function(res){ return res.json(); })
   .then(function(data){
     if(data.error) throw new Error(data.error.message);
@@ -1841,22 +1842,27 @@ function generateSite(){
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
   var aiImgOnly = S.selectedImages;
   var imgInstructions = '';
+  var sectionNames = {hero:'hero section (background or main visual)',about:'About/Concept section',service:'Service/Features section',gallery:'Gallery section',cta:'CTA/Contact section',other:'most appropriate section'};
+  var styleNames = {bg:'full background image (position:absolute,inset:0,object-fit:cover,width:100%,height:100%)',card:'card image (aspect-ratio:4/3,object-fit:cover,border-radius:8px)',circle:'circular portrait (border-radius:50%,aspect-ratio:1,object-fit:cover)',full:'full-width image (width:100%,display:block)'};
   if(uploadedOnly.length || aiImgOnly.length){
-    imgInstructions = '【画像配置指定】\n';
-    uploadedOnly.slice(0,8).forEach(function(img,i){
-      var sectionNames = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',gallery:'ギャラリーセクション',cta:'CTAセクション',other:'適切なセクション'};
-      var styleNames = {bg:'背景画像',card:'カード画像',circle:'丸型写真',full:'全幅画像'};
-      imgInstructions += '画像'+(i+1)+': '+(sectionNames[img.section]||img.section)+' / '+(styleNames[img.style]||img.style)+'\n';
-      imgInstructions += '  img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
-    });
+    imgInstructions = '# IMAGE PLACEMENT — CRITICAL\n';
+    imgInstructions += 'You MUST include every image listed below. Do not skip any.\n\n';
+    if(uploadedOnly.length){
+      imgInstructions += '## Uploaded Images — use <img src="" data-upload-index="N"> exactly as specified:\n';
+      uploadedOnly.slice(0,8).forEach(function(img,i){
+        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section||'hero section')+'\n';
+        imgInstructions += '  Style: '+(styleNames[img.style]||img.style||'feature image')+'\n';
+        imgInstructions += '  Code: <img src="" data-upload-index="'+i+'" alt="photo" style="[use the style above]">\n\n';
+      });
+    }
     if(aiImgOnly.length){
-      imgInstructions += 'AI生成画像（直接URLを使用）:\n';
+      imgInstructions += '## AI Generated Images — use src URL directly:\n';
       aiImgOnly.slice(0,4).forEach(function(url,i){
-        imgInstructions += '画像URL'+(i+1)+': '+url+'\n';
+        imgInstructions += 'AI Image '+(i+1)+': '+url+'\n';
       });
     }
   } else {
-    imgInstructions = '画像はCSSグラデーション・SVGパターンで美しく代替';
+    imgInstructions = '# IMAGES\nNo images provided. Use CSS gradients, SVG art, or geometric shapes — make them intentional and beautiful.';
   }
 
   var vibeToStyle = {
@@ -1896,7 +1902,7 @@ function generateSite(){
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
   }).then(function(res){return res.json();})
   .then(function(data){
     clearInterval(timer);
@@ -2023,12 +2029,12 @@ function quickRegen(section, btn) {
   loadingEl.style.display='flex';
 
   var pal = palData[S.globalPalette]||palData['mono-light'];
-  var prompt = '# TASK: Regenerate the '+labels[section]+' of this website.\n\n'    +'# SECTION SPEC\n'    +sectionGuides[section]+'\n\n'    +'# DESIGN CONSTRAINTS (must match existing site)\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+'\n'    +'- Site name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+'\n\n'    +'# INSTRUCTIONS\n'    +'Replace ONLY the '+labels[section]+' in the HTML below. Keep everything else identical.\n'    +'The new section must be significantly better — more premium, more animated, more unique.\n'    +'Output the complete HTML file. Pure HTML only. No markdown. Start with <!DOCTYPE html>.\n\n'    +'# CURRENT HTML\n'    +S.generatedHTML.substring(0, 14000);
+  var prompt = '# TASK: Regenerate the '+labels[section]+' of this website.\n\n'    +'# SECTION SPEC\n'    +sectionGuides[section]+'\n\n'    +'# DESIGN CONSTRAINTS (must match existing site)\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+'\n'    +'- Site name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+'\n\n'    +'# INSTRUCTIONS\n'    +'Replace ONLY the '+labels[section]+' in the HTML below. Keep everything else identical.\n'    +'The new section must be significantly better — more premium, more animated, more unique.\n'    +'Output the complete HTML file. Pure HTML only. No markdown. Start with <!DOCTYPE html>.\n\n'    +'# CURRENT HTML\n'    +S.generatedHTML.substring(0, 20000);
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
   }).then(function(r){return r.json();})
   .then(function(data){
     loadingEl.style.display='none';
@@ -2058,11 +2064,11 @@ function applyEdit(){
   document.getElementById('edit-input-area').style.display='none';
   var target = window._editTarget || 'all';
   var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
-  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'    +'修正指示：'+instruction+'\n\n'    +'品質基準：Awwwardsレベルを維持。修正箇所以外は変更しない。\n'    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'    +'現在のHTML（先頭13000文字）：\n'+S.generatedHTML.substring(0, 13000);
+  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'    +'修正指示：'+instruction+'\n\n'    +'品質基準：Awwwardsレベルを維持。修正箇所以外は変更しない。\n'    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'    +'現在のHTML（先頭13000文字）：\n'+S.generatedHTML.substring(0, 20000);
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
   }).then(function(r){return r.json();})
   .then(function(data){
     loading.style.display='none';
