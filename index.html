@@ -582,8 +582,29 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <div class="sc-title">業種 &amp; <em>基本情報</em></div>
       <p class="sc-desc">まずお店や会社の種類を選んでください。細かい分類まで選ぶほど、AIがより適切なHPを作ります</p>
       <div class="row2">
-        <div class="field"><label>店舗名 / サービス名</label><input type="text" id="site-name" placeholder="例：風の谷のカフェ"></div>
+        <div class="field"><label>店舗名 / サービス名</label><input type="text" id="site-name" placeholder="例：風の谷のカフェ" oninput="updateLogoPreview()"></div>
         <div class="field"><label>キャッチコピー（任意）</label><input type="text" id="catchcopy" placeholder="例：手作りにこだわる、小さなお店"></div>
+      </div>
+
+      <!-- ロゴスタイル選択 -->
+      <div class="field" style="margin-bottom:20px;">
+        <label style="display:flex;align-items:center;gap:8px;">
+          ロゴスタイル
+          <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;">// ナビ・フッターのサイト名の見せ方</span>
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;" id="logo-style-btns">
+          <button type="button" class="logo-style-btn active" data-style="AI_CHOICE" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:rgba(0,255,170,.1);border:1px solid var(--lime);color:var(--lime);cursor:pointer;border-radius:4px;transition:all .2s;">✦ AIに任せる</button>
+          <button type="button" class="logo-style-btn" data-style="PLAIN" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">PLAIN</button>
+          <button type="button" class="logo-style-btn" data-style="ACCENT_FIRST" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;"><span style="color:var(--lime)">A</span>CCENT 1文字目</button>
+          <button type="button" class="logo-style-btn" data-style="ACCENT_LAST" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">ACCENT 最後<span style="color:var(--lime)">1</span>文字</button>
+          <button type="button" class="logo-style-btn" data-style="ITALIC_MIX" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;"><em style="font-style:italic;">italic</em> ミックス</button>
+          <button type="button" class="logo-style-btn" data-style="SPACED" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">S P A C E D</button>
+          <button type="button" class="logo-style-btn" data-style="SYMBOL_PREFIX" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">// PREFIX</button>
+          <button type="button" class="logo-style-btn" data-style="DOT_SPLIT" onclick="selLogoStyle(this)" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;padding:10px 16px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">NAME <span style="color:var(--lime)">·</span> BRAND</button>
+        </div>
+        <!-- ライブプレビュー -->
+        <div id="logo-preview" style="margin-top:12px;padding:14px 20px;background:var(--s2);border:1px solid var(--border);border-radius:4px;font-size:18px;letter-spacing:.15em;color:var(--text);font-family:'Space Mono',monospace;display:none;">
+        </div>
       </div>
       <div class="row2">
         <div class="field"><label>所在地（任意）</label><input type="text" id="location" placeholder="例：神奈川県平塚市"></div>
@@ -1236,7 +1257,7 @@ var S = {
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
-  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null,
+  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE',
   texts:{},
   generatedHTML:''
 };
@@ -1808,6 +1829,49 @@ function autoSelectColor(){
 }
 
 // ===== GENERATE =====
+function selLogoStyle(btn){
+  document.querySelectorAll('.logo-style-btn').forEach(function(b){
+    b.style.background='transparent';
+    b.style.borderColor='var(--border)';
+    b.style.color='var(--muted2)';
+  });
+  btn.style.background='rgba(0,255,170,.1)';
+  btn.style.borderColor='var(--lime)';
+  btn.style.color='var(--lime)';
+  S.logoStyle = btn.dataset.style;
+  updateLogoPreview();
+}
+
+function updateLogoPreview(){
+  var name = document.getElementById('site-name').value.trim();
+  var preview = document.getElementById('logo-preview');
+  if(!name){ preview.style.display='none'; return; }
+  preview.style.display='block';
+  var style = S.logoStyle || 'AI_CHOICE';
+  var html = '';
+  if(style === 'PLAIN'){
+    html = name.toUpperCase();
+  } else if(style === 'ACCENT_FIRST'){
+    html = '<span style="color:var(--lime)">'+name[0].toUpperCase()+'</span>'+name.slice(1).toUpperCase();
+  } else if(style === 'ACCENT_LAST'){
+    var u = name.toUpperCase();
+    html = u.slice(0,-1)+'<span style="color:var(--lime)">'+u.slice(-1)+'</span>';
+  } else if(style === 'ITALIC_MIX'){
+    var words = name.split(' ');
+    html = words.map(function(w,i){ return i%2===1 ? '<em style="font-style:italic;color:var(--lime)">'+w+'</em>' : w.toUpperCase(); }).join(' ');
+  } else if(style === 'SPACED'){
+    html = name.toUpperCase().split('').join(' ');
+  } else if(style === 'SYMBOL_PREFIX'){
+    html = '<span style="color:var(--lime);font-size:0.8em">// </span>'+name.toUpperCase();
+  } else if(style === 'DOT_SPLIT'){
+    var parts = name.split(/\s+/);
+    html = parts.join(' <span style="color:var(--lime)">·</span> ').toUpperCase();
+  } else {
+    html = '<span style="color:var(--muted2);font-size:11px;letter-spacing:.1em">AI がブランドに最適なスタイルを自動選択します</span>';
+  }
+  preview.innerHTML = html;
+}
+
 function checkRefUrl(){
   var val = document.getElementById('ref-url-input').value.trim();
   var btn = document.getElementById('ref-analyze-btn');
@@ -1986,7 +2050,7 @@ function generateSite(){
     }
   }
 
-  var prompt = '# MISSION\n'    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '    +'Every detail matters. The result must look like a $50,000 agency built it.\n\n'    +'# SITE INFO\n'    +'- Name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one based on industry]')+'\n'    +'- Location: '+(S.location||'Japan')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n\n'    +'# CONTENT\n'    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'    +'- Pricing: '+(S.texts.price||'none')+'\n'    +'- Hours: '+(S.texts.hours||'none')+'\n'    +'- Phone: '+(S.texts.tel||'none')+'\n'    +'- Email: '+(S.texts.email||'none')+'\n'    +'- LINE: '+(S.texts.line||'none')+'\n'    +'- Instagram: '+(S.texts.instagram||'none')+'\n'    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'    +'# DESIGN SYSTEM\n'    +'- Layout: '+S.layout+' → '+layoutInstruction+'\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +pageColorInstructions+'\n'    +'# SECTIONS\n'    +selectedSectionGuides+'\n\n'    +imgInstructions+'\n\n'    +refDNAInstruction    +'# MANDATORY TECHNICAL REQUIREMENTS\n'    +'1. Single HTML file — all CSS and JS inline\n'    +'2. Google Fonts import\n'    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'    +'5. IntersectionObserver for ALL section entrance animations\n'    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'    +'7. CSS custom properties: --color-bg, --color-text, --color-accent, --font-heading, --font-body\n'    +'8. Hover microinteractions on every interactive element\n'    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'    +'10. SNS URLs → SVG icon buttons in footer\n'    +'11. No images? Use intentional CSS gradients or SVG geometric art — not placeholders\n'    +'12. Page load fade-in animation\n'    +'13. Footer: site name, copyright, nav links\n\n'    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'    +'- Body line-height: 1.8–2.0\n'    +'- Heading letter-spacing: 0.05em–0.15em\n'    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'    +'- Harmonious color palette — no random colors\n'    +'- Clear visual hierarchy in every section\n'    +'- Mobile tap targets ≥ 44px\n'    +'- Animations: subtle, purposeful, not distracting (duration 0.4s–0.8s, ease-out)\n'    +'- Japanese text: use Noto Serif JP or Zen Kaku Gothic for headings if vibe is 和風/ラグジュアリー/エレガント\n\n'    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
+  var prompt = '# MISSION\n'    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '    +'Every detail matters. The result must look like a $50,000 agency built it.\n\n'    +'# SITE INFO\n'    +'- Name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one based on industry]')+'\n'    +'- Location: '+(S.location||'Japan')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n\n'    +'# CONTENT\n'    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'    +'- Pricing: '+(S.texts.price||'none')+'\n'    +'- Hours: '+(S.texts.hours||'none')+'\n'    +'- Phone: '+(S.texts.tel||'none')+'\n'    +'- Email: '+(S.texts.email||'none')+'\n'    +'- LINE: '+(S.texts.line||'none')+'\n'    +'- Instagram: '+(S.texts.instagram||'none')+'\n'    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'    +'# DESIGN SYSTEM\n'    +'- Layout: '+S.layout+' → '+layoutInstruction+'\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +'- Logo/brand name style: '+(function(){var m={AI_CHOICE:'AI choice — pick the most distinctive treatment for this brand',PLAIN:'Plain uppercase',ACCENT_FIRST:'First letter in accent color',ACCENT_LAST:'Last letter in accent color',ITALIC_MIX:'Mix italic and upright',SPACED:'Wide letter-spacing 0.4em+',SYMBOL_PREFIX:'Prefix with // in accent color',DOT_SPLIT:'Words separated by · dot in accent color'};return m[S.logoStyle]||'AI choice';})()+'\n'    +pageColorInstructions+'\n'    +'# SECTIONS\n'    +selectedSectionGuides+'\n\n'    +imgInstructions+'\n\n'    +refDNAInstruction    +'# MANDATORY TECHNICAL REQUIREMENTS\n'    +'1. Single HTML file — all CSS and JS inline\n'    +'2. Google Fonts import\n'    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'    +'5. IntersectionObserver for ALL section entrance animations\n'    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'    +'7. CSS custom properties: --color-bg, --color-text, --color-accent, --font-heading, --font-body\n'    +'8. Hover microinteractions on every interactive element\n'    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'    +'10. SNS URLs → SVG icon buttons in footer\n'    +'11. No images? Use intentional CSS gradients or SVG geometric art — not placeholders\n'    +'12. Page load fade-in animation\n'    +'13. Footer: site name, copyright, nav links\n\n'    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'    +'- Body line-height: 1.8–2.0\n'    +'- Heading letter-spacing: 0.05em–0.15em\n'    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'    +'- Harmonious color palette — no random colors\n'    +'- Clear visual hierarchy in every section\n'    +'- Mobile tap targets ≥ 44px\n'    +'- Animations: subtle, purposeful, not distracting (duration 0.4s–0.8s, ease-out)\n'    +'- Japanese text: use Noto Serif JP or Zen Kaku Gothic for headings if vibe is 和風/ラグジュアリー/エレガント\n\n'    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
