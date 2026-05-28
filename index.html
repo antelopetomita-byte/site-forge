@@ -18,7 +18,7 @@
 <meta property="og:type" content="website">
 
 <!-- アイコン（SVGをBase64でインライン） -->
-<link rel="apple-touch-icon" href="IMG_7183.png">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzA0MDYwYSIgcng9IjgwIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDBmZmFhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMzhiOGZmIi8+PC9saW5lYXJHcmFkaWVudD48ZmlsdGVyIGlkPSJnbCI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iOCIgcmVzdWx0PSJibHVyIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJibHVyIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48cmVjdCB4PSI0MCIgeT0iNDAiIHdpZHRoPSI0MzIiIGhlaWdodD0iNDMyIiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjZykiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zIiByeD0iNDAiLz48dGV4dCB4PSIyNTYiIHk9IjI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIwIiBmb250LXdlaWdodD0iOTAwIiBmb250LXN0eWxlPSJpdGFsaWMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9InVybCgjZykiIGZpbHRlcj0idXJsKCNnbCkiPk48L3RleHQ+PHRleHQgeD0iMjU2IiB5PSIzODAiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0IiBmb250LXdlaWdodD0iOTAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjciIGxldHRlci1zcGFjaW5nPSIyIj5PVkVSRkxPVzwvdGV4dD48cmVjdCB4PSI4MCIgeT0iNDIwIiB3aWR0aD0iMzUyIiBoZWlnaHQ9IjMiIGZpbGw9InVybCgjZykiIG9wYWNpdHk9IjAuNiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjQ1MCIgcj0iOCIgZmlsbD0iIzAwZmZhYSIgZmlsdGVyPSJ1cmwoI2dsKSIvPjwvc3ZnPg==">
 
 <!-- manifest -->
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmV1cmFsIE92ZXJmbG93IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0F3SURFM01UWWlQand2Yzlkc0kzZHVhWFE5SWpFd01DSWlJSHNpWW5WcGJIUTlJakl3SWlCd2FXNTBhVzVuUFNJeElpOCtQQzl6ZG1jKyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA0MDYwYSIsInRoZW1lX2NvbG9yIjoiIzAwZmZhYSIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQifQ==">
@@ -842,7 +842,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
           <div class="ai-img-title">// POLLINATIONS AI IMAGE GENERATOR</div>
           <div class="ai-img-row">
             <input type="text" class="ai-img-input" id="ai-img-prompt" placeholder="例：カフェの外観、木漏れ日、温かみのある雰囲気">
-            <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImage()">生成する</button>
+            <select id="ai-gen-count" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;">
+              <option value="1">1枚</option>
+              <option value="2" selected>2枚</option>
+              <option value="3">3枚</option>
+              <option value="4">4枚</option>
+            </select>
+            <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImages()">生成する</button>
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
             <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="setQuickPrompt('ヒーロービジュアル、明るく開放的な空間')">ヒーロー画像</button>
@@ -1601,28 +1607,57 @@ function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;
 function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
+  return new Promise(function(resolve){
+    var seed = Math.floor(Math.random()*999999);
+    var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
+    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
+    var results = document.getElementById('ai-img-results');
+    var wrapper = document.createElement('div');
+    wrapper.className='ai-img-result';
+    wrapper.style.cssText='position:relative;display:inline-block;';
+    var placeholder = document.createElement('div');
+    placeholder.style.cssText='width:160px;height:120px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;';
+    placeholder.textContent='生成中...';
+    wrapper.appendChild(placeholder);
+    results.prepend(wrapper);
+    var img = document.createElement('img');
+    img.style.cssText='width:160px;height:120px;object-fit:cover;border-radius:6px;cursor:pointer;display:none;';
+    img.src=url;
+    img.onload=function(){
+      placeholder.remove();
+      img.style.display='block';
+      S.aiImages.push(url);
+      img.onclick=function(){
+        img.classList.toggle('selected');
+        img.style.outline=img.classList.contains('selected')?'3px solid var(--accent)':'none';
+        if(img.classList.contains('selected')) S.selectedImages.push(url);
+        else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
+      };
+      resolve();
+    };
+    img.onerror=function(){ placeholder.textContent='失敗'; resolve(); };
+    wrapper.appendChild(img);
+  });
+}
+
+function generateImages(){
+  var prompt = document.getElementById('ai-img-prompt').value.trim();
+  if(!prompt) return;
+  var count = parseInt(document.getElementById('ai-gen-count').value)||2;
   var btn = document.getElementById('ai-gen-btn');
   var loading = document.getElementById('ai-gen-loading');
   btn.disabled=true; loading.classList.add('show');
-  var seed = Math.floor(Math.random()*999999);
-  var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
-  var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
-  var results = document.getElementById('ai-img-results');
-  var img = document.createElement('img');
-  img.className='ai-img-result';
-  img.src=url;
-  img.onload=function(){
-    loading.classList.remove('show');
-    btn.disabled=false;
-    S.aiImages.push(url);
-    img.onclick=function(){
-      img.classList.toggle('selected');
-      if(img.classList.contains('selected')) S.selectedImages.push(url);
-      else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
-    };
-  };
-  img.onerror=function(){loading.classList.remove('show');btn.disabled=false;alert('生成に失敗しました。再試行してください。');};
-  results.prepend(img);
+  var chain = Promise.resolve();
+  for(var i=0;i<count;i++){
+    (function(idx){
+      chain = chain.then(function(){
+        return generateImage();
+      }).then(function(){
+        return new Promise(function(r){ setTimeout(r, idx<count-1?16000:0); });
+      });
+    })(i);
+  }
+  chain.finally(function(){ loading.classList.remove('show'); btn.disabled=false; });
 }
 
 // ===== TEXT TABS =====
