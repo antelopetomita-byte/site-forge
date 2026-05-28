@@ -1039,28 +1039,44 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     </div>
   </div>
   
-<!-- 部分修正UI -->
+<!-- 部分修正UI v2 -->
 <div id="edit-section" style="display:none;padding:24px;background:var(--s1);border:1px solid var(--border);margin-top:20px;">
-  <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:16px;">// 部分修正</div>
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="edit-section-btn" onclick="editSection('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🖼 ヒーロー</button>
-      <button class="edit-section-btn" onclick="editSection('about',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">👤 About</button>
-      <button class="edit-section-btn" onclick="editSection('service',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🛠 サービス</button>
-      <button class="edit-section-btn" onclick="editSection('price',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">💰 料金</button>
-      <button class="edit-section-btn" onclick="editSection('color',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🎨 カラー変更</button>
-      <button class="edit-section-btn" onclick="editSection('font',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">🔤 フォント変更</button>
-      <button class="edit-section-btn" onclick="editSection('all',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.1em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;">✦ 全体を修正</button>
+  <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:4px;">// REFINE</div>
+  <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);margin-bottom:16px;">セクションを選んでワンクリック再生成 — または指示を入力</div>
+
+  <!-- クイック再生成ボタン -->
+  <div style="margin-bottom:16px;">
+    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;margin-bottom:8px;">QUICK REGEN</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="regen-btns">
+      <button class="regen-quick-btn" onclick="quickRegen('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ ヒーロー</button>
+      <button class="regen-quick-btn" onclick="quickRegen('about',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ About</button>
+      <button class="regen-quick-btn" onclick="quickRegen('service',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ サービス</button>
+      <button class="regen-quick-btn" onclick="quickRegen('price',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ 料金</button>
+      <button class="regen-quick-btn" onclick="quickRegen('cta',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ 予約CTA</button>
+      <button class="regen-quick-btn" onclick="quickRegen('footer',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ フッター</button>
+    </div>
+  </div>
+
+  <!-- カスタム指示エリア -->
+  <div style="border-top:1px solid var(--border);padding-top:16px;">
+    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;margin-bottom:8px;">CUSTOM INSTRUCTION</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="edit-section-btn" onclick="editSection('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">ヒーロー</button>
+      <button class="edit-section-btn" onclick="editSection('about',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">About</button>
+      <button class="edit-section-btn" onclick="editSection('service',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">サービス</button>
+      <button class="edit-section-btn" onclick="editSection('color',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">カラー</button>
+      <button class="edit-section-btn" onclick="editSection('font',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">フォント</button>
+      <button class="edit-section-btn" onclick="editSection('all',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:var(--lime);border:1px solid var(--lime);color:#000;cursor:pointer;transition:all .2s;border-radius:4px;">✦ 全体</button>
     </div>
     <div id="edit-input-area" style="display:none;">
-      <textarea id="edit-instruction" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:12px;font-family:Noto Sans JP,sans-serif;font-size:13px;min-height:80px;outline:none;resize:vertical;" placeholder="修正の指示を入力（例：もっとシンプルに、テキストを短く、青系の色に変えて）"></textarea>
+      <textarea id="edit-instruction" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:12px;font-family:Noto Sans JP,sans-serif;font-size:13px;min-height:70px;outline:none;resize:vertical;border-radius:4px;" placeholder="指示を入力（例：もっとラグジュアリーに、テキストを短く、アニメーションを追加して）"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="applyEdit()" style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:.1em;padding:10px 24px;background:var(--lime);color:#000;border:none;cursor:pointer;">修正を適用</button>
-        <button onclick="document.getElementById('edit-section').style.display='none';" style="font-family:Bebas Neue,sans-serif;font-size:16px;letter-spacing:.1em;padding:10px 24px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;">キャンセル</button>
+        <button onclick="applyEdit()" style="font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:.1em;padding:10px 24px;background:var(--lime);color:#000;border:none;cursor:pointer;border-radius:4px;">適用</button>
+        <button onclick="document.getElementById('edit-input-area').style.display='none';" style="font-family:Space Mono,monospace;font-size:11px;padding:10px 18px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;">×</button>
       </div>
     </div>
-    <div id="edit-loading" style="display:none;font-family:Space Mono,monospace;font-size:11px;color:var(--lime);">AIが修正中...</div>
   </div>
+  <div id="edit-loading" style="display:none;font-family:Space Mono,monospace;font-size:11px;color:var(--lime);margin-top:12px;display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--lime);animation:pulse 1s infinite;"></div>AI再生成中...</div>
 </div>
 <div class="code-view" id="code-view"><pre id="code-pre"></pre></div>
 </section>
@@ -1989,22 +2005,64 @@ function editSection(target, btn){
   if(btn){btn.style.borderColor='var(--lime)';btn.style.color='var(--lime)';}
 }
 
+function quickRegen(section, btn) {
+  if(!S.generatedHTML) return;
+  var labels = {hero:'ヒーローセクション',about:'About・コンセプトセクション',service:'サービス・特徴セクション',price:'料金セクション',cta:'予約・CTAセクション',footer:'フッター'};
+  var sectionGuides = {
+    hero:'Full-viewport hero with large animated heading (staggered word reveal), subtitle, CTA button with hover effects, scroll indicator. Make it visually stunning and unique.',
+    about:'Two-column concept section: decorative element left, compelling story right. IntersectionObserver entrance animation. Warm, human tone.',
+    service:'Feature cards in CSS Grid with SVG icons, numbered labels (01/02/03), hover lift effect. Staggered entrance. Make each card feel premium.',
+    price:'Pricing cards with clear hierarchy. Recommended plan highlighted with accent color. Clean, trustworthy layout.',
+    cta:'High-contrast reservation/contact section. Large tappable phone number. LINE button + QR if applicable. Bold CTA that converts.',
+    footer:'Elegant footer with site name, nav links, SNS icons, copyright. Matches overall aesthetic perfectly.'
+  };
+  var loadingEl = document.getElementById('edit-loading');
+  var regenBtns = document.querySelectorAll('.regen-quick-btn');
+  regenBtns.forEach(function(b){ b.disabled=true; b.style.opacity='0.4'; });
+  btn.style.borderColor='var(--lime)'; btn.style.color='var(--lime)'; btn.textContent='生成中...';
+  loadingEl.style.display='flex';
+
+  var pal = palData[S.globalPalette]||palData['mono-light'];
+  var prompt = '# TASK: Regenerate the '+labels[section]+' of this website.\n\n'    +'# SECTION SPEC\n'    +sectionGuides[section]+'\n\n'    +'# DESIGN CONSTRAINTS (must match existing site)\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+'\n'    +'- Site name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+'\n\n'    +'# INSTRUCTIONS\n'    +'Replace ONLY the '+labels[section]+' in the HTML below. Keep everything else identical.\n'    +'The new section must be significantly better — more premium, more animated, more unique.\n'    +'Output the complete HTML file. Pure HTML only. No markdown. Start with <!DOCTYPE html>.\n\n'    +'# CURRENT HTML\n'    +S.generatedHTML.substring(0, 14000);
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    loadingEl.style.display='none';
+    regenBtns.forEach(function(b){ b.disabled=false; b.style.opacity='1'; });
+    btn.style.borderColor='var(--border)'; btn.style.color='var(--muted2)';
+    btn.textContent='↺ '+(labels[section].replace('セクション',''));
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = html;
+    document.getElementById('code-pre').textContent = html;
+  }).catch(function(err){
+    loadingEl.style.display='none';
+    regenBtns.forEach(function(b){ b.disabled=false; b.style.opacity='1'; });
+    btn.textContent='↺ エラー';
+    alert('再生成エラー: '+err.message);
+  });
+}
+
 function applyEdit(){
   var instruction = document.getElementById('edit-instruction').value.trim();
   if(!instruction || !S.generatedHTML) return;
   var loading = document.getElementById('edit-loading');
-  loading.style.display='block';
+  loading.style.display='flex';
   document.getElementById('edit-input-area').style.display='none';
   var target = window._editTarget || 'all';
   var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
-  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'
-    +'修正指示：'+instruction+'\n\n'
-    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'
-    +'現在のHTML（先頭12000文字）：\n'+S.generatedHTML.substring(0, 12000);
+  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'    +'修正指示：'+instruction+'\n\n'    +'品質基準：Awwwardsレベルを維持。修正箇所以外は変更しない。\n'    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'    +'現在のHTML（先頭13000文字）：\n'+S.generatedHTML.substring(0, 13000);
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:16000,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:16000,messages:[{role:'user',content:prompt}]})
   }).then(function(r){return r.json();})
   .then(function(data){
     loading.style.display='none';
@@ -2024,7 +2082,7 @@ function applyEdit(){
   });
 }
 
-// ===== SAVE & RESTORE =====
+// ===== SAVE & RESTORE =====// ===== SAVE & RESTORE =====
 function saveProgress(){
   try {
     var data = {
