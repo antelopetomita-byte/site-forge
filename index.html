@@ -842,13 +842,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
           <div class="ai-img-title">// POLLINATIONS AI IMAGE GENERATOR</div>
           <div class="ai-img-row">
             <input type="text" class="ai-img-input" id="ai-img-prompt" placeholder="例：カフェの外観、木漏れ日、温かみのある雰囲気">
-            <select id="ai-gen-count" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px;">
-              <option value="1">1枚</option>
-              <option value="2" selected>2枚</option>
-              <option value="3">3枚</option>
-              <option value="4">4枚</option>
-            </select>
-            <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImages()">生成する</button>
+            <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImage()">生成する</button>
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
             <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="setQuickPrompt('ヒーロービジュアル、明るく開放的な空間')">ヒーロー画像</button>
@@ -1607,57 +1601,28 @@ function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;
 function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
-  return new Promise(function(resolve){
-    var seed = Math.floor(Math.random()*999999);
-    var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
-    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
-    var results = document.getElementById('ai-img-results');
-    var wrapper = document.createElement('div');
-    wrapper.className='ai-img-result';
-    wrapper.style.cssText='position:relative;display:inline-block;';
-    var placeholder = document.createElement('div');
-    placeholder.style.cssText='width:160px;height:120px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;';
-    placeholder.textContent='生成中...';
-    wrapper.appendChild(placeholder);
-    results.prepend(wrapper);
-    var img = document.createElement('img');
-    img.style.cssText='width:160px;height:120px;object-fit:cover;border-radius:6px;cursor:pointer;display:none;';
-    img.src=url;
-    img.onload=function(){
-      placeholder.remove();
-      img.style.display='block';
-      S.aiImages.push(url);
-      img.onclick=function(){
-        img.classList.toggle('selected');
-        img.style.outline=img.classList.contains('selected')?'3px solid var(--accent)':'none';
-        if(img.classList.contains('selected')) S.selectedImages.push(url);
-        else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
-      };
-      resolve();
-    };
-    img.onerror=function(){ placeholder.textContent='失敗'; resolve(); };
-    wrapper.appendChild(img);
-  });
-}
-
-function generateImages(){
-  var prompt = document.getElementById('ai-img-prompt').value.trim();
-  if(!prompt) return;
-  var count = parseInt(document.getElementById('ai-gen-count').value)||2;
   var btn = document.getElementById('ai-gen-btn');
   var loading = document.getElementById('ai-gen-loading');
   btn.disabled=true; loading.classList.add('show');
-  var chain = Promise.resolve();
-  for(var i=0;i<count;i++){
-    (function(idx){
-      chain = chain.then(function(){
-        return generateImage();
-      }).then(function(){
-        return new Promise(function(r){ setTimeout(r, idx<count-1?16000:0); });
-      });
-    })(i);
-  }
-  chain.finally(function(){ loading.classList.remove('show'); btn.disabled=false; });
+  var seed = Math.floor(Math.random()*999999);
+  var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
+  var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
+  var results = document.getElementById('ai-img-results');
+  var img = document.createElement('img');
+  img.className='ai-img-result';
+  img.src=url;
+  img.onload=function(){
+    loading.classList.remove('show');
+    btn.disabled=false;
+    S.aiImages.push(url);
+    img.onclick=function(){
+      img.classList.toggle('selected');
+      if(img.classList.contains('selected')) S.selectedImages.push(url);
+      else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
+    };
+  };
+  img.onerror=function(){loading.classList.remove('show');btn.disabled=false;alert('生成に失敗しました。再試行してください。');};
+  results.prepend(img);
 }
 
 // ===== TEXT TABS =====
@@ -1878,46 +1843,39 @@ function generateSite(){
     imgInstructions = '画像はCSSグラデーション・SVGパターンで美しく代替';
   }
 
-  var prompt = 'あなたはトップクラスのWebデザイナー兼エンジニアです。以下の詳細仕様で完全に動作するシングルページHTMLサイトを生成してください。\n\n'
-    +'【基本情報】\n'
-    +'- サイト名：'+S.siteName+'\n'
-    +'- 業種：'+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'
-    +'- キャッチコピー：'+(S.catchcopy||'（業種に合わせてAIが考案）')+'\n'
-    +'- 所在地：'+(S.location||'なし')+'\n\n'
-    +'【コンテンツ】\n'
-    +'- メインメッセージ：'+(S.texts.top||'AIが生成')+'\n'
-    +'- 紹介文：'+(S.texts.about||'AIが生成')+'\n'
-    +'- サービス：'+(S.texts.service||'AIが生成')+'\n'
-    +'- 料金：'+(S.texts.price||'なし')+'\n'
-    +'- 営業時間：'+(S.texts.hours||'なし')+'\n'
-    +'- 電話：'+(S.texts.tel||'なし')+'\n'
-    +'- メール：'+(S.texts.email||'なし')+'\n'
-    +'- LINE URL：'+(S.texts.line||'なし')+'\n'
-    +'- Instagram：'+(S.texts.instagram||'なし')+'\n'
-    +'- FAQ：'+(S.texts.faq||'なし')+'\n\n'
-    +'【デザイン仕様】\n'
-    +'- 雰囲気：'+(S.vibe||'モダン・プロフェッショナル')+'\n'
-    +'- レイアウト：'+(S.layout||'FULL SCREEN HERO')+'\n'
-    +'- レイアウト実装指示：'+layoutInstruction+'\n'
-    +'- 背景色：'+(S.customBg||pal.bg)+'\n'
-    +'- テキスト色：'+pal.text+'\n'
-    +'- アクセント：'+(S.customAccent||pal.accent)+'\n'
-    +'- 見出しフォント：'+(S.headingFont||'Noto Sans JP')+'\n'
-    +'- 本文フォント：'+(S.bodyFont||'Noto Sans JP')+'\n'
-    +pageColorInstructions+'\n'
-    +'【ページ構成】\n'+S.pages.join('\n')+'\n\n'
-    +imgInstructions+'\n\n'
-    +'【技術要件】\n'
-    +'- 完全なHTML/CSS/JSを1ファイル\n'
-    +'- Google Fontsインポート\n'
-    +'- 完全レスポンシブ\n'
-    +'- スティッキーナビゲーション\n'
-    +'- スクロールアニメーション\n'
-    +'- ハンバーガーメニュー（モバイル）\n'
-    +'- LINEのURLがある場合はQRコード（api.qrserver.com使用）とLINE友達追加ボタンを設置\n'
-    +'- SNS URLがある場合はアイコンボタンをフッターに設置\n'
-    +'- 画像なしの場合はCSSグラデーション・SVGパターンで代替\n\n'
-    +'HTMLのみを出力。コードブロック記法・説明文不要。<!DOCTYPE html>から開始。';
+  var vibeToStyle = {
+    'ナチュラル': 'organic shapes, warm textures, soft gradients, nature-inspired color flow',
+    'ラグジュアリー': 'ultra-thin serif typography, generous whitespace, gold/silver accents, cinematic proportions',
+    'ミニマル': 'radical whitespace, single accent color, micro-typography, invisible grid',
+    'ポップ': 'bold color blocks, playful asymmetry, oversized elements, energetic motion',
+    '和風': 'Japanese ma (negative space), washi texture overlays, vertical rhythm, subtle ink-brush SVG',
+    'ストリート': 'raw grid breaks, grunge overlays, stencil type, high-contrast brutalism',
+    'テック': 'dark mode, neon glow effects, monospace accents, data-visualization aesthetic',
+    'エレガント': 'editorial asymmetry, refined palette, thin dividers, slow reveal animations',
+    'コーポレート': 'trustworthy blues, clean grid, icon system, professional photography layout',
+    'ボールド': 'full-bleed color, huge type scale, kinetic feel, strong contrast',
+  };
+  var currentVibeStyle = vibeToStyle[S.vibe] || 'modern premium feel, confident layout, refined details';
+
+  var sectionTemplates = {
+    'ヒーロー': 'Full-viewport hero. Large animated heading with staggered word reveal (CSS @keyframes, 0.1s delay per word). Subtitle fades in after 0.6s. CTA button with hover: scale(1.04) + box-shadow pulse. Background: layered gradient or uploaded image with overlay. Animated scroll indicator.',
+    'About・コンセプト': 'Two-column layout: left = large decorative number/icon + heading; right = body text. Mobile: stacks. Entry animation: slide-in from opposite sides via IntersectionObserver.',
+    '特徴・強み': 'CSS Grid 3-4 cards. Each: inline SVG icon, bold 01/02/03 label, heading, body. Hover: translateY(-6px) + shadow. Staggered entrance.',
+    'メニュー・料金': 'Pricing cards. Recommended plan: accent border + scale(1.03). Name, large price, description, CTA button per card.',
+    'ギャラリー': 'Asymmetric CSS Grid or masonry. Image overlay on hover (title + icon). Lightbox on click.',
+    'お客様の声': 'Horizontal scroll carousel mobile / 2-col grid desktop. Quote SVG mark, body, author + tag. Card shadow.',
+    'アクセス': 'Split: info table left (address, hours, parking with icons), Google Maps iframe right.',
+    '予約・お問い合わせ': 'High-contrast CTA section. Large tappable phone. LINE green button + QR code. Email link.',
+    'FAQ': 'Accordion. +/- toggle icon. max-height CSS transition. Subtle dividers.',
+    'スタッフ紹介': 'Staff cards: circular photo, name, title, bio. Photo zoom on hover.',
+  };
+
+  var selectedSectionGuides = S.pages.map(function(p){
+    var key = Object.keys(sectionTemplates).find(function(k){ return p.indexOf(k) >= 0; });
+    return key ? '【' + key + '】\n' + sectionTemplates[key] : p;
+  }).join('\n\n');
+
+  var prompt = '# MISSION\n'    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '    +'Every detail matters. The result must look like a $50,000 agency built it.\n\n'    +'# SITE INFO\n'    +'- Name: '+S.siteName+'\n'    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one based on industry]')+'\n'    +'- Location: '+(S.location||'Japan')+'\n'    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n\n'    +'# CONTENT\n'    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'    +'- Pricing: '+(S.texts.price||'none')+'\n'    +'- Hours: '+(S.texts.hours||'none')+'\n'    +'- Phone: '+(S.texts.tel||'none')+'\n'    +'- Email: '+(S.texts.email||'none')+'\n'    +'- LINE: '+(S.texts.line||'none')+'\n'    +'- Instagram: '+(S.texts.instagram||'none')+'\n'    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'    +'# DESIGN SYSTEM\n'    +'- Layout: '+S.layout+' → '+layoutInstruction+'\n'    +'- Background: '+(S.customBg||pal.bg)+'\n'    +'- Text: '+pal.text+'\n'    +'- Accent: '+(S.customAccent||pal.accent)+'\n'    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'    +pageColorInstructions+'\n'    +'# SECTIONS\n'    +selectedSectionGuides+'\n\n'    +imgInstructions+'\n\n'    +'# MANDATORY TECHNICAL REQUIREMENTS\n'    +'1. Single HTML file — all CSS and JS inline\n'    +'2. Google Fonts import\n'    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'    +'5. IntersectionObserver for ALL section entrance animations\n'    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'    +'7. CSS custom properties: --color-bg, --color-text, --color-accent, --font-heading, --font-body\n'    +'8. Hover microinteractions on every interactive element\n'    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'    +'10. SNS URLs → SVG icon buttons in footer\n'    +'11. No images? Use intentional CSS gradients or SVG geometric art — not placeholders\n'    +'12. Page load fade-in animation\n'    +'13. Footer: site name, copyright, nav links\n\n'    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'    +'- Body line-height: 1.8–2.0\n'    +'- Heading letter-spacing: 0.05em–0.15em\n'    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'    +'- Harmonious color palette — no random colors\n'    +'- Clear visual hierarchy in every section\n'    +'- Mobile tap targets ≥ 44px\n'    +'- Animations: subtle, purposeful, not distracting (duration 0.4s–0.8s, ease-out)\n'    +'- Japanese text: use Noto Serif JP or Zen Kaku Gothic for headings if vibe is 和風/ラグジュアリー/エレガント\n\n'    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
     method:'POST',
