@@ -1577,46 +1577,63 @@ var INDUSTRY_PROMPTS = {
 function generateSuggestedImages(){
   var btn = document.getElementById('suggest-btn');
   var container = document.getElementById('suggested-images');
-  var industry = S.industryCat||'その他・一般';
-  var prompts = INDUSTRY_PROMPTS[industry] || INDUSTRY_PROMPTS['その他・一般'];
-  btn.disabled=true;
-  btn.innerHTML='読み込み中...';
-  container.innerHTML='';
+  var industry = S.industryCat || 'その他・一般';
+  var vibe = S.vibe || '';
+  var siteName = S.siteName || '';
 
-  // Pexels APIの代わりにPicsumを使用（確実に動く）
-  var baseSeeds = {
-    '飲食・食品':    [431,312,225,326,429],
-    '美容・健康':    [403,416,453,377,485],
-    '製造業・工業':  [211,375,188,267,343],
-    '建設・不動産':  [164,177,195,281,395],
-    'クリエイティブ':[180,193,206,219,232],
-    'IT・テクノロジー':[0,1,2,3,4],
-    '小売・EC':      [349,362,375,388,401],
-    '教育・学習':    [424,437,450,463,476],
-    '士業・専門職':  [499,512,525,538,551],
-    '医療・介護':    [574,587,600,613,626],
-    '物流・運輸':    [649,662,675,688,701],
-    'その他・一般':  [724,737,750,763,776],
+  // 業種ごとの具体的なプロンプト
+  var industryPrompts = {
+    '飲食・食品':    ['cozy cafe interior warm lighting','delicious food plating restaurant','bakery fresh bread pastry shop','coffee latte art barista','japanese restaurant interior elegant'],
+    '美容・健康':    ['modern hair salon interior','beauty spa relaxing atmosphere','nail salon elegant interior','skincare beauty products flatlay','fitness gym modern equipment'],
+    '製造業・工業':  ['modern factory interior machinery','industrial manufacturing plant','precision engineering workshop','quality control inspection process','corporate factory aerial view'],
+    '建設・不動産':  ['modern architecture building exterior','luxury apartment interior design','construction site professional','real estate modern house','minimalist interior design living room'],
+    'クリエイティブ':['creative studio workspace aesthetic','graphic design portfolio work','photography studio professional setup','art gallery modern exhibition','creative agency office interior'],
+    'IT・テクノロジー':['modern tech office startup','coding developer workspace setup','technology digital innovation','server room data center','clean minimal desk setup computer'],
+    '小売・EC':      ['boutique retail store interior','fashion clothing store display','lifestyle product photography','luxury shopping bag brand','minimalist product flatlay'],
+    '教育・学習':    ['modern classroom bright learning','library books study space','online learning education desk','tutoring session teacher student','school education bright interior'],
+    '士業・専門職':  ['professional law office interior','corporate business meeting room','consultant office modern','professional workspace clean desk','business professional portrait'],
+    '医療・介護':    ['modern clinic hospital clean interior','doctor consultation professional','pharmacy medical clean bright','healthcare professional caring','medical equipment modern'],
+    '物流・運輸':    ['modern warehouse logistics interior','delivery service professional','cargo shipping container port','supply chain management aerial','truck fleet professional'],
+    'その他・一般':  ['modern professional office interior','business team collaboration','clean bright workspace','professional service environment','corporate building exterior'],
   };
-  var seeds = baseSeeds[industry] || baseSeeds['その他・一般'];
-  var offset = Math.floor(Math.random()*800);
 
-  seeds.forEach(function(seed, index){
-    var id = ((seed + offset) % 1000) + 1;
-    var url = 'https://picsum.photos/seed/'+id+'/400/300';
+  var prompts = industryPrompts[industry] || industryPrompts['その他・一般'];
+  // 業種名とサイト名をプロンプトに追加
+  var vibeStyle = vibe ? ', '+vibe+' style' : ', professional high quality';
+  var enhancedPrompts = prompts.map(function(p){
+    return p + vibeStyle + ', commercial photography, 8k, sharp';
+  });
+
+  btn.disabled = true;
+  btn.innerHTML = '生成中...';
+  container.innerHTML = '';
+
+  // 5枚を順番にPollinations AIで生成（16秒間隔）
+  var generated = 0;
+  function genOne(index){
+    if(index >= 5){ return; }
+    var prompt = enhancedPrompts[index % enhancedPrompts.length];
+    var seed = Math.floor(Math.random() * 999999);
+    var url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=400&height=300&seed=' + seed + '&nologo=true';
 
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
 
-    var img = document.createElement('img');
-    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
-    img.src = url;
+    // プレースホルダー
+    var placeholder = document.createElement('div');
+    placeholder.style.cssText = 'width:120px;height:90px;background:var(--s2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;';
+    placeholder.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:8px;color:var(--muted2);text-align:center;">'+(index+1)+'<br>生成中</div>';
+    wrap.appendChild(placeholder);
+    container.appendChild(wrap);
 
+    var img = document.createElement('img');
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:none;';
+    img.src = url;
     img.onload = function(){
-      if(index === seeds.length-1){
-        btn.disabled=false;
-        btn.innerHTML='もう5枚提案する';
-      }
+      placeholder.remove();
+      img.style.display = 'block';
+      generated++;
+      if(generated >= 5){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
       img.onclick = function(){
         if(wrap.classList.contains('selected')){
           wrap.classList.remove('selected');
@@ -1631,47 +1648,86 @@ function generateSuggestedImages(){
         }
       };
     };
-
     img.onerror = function(){
-      wrap.style.display='none';
-      if(index === seeds.length-1){
-        btn.disabled=false;
-        btn.innerHTML='もう5枚提案する';
-      }
+      placeholder.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:8px;color:var(--muted2);">失敗</div>';
+      generated++;
+      if(generated >= 5){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
     };
-
     wrap.appendChild(img);
-    container.appendChild(wrap);
-  });
+
+    // 次の画像は17秒後（レート制限対策）
+    if(index < 4){
+      setTimeout(function(){ genOne(index+1); }, 17000);
+    }
+  }
+  genOne(0);
 }
 
-// ===== AI IMAGE GEN =====
+// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
 function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
+  return new Promise(function(resolve){
+    var seed = Math.floor(Math.random()*999999);
+    var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
+    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
+    var results = document.getElementById('ai-img-results');
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:inline-block;margin:4px;vertical-align:top;';
+    var placeholder = document.createElement('div');
+    placeholder.style.cssText = 'width:160px;height:120px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:Space Mono,monospace;font-size:9px;color:var(--muted2);';
+    placeholder.textContent = '生成中...';
+    wrap.appendChild(placeholder);
+    results.prepend(wrap);
+    var img = document.createElement('img');
+    img.style.cssText = 'width:160px;height:120px;object-fit:cover;border:1px solid var(--border);cursor:pointer;display:none;transition:all .2s;';
+    img.src = url;
+    img.onload = function(){
+      placeholder.remove();
+      img.style.display = 'block';
+      S.aiImages.push(url);
+      img.onclick = function(){
+        img.classList.toggle('selected');
+        img.style.outline = img.classList.contains('selected') ? '3px solid var(--lime)' : 'none';
+        if(img.classList.contains('selected')) S.selectedImages.push(url);
+        else S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
+      };
+      resolve();
+    };
+    img.onerror = function(){
+      placeholder.textContent = '失敗';
+      resolve();
+    };
+    wrap.appendChild(img);
+  });
+}
+
+function generateImages(){
+  var prompt = document.getElementById('ai-img-prompt').value.trim();
+  if(!prompt) return;
+  var count = parseInt(document.getElementById('ai-gen-count').value) || 1;
   var btn = document.getElementById('ai-gen-btn');
   var loading = document.getElementById('ai-gen-loading');
-  btn.disabled=true; loading.classList.add('show');
-  var seed = Math.floor(Math.random()*999999);
-  var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
-  var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
-  var results = document.getElementById('ai-img-results');
-  var img = document.createElement('img');
-  img.className='ai-img-result';
-  img.src=url;
-  img.onload=function(){
-    loading.classList.remove('show');
-    btn.disabled=false;
-    S.aiImages.push(url);
-    img.onclick=function(){
-      img.classList.toggle('selected');
-      if(img.classList.contains('selected')) S.selectedImages.push(url);
-      else S.selectedImages=S.selectedImages.filter(function(i){return i!==url;});
-    };
-  };
-  img.onerror=function(){loading.classList.remove('show');btn.disabled=false;alert('生成に失敗しました。再試行してください。');};
-  results.prepend(img);
+  btn.disabled = true;
+  loading.classList.add('show');
+
+  function genSequential(i){
+    if(i >= count){
+      loading.classList.remove('show');
+      btn.disabled = false;
+      return;
+    }
+    generateImage().then(function(){
+      if(i < count - 1){
+        setTimeout(function(){ genSequential(i+1); }, 17000);
+      } else {
+        loading.classList.remove('show');
+        btn.disabled = false;
+      }
+    });
+  }
+  genSequential(0);
 }
 
 // ===== TEXT TABS =====
