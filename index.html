@@ -1579,61 +1579,45 @@ function generateSuggestedImages(){
   var container = document.getElementById('suggested-images');
   var industry = S.industryCat || 'その他・一般';
   var vibe = S.vibe || '';
-  var siteName = S.siteName || '';
 
-  // 業種ごとの具体的なプロンプト
-  var industryPrompts = {
-    '飲食・食品':    ['cozy cafe interior warm lighting','delicious food plating restaurant','bakery fresh bread pastry shop','coffee latte art barista','japanese restaurant interior elegant'],
-    '美容・健康':    ['modern hair salon interior','beauty spa relaxing atmosphere','nail salon elegant interior','skincare beauty products flatlay','fitness gym modern equipment'],
-    '製造業・工業':  ['modern factory interior machinery','industrial manufacturing plant','precision engineering workshop','quality control inspection process','corporate factory aerial view'],
-    '建設・不動産':  ['modern architecture building exterior','luxury apartment interior design','construction site professional','real estate modern house','minimalist interior design living room'],
-    'クリエイティブ':['creative studio workspace aesthetic','graphic design portfolio work','photography studio professional setup','art gallery modern exhibition','creative agency office interior'],
-    'IT・テクノロジー':['modern tech office startup','coding developer workspace setup','technology digital innovation','server room data center','clean minimal desk setup computer'],
-    '小売・EC':      ['boutique retail store interior','fashion clothing store display','lifestyle product photography','luxury shopping bag brand','minimalist product flatlay'],
-    '教育・学習':    ['modern classroom bright learning','library books study space','online learning education desk','tutoring session teacher student','school education bright interior'],
-    '士業・専門職':  ['professional law office interior','corporate business meeting room','consultant office modern','professional workspace clean desk','business professional portrait'],
-    '医療・介護':    ['modern clinic hospital clean interior','doctor consultation professional','pharmacy medical clean bright','healthcare professional caring','medical equipment modern'],
-    '物流・運輸':    ['modern warehouse logistics interior','delivery service professional','cargo shipping container port','supply chain management aerial','truck fleet professional'],
-    'その他・一般':  ['modern professional office interior','business team collaboration','clean bright workspace','professional service environment','corporate building exterior'],
+  var industryKeywords = {
+    '飲食・食品':    ['cafe interior','restaurant food','bakery','coffee shop','japanese food'],
+    '美容・健康':    ['hair salon','beauty spa','nail salon','skincare','fitness gym'],
+    '製造業・工業':  ['factory','manufacturing','industrial','engineering','production'],
+    '建設・不動産':  ['architecture','interior design','construction','real estate','modern house'],
+    'クリエイティブ':['creative studio','art gallery','design workspace','photography','creative office'],
+    'IT・テクノロジー':['technology office','computer','startup','coding','modern workspace'],
+    '小売・EC':      ['retail store','fashion boutique','shopping','product photography','lifestyle'],
+    '教育・学習':    ['classroom','library','education','studying','school'],
+    '士業・専門職':  ['law office','business meeting','professional','consulting','corporate'],
+    '医療・介護':    ['hospital clinic','doctor','medical','healthcare','pharmacy'],
+    '物流・運輸':    ['warehouse','logistics','delivery','transportation','cargo'],
+    'その他・一般':  ['business office','professional','workplace','team','service'],
   };
 
-  var prompts = industryPrompts[industry] || industryPrompts['その他・一般'];
-  // 業種名とサイト名をプロンプトに追加
-  var vibeStyle = vibe ? ', '+vibe+' style' : ', professional high quality';
-  var enhancedPrompts = prompts.map(function(p){
-    return p + vibeStyle + ', commercial photography, 8k, sharp';
-  });
+  var keywords = industryKeywords[industry] || industryKeywords['その他・一般'];
 
   btn.disabled = true;
-  btn.innerHTML = '生成中...';
+  btn.innerHTML = '読み込み中...';
   container.innerHTML = '';
 
-  // 5枚を順番にPollinations AIで生成（16秒間隔）
-  var generated = 0;
-  function genOne(index){
-    if(index >= 5){ return; }
-    var prompt = enhancedPrompts[index % enhancedPrompts.length];
-    var seed = Math.floor(Math.random() * 999999);
-    var url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=400&height=300&seed=' + seed + '&nologo=true';
+  // Unsplash Source API — 無料・高品質・確実
+  var loaded = 0;
+  keywords.forEach(function(keyword, index){
+    var seed = Math.floor(Math.random()*1000);
+    var url = 'https://source.unsplash.com/400x300/?' + encodeURIComponent(keyword) + '&' + seed;
 
     var wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
 
-    // プレースホルダー
-    var placeholder = document.createElement('div');
-    placeholder.style.cssText = 'width:120px;height:90px;background:var(--s2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;';
-    placeholder.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:8px;color:var(--muted2);text-align:center;">'+(index+1)+'<br>生成中</div>';
-    wrap.appendChild(placeholder);
-    container.appendChild(wrap);
-
     var img = document.createElement('img');
-    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:none;';
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
     img.src = url;
+    img.crossOrigin = 'anonymous';
+
     img.onload = function(){
-      placeholder.remove();
-      img.style.display = 'block';
-      generated++;
-      if(generated >= 5){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
+      loaded++;
+      if(loaded >= keywords.length){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
       img.onclick = function(){
         if(wrap.classList.contains('selected')){
           wrap.classList.remove('selected');
@@ -1649,21 +1633,18 @@ function generateSuggestedImages(){
       };
     };
     img.onerror = function(){
-      placeholder.innerHTML = '<div style="font-family:Space Mono,monospace;font-size:8px;color:var(--muted2);">失敗</div>';
-      generated++;
-      if(generated >= 5){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
+      // フォールバック: Picsum
+      img.src = 'https://picsum.photos/seed/'+(seed+index)+'/400/300';
+      loaded++;
+      if(loaded >= keywords.length){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
     };
-    wrap.appendChild(img);
 
-    // 次の画像は17秒後（レート制限対策）
-    if(index < 4){
-      setTimeout(function(){ genOne(index+1); }, 17000);
-    }
-  }
-  genOne(0);
+    wrap.appendChild(img);
+    container.appendChild(wrap);
+  });
 }
 
-// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
+// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
 function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
@@ -1695,9 +1676,18 @@ function generateImage(){
       };
       resolve();
     };
+    var retryCount = 0;
     img.onerror = function(){
-      placeholder.textContent = '失敗';
-      resolve();
+      if(retryCount < 2){
+        retryCount++;
+        setTimeout(function(){
+          var newSeed = Math.floor(Math.random()*999999);
+          img.src = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+newSeed+'&nologo=true';
+        }, 3000 * retryCount);
+      } else {
+        placeholder.textContent = '失敗（再試行してください）';
+        resolve();
+      }
     };
     wrap.appendChild(img);
   });
