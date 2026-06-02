@@ -395,6 +395,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .gen-status{font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);opacity:.8;margin-top:4px;}
 
 /* NAV */
+.help-step{padding:24px 32px;border-bottom:1px solid var(--border);}
+.help-step-num{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--lime);margin-bottom:6px;}
+.help-step-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em;color:var(--text);margin-bottom:12px;}
+.help-step-body p{font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.8;color:var(--muted2);margin-bottom:10px;}
+.help-step-body p strong{color:var(--lime);}
+.help-step-body ul{list-style:none;display:flex;flex-direction:column;gap:8px;padding:0;}
+.help-step-body ul li{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:var(--muted2);padding-left:16px;position:relative;}
+.help-step-body ul li::before{content:'—';position:absolute;left:0;color:var(--lime);}
+.help-step-body ul li strong{color:var(--text);}
 .nav-btns{display:flex;justify-content:space-between;margin-top:36px;padding-top:20px;border-top:1px solid var(--border);position:relative;z-index:1;clear:both;}
 .btn{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.1em;padding:11px 30px;border:none;cursor:pointer;transition:all .18s;}
 .btn-ghost{background:transparent;color:var(--muted3);border:1px solid var(--b2);}
@@ -572,7 +581,152 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="pb-line"></div>
     <div class="pb-step" data-step="9"><div class="pb-dot">09</div><div class="pb-label">生成</div></div>
     <button onclick="saveProgress()" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">💾 保存</button>
+    <button onclick="openHelp()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">？ 使い方</button>
   </div>
+
+<!-- ヘルプモーダル -->
+<div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8000;overflow-y:auto;backdrop-filter:blur(8px);">
+  <div style="max-width:680px;margin:40px auto;background:var(--s1);border:1px solid var(--border);padding:0 0 40px;">
+    <!-- ヘッダー -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:24px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--s1);z-index:1;">
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:4px;">// GUIDE</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.1em;color:var(--text);">NEURAL OVERFLOW 使い方</div>
+      </div>
+      <button onclick="closeHelp()" style="font-family:'Space Mono',monospace;font-size:18px;background:transparent;border:1px solid var(--border);color:var(--muted2);width:36px;height:36px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted2)';">×</button>
+    </div>
+    <!-- コンテンツ -->
+    <div style="padding:32px;display:flex;flex-direction:column;gap:0;">
+
+      <!-- STEP 1 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 01</div>
+        <div class="help-step-title">業種 &amp; 基本情報</div>
+        <div class="help-step-body">
+          <p>ロゴスタイルはサイト名を入力すると右下にプレビューが表示されます。<strong>「AIに任せる」</strong>がおすすめ。</p>
+          <ul>
+            <li>サイト名・キャッチコピー・所在地を入力</li>
+            <li>業種を大カテゴリ→小カテゴリの順に選択</li>
+            <li>ロゴスタイルを7種から選択（AIに任せるが最も自然）</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 02</div>
+        <div class="help-step-title">雰囲気 &amp; テイスト</div>
+        <div class="help-step-body">
+          <p>サイト全体の<strong>デザインの方向性</strong>を決めます。業種と合わせて考えましょう。</p>
+          <ul>
+            <li>ナチュラル・ラグジュアリー・ミニマルなど10種から選択</li>
+            <li>選んだ雰囲気がAIへのデザイン指示に直結します</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 03</div>
+        <div class="help-step-title">レイアウト選択</div>
+        <div class="help-step-body">
+          <p>ヒーローセクションの<strong>構成パターン</strong>を選びます。</p>
+          <ul>
+            <li>10種類のレイアウトをプレビューで確認しながら選択</li>
+            <li>業種や雰囲気に合ったものを選ぶとクオリティが上がります</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 04</div>
+        <div class="help-step-title">ページ構成</div>
+        <div class="help-step-body">
+          <p>HPに含める<strong>セクション（ページ）</strong>を選びます。</p>
+          <ul>
+            <li>必要なセクションにチェックを入れる</li>
+            <li>少なすぎると寂しくなるので最低5〜6個推奨</li>
+            <li>よくわからなければデフォルトのままでOK</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 05</div>
+        <div class="help-step-title">カラー設定</div>
+        <div class="help-step-body">
+          <p>サイトの<strong>配色テーマ</strong>を選びます。</p>
+          <ul>
+            <li>プリセットテーマから選ぶだけでOK</li>
+            <li>カスタム背景色・アクセントカラーも細かく指定可能</li>
+            <li>ページごとに色を変えることもできます（上級者向け）</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 06</div>
+        <div class="help-step-title">フォント選択</div>
+        <div class="help-step-body">
+          <p>見出しと本文の<strong>フォント</strong>を選びます。</p>
+          <ul>
+            <li>見出し31種・本文25種から選択可能</li>
+            <li>「もっと見る」で隠れているフォントも表示されます</li>
+            <li>日本語サイトはNoto系・Zen系がおすすめ</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 07</div>
+        <div class="help-step-title">画像の準備</div>
+        <div class="help-step-body">
+          <p>HPに使う<strong>画像</strong>を用意します。3通りの方法があります。</p>
+          <ul>
+            <li><strong>① 業種別AI提案</strong>：「5枚提案する」ボタンで業種に合った写真が自動提案される。タップで選択、セクションと表示方法を指定</li>
+            <li><strong>② AI画像生成</strong>：好きなプロンプトを入力してPollinationsで画像を生成。選択後にセクション指定</li>
+            <li><strong>③ 自分でアップロード</strong>：撮影した写真などをアップロード。セクションと表示方法を指定</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="help-step">
+        <div class="help-step-num">STEP 08</div>
+        <div class="help-step-title">テキスト入力</div>
+        <div class="help-step-body">
+          <p>HPに載せる<strong>文章</strong>を入力します。</p>
+          <ul>
+            <li><strong>「全項目をAIで自動生成」</strong>を押すと全部自動で入力されます（最もラク）</li>
+            <li>各項目右の「AI生成」ボタンで1項目ずつ生成することも可能</li>
+            <li>自分で書いた文章を入力してもOK</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 9 -->
+      <div class="help-step" style="border-bottom:none;">
+        <div class="help-step-num">STEP 09</div>
+        <div class="help-step-title">生成 &amp; 仕上げ</div>
+        <div class="help-step-body">
+          <p>いよいよ<strong>HP生成</strong>です。</p>
+          <ul>
+            <li><strong>参照URLモード</strong>：好きなサイトのURLを入力→解析→そのデザインを参考に生成</li>
+            <li>「AIでHP生成」ボタンを押すと数十秒で完成</li>
+            <li>生成後は<strong>QUICK REGEN</strong>でセクション別に再生成できます</li>
+            <li>カスタム指示を入力して細かく調整することも可能</li>
+            <li>完成したらHTMLをダウンロードして公開！</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
   <div class="wizard-outer">
   <div class="wizard-wrap">
@@ -799,6 +953,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="font-card" data-fname="Josefin Sans" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Josefin Sans',sans-serif;font-size:20px;font-weight:700;">TITLE</div><div class="font-meta">JOSEFIN SANS // ジオメトリック</div></div>
         <div class="font-card" data-fname="Righteous" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Righteous',sans-serif;font-size:20px;">TITLE</div><div class="font-meta">RIGHTEOUS // レトロ・ポップ欧文</div></div>
         <div class="font-card" data-fname="Monoton" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Monoton',cursive;font-size:16px;">TITLE</div><div class="font-meta">MONOTON // ネオン・レトロ風</div></div>
+        <div class="font-card" data-fname="Cormorant Garamond" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;">Title</div><div class="font-meta">CORMORANT // 繊細・イタリック映え</div></div>
+        <div class="font-card" data-fname="Syne" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">TITLE</div><div class="font-meta">SYNE // 現代的・エディトリアル</div></div>
+        <div class="font-card" data-fname="DM Serif Display" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'DM Serif Display',serif;font-size:22px;">Title あア</div><div class="font-meta">DM SERIF // 高品質・モダンセリフ</div></div>
+        <div class="font-card" data-fname="Unbounded" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;">TITLE</div><div class="font-meta">UNBOUNDED // スクエア・未来感</div></div>
+        <div class="font-card" data-fname="Barlow Condensed" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;">TITLE</div><div class="font-meta">BARLOW CONDENSED // 縦長・スポーツ系</div></div>
+        <div class="font-card" data-fname="Cardo" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Cardo',serif;font-size:20px;">Title あア</div><div class="font-meta">CARDO // 学術・クラシック</div></div>
+        <div class="font-card" data-fname="Bodoni Moda" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Bodoni Moda',serif;font-size:20px;font-weight:700;">Title</div><div class="font-meta">BODONI MODA // ファッション誌風</div></div>
+        <div class="font-card" data-fname="Big Shoulders Display" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Big Shoulders Display',sans-serif;font-size:22px;font-weight:900;">TITLE</div><div class="font-meta">BIG SHOULDERS // 超ワイド・迫力</div></div>
+        <div class="font-card" data-fname="Libre Baskerville" onclick="selFont(this,'heading')"><div class="font-preview-en" style="font-family:'Libre Baskerville',serif;font-size:18px;font-weight:700;">Title あア</div><div class="font-meta">LIBRE BASKERVILLE // 王道セリフ</div></div>
+        <div class="font-card" data-fname="Klee One" onclick="selFont(this,'heading')"><div class="font-preview-jp" style="font-family:'Klee One',cursive;font-size:16px;">タイトル あア</div><div class="font-meta">KLEE ONE // 教科書体・親しみやすい</div></div>
       </div>
 
       <!-- 本文フォント -->
@@ -825,6 +989,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="font-card" data-fname="Cormorant Garamond" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'Cormorant Garamond',serif;font-size:14px;">Body text. Classic garamond.</div><div class="font-meta">CORMORANT // クラシック欧文</div></div>
         <div class="font-card" data-fname="Georgia" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:Georgia,serif;font-size:13px;">Body text. Classic serif.</div><div class="font-meta">GEORGIA // クラシック・セリフ</div></div>
         <div class="font-card" data-fname="Noto Sans JP" onclick="selFont(this,'body')"><div class="font-preview-jp" style="font-family:'Noto Sans JP';font-size:13px;font-weight:300;">本文テキスト。細字で上品な印象。</div><div class="font-meta">NOTO SANS LIGHT // 細字・上品</div></div>
+        <div class="font-card" data-fname="Syne" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'Syne',sans-serif;font-size:13px;">Body text. Editorial feel.</div><div class="font-meta">SYNE // エディトリアル欧文</div></div>
+        <div class="font-card" data-fname="DM Sans" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'DM Sans',sans-serif;font-size:13px;">本文テキスト。現代的で読みやすい。</div><div class="font-meta">DM SANS // クリーン・モダン</div></div>
+        <div class="font-card" data-fname="Lato" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'Lato',sans-serif;font-size:13px;">本文テキスト。定番の読みやすい欧文。</div><div class="font-meta">LATO // 定番欧文・可読性高い</div></div>
+        <div class="font-card" data-fname="Nunito" onclick="selFont(this,'body')"><div class="font-preview-jp" style="font-family:'Nunito',sans-serif;font-size:13px;">本文テキスト。丸みのある欧文。</div><div class="font-meta">NUNITO // ラウンド・フレンドリー</div></div>
+        <div class="font-card" data-fname="Source Han Sans JP" onclick="selFont(this,'body')"><div class="font-preview-jp" style="font-family:'Source Han Sans JP',sans-serif;font-size:13px;">本文テキスト。源ノ角ゴシック。</div><div class="font-meta">源ノ角ゴシック // 源流ゴシック</div></div>
+        <div class="font-card" data-fname="BIZ UDPGothic" onclick="selFont(this,'body')"><div class="font-preview-jp" style="font-family:'BIZ UDPGothic',sans-serif;font-size:13px;">本文テキスト。UDフォントで読みやすい。</div><div class="font-meta">BIZ UD GOTHIC // UD・バリアフリー</div></div>
+        <div class="font-card" data-fname="Hind" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'Hind',sans-serif;font-size:13px;">Body text. Clean humanist sans.</div><div class="font-meta">HIND // ヒューマニスト・欧文</div></div>
+        <div class="font-card" data-fname="Libre Franklin" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'Libre Franklin',sans-serif;font-size:13px;">Body text. News-style sans.</div><div class="font-meta">LIBRE FRANKLIN // ニュース系欧文</div></div>
+        <div class="font-card" data-fname="EB Garamond" onclick="selFont(this,'body')"><div class="font-preview-en" style="font-family:'EB Garamond',serif;font-size:14px;">Body text. Classic book style.</div><div class="font-meta">EB GARAMOND // 書籍・クラシック</div></div>
       </div>
 
       <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(6)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(6)">次へ →</button></div>
@@ -1581,70 +1754,111 @@ function generateSuggestedImages(){
   var vibe = S.vibe || '';
 
   var industryKeywords = {
-    '飲食・食品':    ['cafe interior','restaurant food','bakery','coffee shop','japanese food'],
-    '美容・健康':    ['hair salon','beauty spa','nail salon','skincare','fitness gym'],
-    '製造業・工業':  ['factory','manufacturing','industrial','engineering','production'],
-    '建設・不動産':  ['architecture','interior design','construction','real estate','modern house'],
-    'クリエイティブ':['creative studio','art gallery','design workspace','photography','creative office'],
-    'IT・テクノロジー':['technology office','computer','startup','coding','modern workspace'],
-    '小売・EC':      ['retail store','fashion boutique','shopping','product photography','lifestyle'],
-    '教育・学習':    ['classroom','library','education','studying','school'],
-    '士業・専門職':  ['law office','business meeting','professional','consulting','corporate'],
-    '医療・介護':    ['hospital clinic','doctor','medical','healthcare','pharmacy'],
-    '物流・運輸':    ['warehouse','logistics','delivery','transportation','cargo'],
-    'その他・一般':  ['business office','professional','workplace','team','service'],
+    '飲食・食品':    ['cafe interior cozy','food plating restaurant','bakery bread pastry','coffee espresso','japanese cuisine'],
+    '美容・健康':    ['hair salon interior modern','beauty spa treatment','nail art salon','skincare beauty','yoga fitness studio'],
+    '製造業・工業':  ['factory manufacturing','industrial machinery','production line','engineering precision','warehouse industrial'],
+    '建設・不動産':  ['modern architecture building','luxury interior design','construction site','real estate house','minimalist living room'],
+    'クリエイティブ':['creative studio workspace','art gallery exhibition','photography studio','graphic design','creative office'],
+    'IT・テクノロジー':['tech office startup','computer programming','digital innovation','server data center','minimal desk setup'],
+    '小売・EC':      ['boutique retail store','fashion clothing','product photography lifestyle','luxury shopping','minimalist flatlay'],
+    '教育・学習':    ['modern classroom','library books','education study desk','online learning','school bright interior'],
+    '士業・専門職':  ['law office professional','business meeting room','corporate consulting','professional desk','modern office'],
+    '医療・介護':    ['modern clinic interior','doctor medical professional','pharmacy clean','healthcare caring','medical equipment'],
+    '物流・運輸':    ['warehouse logistics','delivery truck','cargo shipping','supply chain','transportation aerial'],
+    'その他・一般':  ['modern professional office','business team','clean workspace','corporate building','professional service'],
   };
 
   var keywords = industryKeywords[industry] || industryKeywords['その他・一般'];
-
   btn.disabled = true;
   btn.innerHTML = '読み込み中...';
   container.innerHTML = '';
 
-  // Unsplash Source API — 無料・高品質・確実
-  var loaded = 0;
   keywords.forEach(function(keyword, index){
-    var seed = Math.floor(Math.random()*1000);
-    var url = 'https://source.unsplash.com/400x300/?' + encodeURIComponent(keyword) + '&' + seed;
+    var seed = Math.floor(Math.random()*9999);
+    // Unsplash Source API
+    var url = 'https://source.unsplash.com/400x300/?' + encodeURIComponent(keyword) + ',' + seed;
 
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;cursor:pointer;display:inline-block;margin:4px;';
+    wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:6px;margin:4px;vertical-align:top;';
 
     var img = document.createElement('img');
-    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;';
+    img.style.cssText = 'width:120px;height:90px;object-fit:cover;border:2px solid var(--border);transition:all .2s;display:block;cursor:pointer;';
     img.src = url;
-    img.crossOrigin = 'anonymous';
+
+    // 配置セレクタ
+    var selWrap = document.createElement('div');
+    selWrap.style.cssText = 'display:none;flex-direction:column;gap:3px;width:120px;';
+
+    var secSel = document.createElement('select');
+    secSel.style.cssText = 'background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Space Mono,monospace;font-size:9px;padding:3px;width:100%;';
+    [
+      {v:'hero',l:'ヒーロー背景'},
+      {v:'about',l:'About写真'},
+      {v:'service',l:'サービス'},
+      {v:'gallery',l:'ギャラリー'},
+      {v:'cta',l:'CTA背景'},
+      {v:'other',l:'その他'},
+    ].forEach(function(opt){
+      var o = document.createElement('option');
+      o.value = opt.v; o.textContent = opt.l;
+      secSel.appendChild(o);
+    });
+
+    var styleSel = document.createElement('select');
+    styleSel.style.cssText = secSel.style.cssText;
+    [
+      {v:'bg',l:'背景'},
+      {v:'card',l:'カード'},
+      {v:'circle',l:'丸型'},
+      {v:'full',l:'全幅'},
+    ].forEach(function(opt){
+      var o = document.createElement('option');
+      o.value = opt.v; o.textContent = opt.l;
+      styleSel.appendChild(o);
+    });
+
+    selWrap.appendChild(secSel);
+    selWrap.appendChild(styleSel);
 
     img.onload = function(){
-      loaded++;
-      if(loaded >= keywords.length){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
-      img.onclick = function(){
-        if(wrap.classList.contains('selected')){
-          wrap.classList.remove('selected');
-          img.style.borderColor='var(--border)';
-          img.style.boxShadow='none';
-          S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
-        } else {
-          wrap.classList.add('selected');
-          img.style.borderColor='var(--lime)';
-          img.style.boxShadow='0 0 12px rgba(0,255,170,.4)';
-          S.selectedImages.push(url);
-        }
-      };
+      var loaded = container.querySelectorAll('img[data-loaded]').length;
+      if(loaded >= keywords.length - 1){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
+      img.dataset.loaded = '1';
     };
     img.onerror = function(){
-      // フォールバック: Picsum
-      img.src = 'https://picsum.photos/seed/'+(seed+index)+'/400/300';
-      loaded++;
-      if(loaded >= keywords.length){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }
+      img.src = 'https://picsum.photos/seed/'+(seed+index*7)+'/400/300';
+    };
+
+    img.onclick = function(){
+      if(wrap.dataset.selected === '1'){
+        wrap.dataset.selected = '0';
+        img.style.borderColor = 'var(--border)';
+        img.style.boxShadow = 'none';
+        selWrap.style.display = 'none';
+        // S.selectedImagesから削除
+        S.uploadedImages = S.uploadedImages.filter(function(u){ return u.src !== url; });
+      } else {
+        wrap.dataset.selected = '1';
+        img.style.borderColor = 'var(--lime)';
+        img.style.boxShadow = '0 0 12px rgba(0,255,170,.4)';
+        selWrap.style.display = 'flex';
+        // S.uploadedImagesに追加（配置情報付き）
+        var imgData = {src: url, section: secSel.value, style: styleSel.value, name: keyword, isUnsplash: true};
+        S.uploadedImages.push(imgData);
+        secSel.onchange = function(){ imgData.section = secSel.value; };
+        styleSel.onchange = function(){ imgData.style = styleSel.value; };
+      }
     };
 
     wrap.appendChild(img);
+    wrap.appendChild(selWrap);
     container.appendChild(wrap);
   });
+
+  setTimeout(function(){ btn.disabled=false; btn.innerHTML='もう5枚提案する'; }, 8000);
 }
 
-// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
+// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
 function setQuickPrompt(txt){document.getElementById('ai-img-prompt').value=txt;}
 function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
@@ -1667,12 +1881,38 @@ function generateImage(){
     img.onload = function(){
       placeholder.remove();
       img.style.display = 'block';
-      S.aiImages.push(url);
+
+      // 配置セレクタを追加
+      var selWrap = document.createElement('div');
+      selWrap.style.cssText = 'display:none;flex-direction:column;gap:3px;margin-top:4px;';
+      var secSel = document.createElement('select');
+      secSel.style.cssText = 'background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Space Mono,monospace;font-size:9px;padding:3px;width:160px;';
+      [{v:'hero',l:'ヒーロー背景'},{v:'about',l:'About写真'},{v:'service',l:'サービス'},{v:'gallery',l:'ギャラリー'},{v:'cta',l:'CTA背景'},{v:'other',l:'その他'}]
+      .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; secSel.appendChild(o); });
+      var styleSel = document.createElement('select');
+      styleSel.style.cssText = secSel.style.cssText;
+      [{v:'bg',l:'背景'},{v:'card',l:'カード'},{v:'circle',l:'丸型'},{v:'full',l:'全幅'}]
+      .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; styleSel.appendChild(o); });
+      selWrap.appendChild(secSel);
+      selWrap.appendChild(styleSel);
+      wrap.appendChild(selWrap);
+
+      var imgData = {src: url, section: 'hero', style: 'bg', name: 'AI生成画像', isAI: true};
+      secSel.onchange = function(){ imgData.section = secSel.value; };
+      styleSel.onchange = function(){ imgData.style = styleSel.value; };
+
       img.onclick = function(){
         img.classList.toggle('selected');
         img.style.outline = img.classList.contains('selected') ? '3px solid var(--lime)' : 'none';
-        if(img.classList.contains('selected')) S.selectedImages.push(url);
-        else S.selectedImages = S.selectedImages.filter(function(u){return u!==url;});
+        if(img.classList.contains('selected')){
+          selWrap.style.display = 'flex';
+          S.uploadedImages.push(imgData);
+          S.aiImages.push(url);
+        } else {
+          selWrap.style.display = 'none';
+          S.uploadedImages = S.uploadedImages.filter(function(u){ return u.src !== url; });
+          S.aiImages = S.aiImages.filter(function(u){ return u !== url; });
+        }
       };
       resolve();
     };
@@ -2288,6 +2528,21 @@ function applyEdit(){
 }
 
 // ===== SAVE & RESTORE =====// ===== SAVE & RESTORE =====
+function openHelp(){
+  var m = document.getElementById('help-modal');
+  m.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeHelp(){
+  var m = document.getElementById('help-modal');
+  m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+// モーダル外クリックで閉じる
+document.getElementById('help-modal').addEventListener('click', function(e){
+  if(e.target === this) closeHelp();
+});
+
 function saveProgress(){
   try {
     var data = {
