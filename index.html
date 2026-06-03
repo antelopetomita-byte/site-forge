@@ -142,7 +142,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,90px);line-height:1;margin-bottom:56px;letter-spacing:.02em;}
 
 /* STEP PROGRESS */
-.progress-bar{display:flex;align-items:center;gap:0;margin-bottom:40px;overflow-x:auto;padding-bottom:4px;}
+.progress-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.pb-row{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:2px;}
+.pb-btn-row{display:flex;gap:8px;justify-content:flex-end;}
 .pb-step{display:flex;align-items:center;gap:0;flex-shrink:0;}
 .pb-dot{width:32px;height:32px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;transition:all .2s;cursor:none;flex-shrink:0;color:var(--muted2);}
 .pb-dot.active{border-color:var(--lime);color:var(--lime);box-shadow:0 0 12px rgba(0,255,170,.3);}
@@ -563,6 +565,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
   <!-- PROGRESS -->
   <div class="progress-bar" id="progress-bar">
+  <div class="pb-row">
     <div class="pb-step active" data-step="1"><div class="pb-dot active">01</div><div class="pb-label">業種</div></div>
     <div class="pb-line"></div>
     <div class="pb-step" data-step="2"><div class="pb-dot">02</div><div class="pb-label">ページ構成</div></div>
@@ -580,9 +583,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <div class="pb-step" data-step="8"><div class="pb-dot">08</div><div class="pb-label">テキスト</div></div>
     <div class="pb-line"></div>
     <div class="pb-step" data-step="9"><div class="pb-dot">09</div><div class="pb-label">生成</div></div>
-    <button onclick="saveProgress()" style="margin-left:auto;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">💾 保存</button>
-    <button onclick="openHelp()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;flex-shrink:0;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">？ 使い方</button>
+  </div><!-- /.pb-row -->
+  <div class="pb-btn-row">
+    <button onclick="saveProgress()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">💾 保存</button>
+    <button onclick="openHelp()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">？ 使い方</button>
   </div>
+  </div><!-- /.progress-bar -->
 
 <!-- ヘルプモーダル -->
 <div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8000;overflow-y:auto;backdrop-filter:blur(8px);">
