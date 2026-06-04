@@ -25,7 +25,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Exo+2:ital,wght@1,900&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#02030a;--s1:rgba(8,13,20,0.75);--s2:rgba(14,24,37,0.8);--s3:#141e2e;
+  --bg:#02030a;--s1:#080d14;--s2:#0e1825;--s3:#141e2e;
   --border:#224060;--b2:#2e5585;--b3:#3a6090;
   --lime:#00ffaa;--red:#ff3355;--blue:#38b8ff;--orange:#ff9500;
   --text:#ffffff;--muted:#6a90a8;--muted2:#99bfd0;--muted3:#c8dde8;
@@ -142,7 +142,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,7vw,90px);line-height:1;margin-bottom:56px;letter-spacing:.02em;}
 
 /* STEP PROGRESS */
-.progress-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.progress-bar{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;position:relative;z-index:2;}
 .pb-row{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:2px;}
 .pb-btn-row{display:flex;gap:8px;justify-content:flex-end;}
 .pb-step{display:flex;align-items:center;gap:0;flex-shrink:0;}
@@ -156,7 +156,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
 /* WIZARD */
 .wizard-outer{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
-.wizard-wrap{position:relative;z-index:1;border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);overflow:visible;}
+.wizard-wrap{position:relative;z-index:2;background:#04060a;border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);overflow:visible;}
 
 /* LIVE PREVIEW PANEL */
 .live-preview-panel{position:sticky;top:20px;border:1px solid var(--border);background:var(--s1);overflow:hidden;}
@@ -497,7 +497,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 </head>
 <body>
 <!-- 宇宙背景 -->
-<canvas id="galaxy-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+<canvas id="galaxy-bg" style="position:fixed;inset:0;z-index:-1;pointer-events:none;"></canvas>
 <script>
 (function(){
   var canvas = document.getElementById('galaxy-bg');
@@ -1145,9 +1145,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
         <div class="img-section-title">// AIで画像を生成</div>
         <div class="ai-img-panel">
-          <div class="ai-img-title">// POLLINATIONS AI IMAGE GENERATOR</div>
+          <div class="ai-img-title">// RANDOM PHOTO PICKER</div>
           <div class="ai-img-row">
-            <input type="text" class="ai-img-input" id="ai-img-prompt" placeholder="例：カフェの外観、木漏れ日、温かみのある雰囲気">
+            <input type="text" class="ai-img-input" id="ai-img-prompt" placeholder="キーワードを入力（例：カフェ、山、海）">
             <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImage()">生成する</button>
           </div>
           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
@@ -1936,43 +1936,49 @@ function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
   return new Promise(function(resolve){
-    var seed = Math.floor(Math.random()*999999);
-    var encoded = encodeURIComponent(prompt+', professional photography, high quality, sharp');
-    var url = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+seed+'&nologo=true';
+    // プロンプト文字列をseed数値に変換
+    var seed = 0;
+    for(var i=0;i<prompt.length;i++){ seed = (seed*31 + prompt.charCodeAt(i)) % 1000; }
+    seed = seed + Math.floor(Math.random()*200);
+    var w = 600, h = 450;
+    var url = 'https://picsum.photos/seed/'+seed+'/'+w+'/'+h;
+
     var results = document.getElementById('ai-img-results');
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'display:inline-block;margin:4px;vertical-align:top;';
+    wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:4px;margin:4px;vertical-align:top;';
+
     var placeholder = document.createElement('div');
     placeholder.style.cssText = 'width:160px;height:120px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:Space Mono,monospace;font-size:9px;color:var(--muted2);';
-    placeholder.textContent = '生成中...';
+    placeholder.textContent = '読み込み中...';
     wrap.appendChild(placeholder);
     results.prepend(wrap);
+
     var img = document.createElement('img');
     img.style.cssText = 'width:160px;height:120px;object-fit:cover;border:1px solid var(--border);cursor:pointer;display:none;transition:all .2s;';
     img.src = url;
+
+    // 配置セレクタ
+    var selWrap = document.createElement('div');
+    selWrap.style.cssText = 'display:none;flex-direction:column;gap:3px;';
+    var secSel = document.createElement('select');
+    secSel.style.cssText = 'background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Space Mono,monospace;font-size:9px;padding:3px;width:160px;';
+    [{v:'hero',l:'ヒーロー背景'},{v:'about',l:'About写真'},{v:'service',l:'サービス'},{v:'gallery',l:'ギャラリー'},{v:'cta',l:'CTA背景'},{v:'other',l:'その他'}]
+    .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; secSel.appendChild(o); });
+    var styleSel = document.createElement('select');
+    styleSel.style.cssText = secSel.style.cssText;
+    [{v:'bg',l:'背景'},{v:'card',l:'カード'},{v:'circle',l:'丸型'},{v:'full',l:'全幅'}]
+    .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; styleSel.appendChild(o); });
+    selWrap.appendChild(secSel);
+    selWrap.appendChild(styleSel);
+    wrap.appendChild(selWrap);
+
+    var imgData = {src: url, section: 'hero', style: 'bg', name: prompt, isAI: true};
+    secSel.onchange = function(){ imgData.section = secSel.value; };
+    styleSel.onchange = function(){ imgData.style = styleSel.value; };
+
     img.onload = function(){
       placeholder.remove();
       img.style.display = 'block';
-
-      // 配置セレクタを追加
-      var selWrap = document.createElement('div');
-      selWrap.style.cssText = 'display:none;flex-direction:column;gap:3px;margin-top:4px;';
-      var secSel = document.createElement('select');
-      secSel.style.cssText = 'background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Space Mono,monospace;font-size:9px;padding:3px;width:160px;';
-      [{v:'hero',l:'ヒーロー背景'},{v:'about',l:'About写真'},{v:'service',l:'サービス'},{v:'gallery',l:'ギャラリー'},{v:'cta',l:'CTA背景'},{v:'other',l:'その他'}]
-      .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; secSel.appendChild(o); });
-      var styleSel = document.createElement('select');
-      styleSel.style.cssText = secSel.style.cssText;
-      [{v:'bg',l:'背景'},{v:'card',l:'カード'},{v:'circle',l:'丸型'},{v:'full',l:'全幅'}]
-      .forEach(function(opt){ var o=document.createElement('option'); o.value=opt.v; o.textContent=opt.l; styleSel.appendChild(o); });
-      selWrap.appendChild(secSel);
-      selWrap.appendChild(styleSel);
-      wrap.appendChild(selWrap);
-
-      var imgData = {src: url, section: 'hero', style: 'bg', name: 'AI生成画像', isAI: true};
-      secSel.onchange = function(){ imgData.section = secSel.value; };
-      styleSel.onchange = function(){ imgData.style = styleSel.value; };
-
       img.onclick = function(){
         img.classList.toggle('selected');
         img.style.outline = img.classList.contains('selected') ? '3px solid var(--lime)' : 'none';
@@ -1988,18 +1994,10 @@ function generateImage(){
       };
       resolve();
     };
-    var retryCount = 0;
     img.onerror = function(){
-      if(retryCount < 2){
-        retryCount++;
-        setTimeout(function(){
-          var newSeed = Math.floor(Math.random()*999999);
-          img.src = 'https://image.pollinations.ai/prompt/'+encoded+'?width=512&height=384&seed='+newSeed+'&nologo=true';
-        }, 3000 * retryCount);
-      } else {
-        placeholder.textContent = '失敗（再試行してください）';
-        resolve();
-      }
+      // 別のseedでリトライ
+      img.src = 'https://picsum.photos/seed/'+(seed+500)+'/'+w+'/'+h;
+      img.onerror = function(){ placeholder.textContent='失敗'; resolve(); };
     };
     wrap.appendChild(img);
   });
