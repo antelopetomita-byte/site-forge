@@ -1145,7 +1145,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
         <div class="img-section-title">// AIで画像を生成</div>
         <div class="ai-img-panel">
-          <div class="ai-img-title">// RANDOM PHOTO PICKER</div>
+          <div class="ai-img-title">// UNSPLASH PHOTO SEARCH</div>
           <div class="ai-img-row">
             <input type="text" class="ai-img-input" id="ai-img-prompt" placeholder="キーワードを入力（例：カフェ、山、海）">
             <button class="ai-img-btn" id="ai-gen-btn" onclick="generateImage()">生成する</button>
@@ -1159,7 +1159,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
           <div class="ai-gen-loading" id="ai-gen-loading"><div class="spin"></div><span>AI生成中...</span></div>
           <div class="ai-img-results" id="ai-img-results"></div>
         </div>
-        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;">※ Pollinations.AIを使用。生成に数秒かかります。</div>
+        <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;">※ Unsplashのキーワード検索を使用。</div>
       </div>
 
       <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep(7)">← 戻る</button><button class="btn btn-primary" onclick="nextStep(7)">次へ →</button></div>
@@ -1936,12 +1936,10 @@ function generateImage(){
   var prompt = document.getElementById('ai-img-prompt').value.trim();
   if(!prompt) return;
   return new Promise(function(resolve){
-    // プロンプト文字列をseed数値に変換
-    var seed = 0;
-    for(var i=0;i<prompt.length;i++){ seed = (seed*31 + prompt.charCodeAt(i)) % 1000; }
-    seed = seed + Math.floor(Math.random()*200);
+    var seed = Math.floor(Math.random()*9999);
     var w = 600, h = 450;
-    var url = 'https://picsum.photos/seed/'+seed+'/'+w+'/'+h;
+    // Unsplash Source — キーワードで検索
+    var url = 'https://source.unsplash.com/'+w+'x'+h+'/?'+encodeURIComponent(prompt)+','+seed;
 
     var results = document.getElementById('ai-img-results');
     var wrap = document.createElement('div');
@@ -1996,6 +1994,7 @@ function generateImage(){
     };
     img.onerror = function(){
       // 別のseedでリトライ
+      // フォールバック: Picsum
       img.src = 'https://picsum.photos/seed/'+(seed+500)+'/'+w+'/'+h;
       img.onerror = function(){ placeholder.textContent='失敗'; resolve(); };
     };
