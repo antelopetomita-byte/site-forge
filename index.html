@@ -25,14 +25,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Audiowide&family=Exo+2:ital,wght@1,900&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=M+PLUS+Rounded+1c:wght@400;700&family=Kaisei+Opti&family=Dela+Gothic+One&family=Yomogi&family=Zen+Old+Mincho:wght@400;700&family=Hachi+Maru+Pop&family=Rock+Salt&family=Monoton&family=Playfair+Display:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Abril+Fatface&family=Permanent+Marker&family=Special+Elite&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Josefin+Sans:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#04060a;--s1:#080d14;--s2:#0e1825;--s3:#141e2e;
+  --bg:#02030a;--s1:rgba(8,13,20,0.75);--s2:rgba(14,24,37,0.8);--s3:#141e2e;
   --border:#224060;--b2:#2e5585;--b3:#3a6090;
   --lime:#00ffaa;--red:#ff3355;--blue:#38b8ff;--orange:#ff9500;
   --text:#ffffff;--muted:#6a90a8;--muted2:#99bfd0;--muted3:#c8dde8;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow-x:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;cursor:none;background-image:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(0,180,255,.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(0,255,170,.06) 0%,transparent 60%);}
+body{background:#02030a;color:var(--text);font-family:'Noto Sans JP',sans-serif;cursor:none;}
 
 /* CURSOR */
 #cur{position:fixed;width:10px;height:10px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .1s,height .1s;}
@@ -156,7 +156,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 
 /* WIZARD */
 .wizard-outer{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
-.wizard-wrap{border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);overflow:visible;}
+.wizard-wrap{position:relative;z-index:1;border:1px solid var(--border);min-height:600px;background:rgba(8,13,20,.98);box-shadow:0 0 60px rgba(0,180,255,.05),inset 0 0 60px rgba(0,0,0,.2);overflow:visible;}
 
 /* LIVE PREVIEW PANEL */
 .live-preview-panel{position:sticky;top:20px;border:1px solid var(--border);background:var(--s1);overflow:hidden;}
@@ -496,6 +496,120 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 </style>
 </head>
 <body>
+<!-- 宇宙背景 -->
+<canvas id="galaxy-bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+<script>
+(function(){
+  var canvas = document.getElementById('galaxy-bg');
+  var ctx = canvas.getContext('2d');
+  var W, H, stars = [], nebulas = [];
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initStars(){
+    stars = [];
+    nebulas = [];
+    // 星を生成
+    for(var i = 0; i < 320; i++){
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.4 + 0.2,
+        a: Math.random() * 0.7 + 0.15,
+        speed: Math.random() * 0.003 + 0.001,
+        phase: Math.random() * Math.PI * 2,
+        color: Math.random() < 0.15 ? '#a0d4ff' : Math.random() < 0.1 ? '#ffddaa' : '#ffffff'
+      });
+    }
+    // 星雲（ぼんやりした光の塊）
+    nebulas = [
+      {x: W*0.15, y: H*0.25, rx: W*0.25, ry: H*0.2,  c1:'rgba(30,0,80,0.18)',  c2:'rgba(0,60,120,0.08)'},
+      {x: W*0.75, y: H*0.55, rx: W*0.3,  ry: H*0.25, c1:'rgba(0,40,100,0.15)', c2:'rgba(0,100,80,0.06)'},
+      {x: W*0.45, y: H*0.8,  rx: W*0.2,  ry: H*0.15, c1:'rgba(60,0,100,0.12)', c2:'transparent'},
+      {x: W*0.85, y: H*0.15, rx: W*0.2,  ry: H*0.18, c1:'rgba(0,30,80,0.14)',  c2:'transparent'},
+    ];
+  }
+
+  function drawNebulas(){
+    nebulas.forEach(function(n){
+      var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, Math.max(n.rx, n.ry));
+      g.addColorStop(0, n.c1);
+      g.addColorStop(0.5, n.c2);
+      g.addColorStop(1, 'transparent');
+      ctx.save();
+      ctx.scale(n.rx / Math.max(n.rx, n.ry), n.ry / Math.max(n.rx, n.ry));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      var scale = Math.max(n.rx, n.ry);
+      ctx.arc(
+        n.x * Math.max(n.rx,n.ry) / n.rx,
+        n.y * Math.max(n.rx,n.ry) / n.ry,
+        scale, 0, Math.PI*2
+      );
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  var t = 0;
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    // 深宇宙の暗い背景
+    ctx.fillStyle = '#02030a';
+    ctx.fillRect(0, 0, W, H);
+
+    // 天の川（斜めの光の帯）
+    var milky = ctx.createLinearGradient(0, H*0.8, W, 0);
+    milky.addColorStop(0,   'transparent');
+    milky.addColorStop(0.3, 'rgba(20,30,80,0.08)');
+    milky.addColorStop(0.5, 'rgba(40,20,100,0.12)');
+    milky.addColorStop(0.7, 'rgba(0,60,120,0.07)');
+    milky.addColorStop(1,   'transparent');
+    ctx.fillStyle = milky;
+    ctx.fillRect(0, 0, W, H);
+
+    // 星雲
+    drawNebulas();
+
+    // 星を描画
+    t += 0.016;
+    stars.forEach(function(s){
+      var alpha = s.a * (0.6 + 0.4 * Math.sin(t * s.speed * 60 + s.phase));
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+      // 大きい星にグロー
+      if(s.r > 1.1){
+        var glow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*5);
+        glow.addColorStop(0, s.color.replace(')', ',0.3)').replace('rgb','rgba'));
+        glow.addColorStop(1, 'transparent');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r*5, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  initStars();
+  draw();
+
+  window.addEventListener('resize', function(){
+    resize();
+    initStars();
+  });
+})();
+</script>
 
 <div id="cur"></div>
 <div id="cur-ring"></div>
@@ -1028,16 +1142,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div id="img-placement-list" class="img-placement-list"></div>
       </div>
 
-      <!-- AI画像提案 -->
-      <div class="img-section">
-        <div class="img-section-title">// 業種に合わせたAI画像提案</div>
-        <div style="font-size:11px;color:var(--muted2);font-family:'Space Mono',monospace;margin-bottom:12px;">業種・雰囲気をもとにAIが自動で提案します</div>
-        <button class="ai-assist-all-btn" id="suggest-btn" onclick="generateSuggestedImages()" style="margin-bottom:12px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-          業種に合った画像を5枚提案する
-        </button>
-        <div id="suggested-images" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
-      </div>
+
         <div class="img-section-title">// AIで画像を生成</div>
         <div class="ai-img-panel">
           <div class="ai-img-title">// POLLINATIONS AI IMAGE GENERATOR</div>
@@ -1240,7 +1345,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         別パターンを生成
       </button>
       <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード</button>
-      <button class="btn btn-ghost" onclick="toggleEditSection()">✏️ 部分修正</button><button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
+      <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
     </div>
   </div>
   <!-- プレビューを直接操作できるように -->
@@ -1251,45 +1356,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     </div>
   </div>
   
-<!-- 部分修正UI v2 -->
-<div id="edit-section" style="display:none;padding:24px;background:var(--s1);border:1px solid var(--border);margin-top:20px;">
-  <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--lime);margin-bottom:4px;">// REFINE</div>
-  <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);margin-bottom:16px;">セクションを選んでワンクリック再生成 — または指示を入力</div>
-
-  <!-- クイック再生成ボタン -->
-  <div style="margin-bottom:16px;">
-    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;margin-bottom:8px;">QUICK REGEN</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="regen-btns">
-      <button class="regen-quick-btn" onclick="quickRegen('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ ヒーロー</button>
-      <button class="regen-quick-btn" onclick="quickRegen('about',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ About</button>
-      <button class="regen-quick-btn" onclick="quickRegen('service',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ サービス</button>
-      <button class="regen-quick-btn" onclick="quickRegen('price',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ 料金</button>
-      <button class="regen-quick-btn" onclick="quickRegen('cta',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ 予約CTA</button>
-      <button class="regen-quick-btn" onclick="quickRegen('footer',this)" style="font-family:Space Mono,monospace;font-size:10px;letter-spacing:.05em;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">↺ フッター</button>
-    </div>
-  </div>
-
-  <!-- カスタム指示エリア -->
-  <div style="border-top:1px solid var(--border);padding-top:16px;">
-    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;margin-bottom:8px;">CUSTOM INSTRUCTION</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-      <button class="edit-section-btn" onclick="editSection('hero',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">ヒーロー</button>
-      <button class="edit-section-btn" onclick="editSection('about',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">About</button>
-      <button class="edit-section-btn" onclick="editSection('service',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">サービス</button>
-      <button class="edit-section-btn" onclick="editSection('color',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">カラー</button>
-      <button class="edit-section-btn" onclick="editSection('font',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all .2s;border-radius:4px;">フォント</button>
-      <button class="edit-section-btn" onclick="editSection('all',this)" style="font-family:Space Mono,monospace;font-size:10px;padding:6px 12px;background:var(--lime);border:1px solid var(--lime);color:#000;cursor:pointer;transition:all .2s;border-radius:4px;">✦ 全体</button>
-    </div>
-    <div id="edit-input-area" style="display:none;">
-      <textarea id="edit-instruction" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:12px;font-family:Noto Sans JP,sans-serif;font-size:13px;min-height:70px;outline:none;resize:vertical;border-radius:4px;" placeholder="指示を入力（例：もっとラグジュアリーに、テキストを短く、アニメーションを追加して）"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button onclick="applyEdit()" style="font-family:Bebas Neue,sans-serif;font-size:15px;letter-spacing:.1em;padding:10px 24px;background:var(--lime);color:#000;border:none;cursor:pointer;border-radius:4px;">適用</button>
-        <button onclick="document.getElementById('edit-input-area').style.display='none';" style="font-family:Space Mono,monospace;font-size:11px;padding:10px 18px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;">×</button>
-      </div>
-    </div>
-  </div>
-  <div id="edit-loading" style="display:none;font-family:Space Mono,monospace;font-size:11px;color:var(--lime);margin-top:12px;display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:var(--lime);animation:pulse 1s infinite;"></div>AI再生成中...</div>
-</div>
 <div class="code-view" id="code-view"><pre id="code-pre"></pre></div>
 </section>
 
