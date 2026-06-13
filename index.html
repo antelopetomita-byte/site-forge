@@ -18,7 +18,7 @@
 <meta property="og:type" content="website">
 
 <!-- アイコン（SVGをBase64でインライン） -->
-<link rel="apple-touch-icon" href="IMG_7183.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <!-- manifest -->
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmV1cmFsIE92ZXJmbG93IiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjRiV3h1Y3owaWFIUjBjRG92TDNkM2R5NTNNeTV2Y21jdk1qQXdNQzl6ZG1jaUlIWnBaWGRDYjNnOUlqQWdNQ0F3SURFM01UWWlQand2Yzlkc0kzZHVhWFE5SWpFd01DSWlJSHNpWW5WcGJIUTlJakl3SWlCd2FXNTBhVzVuUFNJeElpOCtQQzl6ZG1jKyIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzA0MDYwYSIsInRoZW1lX2NvbG9yIjoiIzAwZmZhYSIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQifQ==">
@@ -847,6 +847,40 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     </div>
   </div>
 </div>
+
+  <!-- ⚡ QUICK START MODE -->
+  <div id="quick-start" style="position:relative;z-index:2;margin-bottom:32px;border:1px solid rgba(0,255,170,.35);background:linear-gradient(135deg,rgba(0,255,170,.06),rgba(0,140,255,.04));padding:28px 28px 24px;overflow:hidden;">
+    <div style="position:absolute;top:-30px;right:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(0,255,170,.05);pointer-events:none;line-height:1;">⚡</div>
+    <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:6px;">// QUICK START</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,4vw,32px);letter-spacing:.05em;color:var(--text);margin-bottom:6px;">30秒でHP完成。<span style="color:var(--lime)">おまかせ生成</span></div>
+    <p style="font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;color:var(--muted2);margin-bottom:18px;">店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">
+      <input type="text" id="qs-name" placeholder="店名・サービス名" style="flex:1;min-width:160px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
+      <select id="qs-industry" style="min-width:140px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+        <option value="">業種を選択</option>
+        <option value="飲食・食品">飲食・食品</option>
+        <option value="美容・健康">美容・健康</option>
+        <option value="製造業・工業">製造業・工業</option>
+        <option value="建設・不動産">建設・不動産</option>
+        <option value="クリエイティブ">クリエイティブ</option>
+        <option value="IT・テクノロジー">IT・テクノロジー</option>
+        <option value="小売・EC">小売・EC</option>
+        <option value="教育・学習">教育・学習</option>
+        <option value="士業・専門職">士業・専門職</option>
+        <option value="医療・介護">医療・介護</option>
+        <option value="物流・運輸">物流・運輸</option>
+        <option value="その他・一般">その他・一般</option>
+      </select>
+      <button onclick="quickStart()" id="qs-btn" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:13px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap;">⚡ おまかせ生成</button>
+    </div>
+    <div id="qs-status" style="display:none;margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);align-items:center;gap:8px;"><div class="spin" style="width:10px;height:10px;border-width:2px;"></div><span id="qs-status-text">AIがデザインを決定中...</span></div>
+  </div>
+
+  <div style="position:relative;z-index:2;display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+    <div style="flex:1;height:1px;background:var(--border);"></div>
+    <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--muted2);">またはカスタムで作る</span>
+    <div style="flex:1;height:1px;background:var(--border);"></div>
+  </div>
 
   <div class="wizard-outer">
   <div class="wizard-wrap">
@@ -1918,6 +1952,353 @@ function generateSuggestedImages(){
 }
 
 // ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
+function quickStart(){
+  var name = document.getElementById('qs-name').value.trim();
+  var industry = document.getElementById('qs-industry').value;
+  if(!name){ alert('店名・サービス名を入力してください'); return; }
+  if(!industry){ alert('業種を選択してください'); return; }
+
+  var btn = document.getElementById('qs-btn');
+  var status = document.getElementById('qs-status');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  status.style.display = 'flex';
+
+  S.siteName = name;
+  S.industryCat = industry;
+  S.industrySub = '';
+  S.catchcopy = '';
+  S.location = '';
+  S.logoStyle = 'AI_CHOICE';
+
+  var presets = {
+    '飲食・食品':    {vibe:'ナチュラル', palette:'forest', layout:'FULL SCREEN HERO', hFont:'Shippori Mincho', bFont:'Zen Kaku Gothic New'},
+    '美容・健康':    {vibe:'エレガント', palette:'rose', layout:'SPLIT SCREEN', hFont:'Cormorant Garamond', bFont:'Noto Sans JP'},
+    '製造業・工業':  {vibe:'コーポレート', palette:'navy', layout:'FULL SCREEN HERO', hFont:'Oswald', bFont:'Noto Sans JP'},
+    '建設・不動産':  {vibe:'ミニマル', palette:'mono-light', layout:'SPLIT SCREEN', hFont:'Montserrat', bFont:'Noto Sans JP'},
+    'クリエイティブ':{vibe:'ボールド', palette:'mono-dark', layout:'ASYMMETRIC', hFont:'Syne', bFont:'DM Sans'},
+    'IT・テクノロジー':{vibe:'テック', palette:'mono-dark', layout:'FULL SCREEN HERO', hFont:'Space Grotesk', bFont:'Inter'},
+    '小売・EC':      {vibe:'ポップ', palette:'fire', layout:'CARD GRID', hFont:'Poppins', bFont:'Noto Sans JP'},
+    '教育・学習':    {vibe:'ナチュラル', palette:'forest', layout:'CENTERED CLASSIC', hFont:'Zen Maru Gothic', bFont:'Zen Maru Gothic'},
+    '士業・専門職':  {vibe:'コーポレート', palette:'navy', layout:'CENTERED CLASSIC', hFont:'Noto Serif JP', bFont:'Noto Sans JP'},
+    '医療・介護':    {vibe:'ナチュラル', palette:'mono-light', layout:'CENTERED CLASSIC', hFont:'Zen Maru Gothic', bFont:'BIZ UDPGothic'},
+    '物流・運輸':    {vibe:'コーポレート', palette:'navy', layout:'FULL SCREEN HERO', hFont:'Oswald', bFont:'Noto Sans JP'},
+    'その他・一般':  {vibe:'ミニマル', palette:'mono-light', layout:'FULL SCREEN HERO', hFont:'Montserrat', bFont:'Noto Sans JP'},
+  };
+
+  var p = presets[industry] || presets['その他・一般'];
+  S.vibe = p.vibe;
+  S.globalPalette = p.palette;
+  S.layout = p.layout;
+  S.headingFont = p.hFont;
+  S.bodyFont = p.bFont;
+  S.customBg = '';
+  S.customAccent = '';
+  S.pages = ['ヒーロー（トップビジュアル）','About・コンセプト','特徴・強み','メニュー・料金','お客様の声','アクセス','予約・お問い合わせ','FAQ'];
+  S.texts = {top:'',about:'',service:'',price:'',hours:'',tel:'',email:'',line:'',instagram:'',faq:'',staff:''};
+
+  // step9へ移動して生成実行
+  goToStep(9);
+  setTimeout(function(){
+    generateSite();
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    status.style.display = 'none';
+  }, 300);
+}
+
+function generateSite(){
+  var btn = document.getElementById('gen-btn');
+  var gen = document.getElementById('generating');
+  var st = document.getElementById('gen-status');
+  btn.style.display='none'; gen.classList.add('show');
+  var industryMsg = S.industryCat ? S.industryCat+'に最適化中...' : 'analyzing requirements...';
+  var layoutMsg = S.layout ? S.layout.split('：')[0]+' レイアウト構築中...' : 'building layout structure...';
+  var msgs=[industryMsg,layoutMsg,'カラー・フォントを適用中...','テキストコンテンツを生成中...','各セクションを組み立て中...','スマホ対応を最適化中...','HTMLを最終調整中...'];
+  var mi=0;
+  var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
+
+  var pal = palData[S.globalPalette]||palData['mono-light'];
+  var layoutGuide = {
+    'FULL SCREEN HERO':'全画面背景画像またはグラデーション上に中央配置の大きなテキストとCTAボタン。',
+    'SPLIT LAYOUT':'左50%にテキスト・右50%に画像のフレックスレイアウト。',
+    'BOLD TYPOGRAPHY':'超大きなタイポグラフィがメインビジュアル。',
+    'MAGAZINE STYLE':'CSS Gridで非対称な雑誌風レイアウト。',
+    'MINIMAL CENTER':'大量の余白。中央揃え。装飾は最小限。',
+    'CARD GRID':'ヒーロー下にサービスカードが3列グリッド。',
+    'JAPANESE STYLE':'和紙テクスチャ風背景。縦書き風テキスト。和柄SVGパターン。',
+    'EDITORIAL':'非対称グリッド。タイポグラフィ重視。ファッション誌風。',
+    'CORPORATE':'スライダー風ヒーロー。3カラムの特徴セクション。',
+    'LANDING PAGE':'縦長LP。セクション毎にCTAボタン。',
+  };
+  var layoutInstruction = layoutGuide['FULL SCREEN HERO'];
+  if(S.layout){
+    var lkeys = Object.keys(layoutGuide);
+    for(var li=0;li<lkeys.length;li++){
+      if(S.layout.indexOf(lkeys[li])>=0){ layoutInstruction = layoutGuide[lkeys[li]]; break; }
+    }
+  }
+
+  var pcKeys = Object.keys(S.pageColors);
+  var pageColorInstructions = '';
+  if(pcKeys.length){
+    pageColorInstructions = '【ページ毎カラー設定】\n';
+    pcKeys.forEach(function(p){
+      var c=S.pageColors[p];
+      pageColorInstructions += p+': 背景'+(c.bg||'継承')+' テキスト'+(c.text||'継承')+' アクセント'+(c.accent||'継承')+'\n';
+    });
+  }
+
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  var aiImgOnly = S.selectedImages;
+  var imgInstructions = '';
+  if(uploadedOnly.length || aiImgOnly.length){
+    imgInstructions = '【画像配置指定】\n';
+    uploadedOnly.slice(0,8).forEach(function(img,i){
+      var sectionNames = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',gallery:'ギャラリーセクション',cta:'CTAセクション',other:'適切なセクション'};
+      var styleNames = {bg:'背景画像',card:'カード画像',circle:'丸型写真',full:'全幅画像'};
+      imgInstructions += '画像'+(i+1)+': '+(sectionNames[img.section]||img.section)+' / '+(styleNames[img.style]||img.style)+'\n';
+      imgInstructions += '  img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
+    });
+    if(aiImgOnly.length){
+      imgInstructions += 'AI生成画像（直接URLを使用）:\n';
+      aiImgOnly.slice(0,4).forEach(function(url,i){
+        imgInstructions += '画像URL'+(i+1)+': '+url+'\n';
+      });
+    }
+  } else {
+    imgInstructions = '画像はCSSグラデーション・SVGパターンで美しく代替';
+  }
+
+  var vibeToStyle = {
+    'ナチュラル': 'organic shapes, warm textures, soft gradients, nature-inspired color flow',
+    'ラグジュアリー': 'ultra-thin serif typography, generous whitespace, gold/silver accents, cinematic proportions',
+    'ミニマル': 'radical whitespace, single accent color, micro-typography, invisible grid',
+    'ポップ': 'bold color blocks, playful asymmetry, oversized elements, energetic motion',
+    '和風': 'Japanese ma (negative space), washi texture overlays, vertical rhythm, subtle ink-brush SVG',
+    'ストリート': 'raw grid breaks, grunge overlays, stencil type, high-contrast brutalism',
+    'テック': 'dark mode, neon glow effects, monospace accents, data-visualization aesthetic',
+    'エレガント': 'editorial asymmetry, refined palette, thin dividers, slow reveal animations',
+    'コーポレート': 'trustworthy blues, clean grid, icon system, professional photography layout',
+    'ボールド': 'full-bleed color, huge type scale, kinetic feel, strong contrast',
+  };
+  var currentVibeStyle = vibeToStyle[S.vibe] || 'modern premium feel, confident layout, refined details';
+  var logoStyleMap = {AI_CHOICE:'AI choice — pick the most distinctive treatment for this brand',PLAIN:'Plain uppercase',ACCENT_FIRST:'First letter in accent color',ACCENT_LAST:'Last letter in accent color',ITALIC_MIX:'Mix italic and upright',SPACED:'Wide letter-spacing 0.4em+',SYMBOL_PREFIX:'Prefix with // in accent color',DOT_SPLIT:'Words separated by · dot in accent color'};
+  var refDNAInstruction = '';
+  if(S.refDNA){
+    if(S.refDNA.raw){
+      refDNAInstruction = '# REFERENCE DESIGN DNA\n'+S.refDNA.raw+'\nAdapt this aesthetic for the brand.\n\n';
+    } else {
+      var d = S.refDNA;
+      refDNAInstruction = '# REFERENCE DESIGN DNA\n- Colors: bg='+d.colors.bg+', accent='+d.colors.accent+'\n- Typography: '+d.typography.heading+' / '+d.typography.body+'\n- Layout: '+d.layout+'\n- Vibe: '+d.vibe+'\n- Animations: '+d.animations+'\nAdapt to suit the brand while keeping this quality level.\n\n';
+    }
+  }
+
+  var prompt = '# MISSION\n'
+    +'You are an elite web designer whose work wins Awwwards, CSS Design Awards, and FWA. '
+    +'Create a single-file HTML website that feels handcrafted, premium, and unique — NOT a generic template. '
+    +'The result must look like a $50,000 agency built it.\n\n'
+    +'# SITE INFO\n'
+    +'- Name: '+S.siteName+'\n'
+    +'- Industry: '+S.industryCat+(S.industrySub?' / '+S.industrySub:'')+'\n'
+    +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one]')+'\n'
+    +'- Location: '+(S.location||'Japan')+'\n'
+    +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n'
+    +'- Logo style: '+(logoStyleMap[S.logoStyle]||'AI choice')+'\n\n'
+    +'# CONTENT\n'
+    +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'
+    +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'
+    +'- Services: '+(S.texts.service||'[generate service list in Japanese]')+'\n'
+    +'- Pricing: '+(S.texts.price||'none')+'\n'
+    +'- Hours: '+(S.texts.hours||'none')+'\n'
+    +'- Phone: '+(S.texts.tel||'none')+'\n'
+    +'- Email: '+(S.texts.email||'none')+'\n'
+    +'- LINE: '+(S.texts.line||'none')+'\n'
+    +'- Instagram: '+(S.texts.instagram||'none')+'\n'
+    +'- FAQ: '+(S.texts.faq||'none')+'\n\n'
+    +'# DESIGN SYSTEM\n'
+    +'- Layout: '+(S.layout||'FULL SCREEN HERO')+'\n'
+    +'- Layout implementation: '+layoutInstruction+'\n'
+    +'- Background: '+(S.customBg||pal.bg)+'\n'
+    +'- Text: '+pal.text+'\n'
+    +'- Accent: '+(S.customAccent||pal.accent)+'\n'
+    +'- Heading font: '+(S.headingFont||'Noto Serif JP')+'\n'
+    +'- Body font: '+(S.bodyFont||'Noto Sans JP')+'\n'
+    +pageColorInstructions+'\n'
+    +'# PAGES\n'+S.pages.join('\n')+'\n\n'
+    +imgInstructions+'\n\n'
+    +refDNAInstruction
+    +'# MANDATORY TECHNICAL REQUIREMENTS\n'
+    +'1. Single HTML file — all CSS and JS inline\n'
+    +'2. Google Fonts import\n'
+    +'3. Mobile-first responsive (breakpoints 768px, 1200px)\n'
+    +'4. Sticky nav: backdrop-filter blur + hide on scroll down / show on scroll up\n'
+    +'5. IntersectionObserver for ALL section entrance animations\n'
+    +'6. Smooth scroll + mobile hamburger (animated → X icon)\n'
+    +'7. CSS custom properties: --color-bg, --color-text, --color-accent\n'
+    +'8. Hover microinteractions on every interactive element\n'
+    +'9. LINE URL → green button + QR: api.qrserver.com/v1/create-qr-code/?size=120x120&data=[URL]\n'
+    +'10. SNS URLs → SVG icon buttons in footer\n'
+    +'11. No images? Use intentional CSS gradients or SVG geometric art\n'
+    +'12. Page load fade-in animation\n'
+    +'13. Footer: site name, copyright, nav links\n\n'
+    +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'
+    +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'
+    +'- Body line-height: 1.8–2.0\n'
+    +'- Heading letter-spacing: 0.05em–0.15em\n'
+    +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'
+    +'- Harmonious color palette — no random colors\n'
+    +'- Mobile tap targets ≥ 44px\n'
+    +'- Animations: subtle, purposeful (0.4s–0.8s ease-out)\n\n'
+    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
+  }).then(function(res){return res.json();})
+  .then(function(data){
+    clearInterval(timer);
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('');
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    showResult(html);
+  }).catch(function(err){
+    clearInterval(timer);
+    gen.classList.remove('show'); btn.style.display='flex';
+    alert('生成エラー: '+err.message);
+  });
+}
+
+function showResult(html){
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  if(uploadedOnly.length){
+    var injectScript = '<scr'+'ipt>window.addEventListener("load",function(){';
+    uploadedOnly.forEach(function(img,i){
+      injectScript += 'var el=document.querySelector(\'[data-upload-index="'+i+'"]\');if(el){el.src="'+img.src+'";}';
+    });
+    injectScript += '});<\/scr'+'ipt>';
+    html = html.replace('</body>', injectScript+'</body>');
+  }
+  S.generatedHTML = html;
+  var rs = document.getElementById('result-section');
+  rs.classList.add('show');
+  setDevice('pc');
+  document.getElementById('code-pre').textContent=html;
+  setTimeout(function(){rs.scrollIntoView({behavior:'smooth'});},100);
+}
+
+function showPrev(){
+  document.getElementById('device-wrap').style.display='flex';
+  document.getElementById('code-view').classList.remove('show');
+  document.getElementById('prev-btn').classList.add('active');
+  document.getElementById('code-btn-tog').classList.remove('active');
+}
+function showCode(){
+  document.getElementById('device-wrap').style.display='none';
+  document.getElementById('code-view').classList.add('show');
+  document.getElementById('code-btn-tog').classList.add('active');
+  document.getElementById('prev-btn').classList.remove('active');
+}
+
+// ===== DEVICE TOGGLE =====
+var currentDevice = 'pc';
+function setDevice(d){
+  currentDevice = d;
+  var wrap = document.getElementById('device-wrap');
+  document.querySelectorAll('.dev-btn').forEach(function(b){b.classList.remove('active');});
+  var devBtn = document.getElementById('dev-'+d);
+  if(devBtn) devBtn.classList.add('active');
+  wrap.innerHTML = '';
+  wrap.className = 'device-wrap';
+  if(d==='pc'){
+    wrap.classList.add('pc-mode');
+    wrap.innerHTML = '<div class="device-frame-pc"><iframe id="preview-frame" class="preview-frame" title="preview"></iframe></div>';
+  } else if(d==='tablet'){
+    wrap.innerHTML = '<div class="device-frame-tablet"><div style="background:#1a1a2e;border-radius:20px;padding:14px 10px;box-shadow:0 0 0 2px #2a2a4a,0 20px 60px rgba(0,0,0,.6);"><iframe id="preview-frame" class="preview-frame" style="border-radius:8px;" title="preview"></iframe></div></div>';
+  } else {
+    wrap.innerHTML = '<div class="device-shell"><div class="device-shell-bar"><div class="device-shell-notch"></div></div><iframe id="preview-frame" class="preview-frame" title="preview"></iframe><div class="device-shell-home"></div></div>';
+  }
+  if(S.generatedHTML){
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = S.generatedHTML;
+  }
+}
+
+function dlHTML(){
+  var blob=new Blob([S.generatedHTML],{type:'text/html'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
+  a.click();
+};
+
+function regenSite(){
+  var rs = document.getElementById('result-section');
+  rs.classList.remove('show');
+  var btn = document.getElementById('gen-btn');
+  if(btn) btn.style.display='flex';
+  var gen = document.getElementById('generating');
+  if(gen) gen.classList.remove('show');
+  document.getElementById('app').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){ generateSite(); }, 500);
+}
+
+function toggleEditSection(){
+  var el = document.getElementById('edit-section');
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+function editSection(target, btn){
+  var currentEditTarget = target;
+  window._editTarget = target;
+  var labels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
+  var area = document.getElementById('edit-input-area');
+  var input = document.getElementById('edit-instruction');
+  if(area) area.style.display='block';
+  if(input) input.placeholder = (labels[target]||target)+'の修正指示を入力\n例：もっとシンプルに、テキストを短く';
+  document.querySelectorAll('.edit-section-btn').forEach(function(b){
+    b.style.borderColor='var(--border)';b.style.color='var(--muted2)';
+  });
+  if(btn){btn.style.borderColor='var(--lime)';btn.style.color='var(--lime)';}
+}
+
+function applyEdit(){
+  var instruction = document.getElementById('edit-instruction').value.trim();
+  if(!instruction || !S.generatedHTML) return;
+  var loading = document.getElementById('edit-loading');
+  loading.style.display='block';
+  document.getElementById('edit-input-area').style.display='none';
+  var target = window._editTarget || 'all';
+  var sectionLabels = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',price:'料金セクション',color:'カラー全体',font:'フォント全体',all:'サイト全体'};
+  var prompt = '以下のHTMLの「'+(sectionLabels[target]||'サイト全体')+'」を修正指示に従って修正してください。\n\n'
+    +'修正指示：'+instruction+'\n\n'
+    +'修正した完全なHTMLのみを出力。説明不要。<!DOCTYPE html>から開始。\n\n'
+    +'現在のHTML（先頭12000文字）：\n'+S.generatedHTML.substring(0, 12000);
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    loading.style.display='none';
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = html;
+    document.getElementById('code-pre').textContent = html;
+    document.getElementById('edit-instruction').value='';
+    document.getElementById('edit-input-area').style.display='none';
+  }).catch(function(err){
+    loading.style.display='none';
+    alert('修正エラー: '+err.message);
+    document.getElementById('edit-input-area').style.display='block';
+  });
+}
+
 // ===== SAVE & RESTORE =====// ===== SAVE & RESTORE =====
 function openHelp(){
   var m = document.getElementById('help-modal');
