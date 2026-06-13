@@ -704,14 +704,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
   </div><!-- /.pb-row -->
   <div class="pb-btn-row">
     <button onclick="saveProgress()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">💾 保存</button>
-    <button onclick="openHelp()" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;padding:6px 14px;background:transparent;border:1px solid rgba(0,255,170,.3);color:rgba(0,255,170,.6);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='rgba(0,255,170,.3)';this.style.color='rgba(0,255,170,.6)';">？ 使い方</button>
+    <button onclick="openHelp()" style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.15em;padding:7px 16px;background:var(--lime);border:1px solid var(--lime);color:#000;cursor:pointer;transition:all .2s;">？ 使い方</button>
   </div>
   </div><!-- /.progress-bar -->
 
 <!-- ヘルプモーダル -->
-<div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8000;overflow-y:auto;backdrop-filter:blur(8px);">
+<div id="help-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:8000;overflow-y:auto;backdrop-filter:blur(10px);">
   <div style="max-width:680px;margin:40px auto;background:var(--s1);border:1px solid var(--border);padding:0 0 40px;">
-    <!-- ヘッダー -->
     <div style="display:flex;justify-content:space-between;align-items:center;padding:24px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--s1);z-index:1;">
       <div>
         <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:4px;">// GUIDE</div>
@@ -719,131 +718,125 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       </div>
       <button onclick="closeHelp()" style="font-family:'Space Mono',monospace;font-size:18px;background:transparent;border:1px solid var(--border);color:var(--muted2);width:36px;height:36px;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted2)';">×</button>
     </div>
-    <!-- コンテンツ -->
     <div style="padding:32px;display:flex;flex-direction:column;gap:0;">
 
-      <!-- STEP 1 -->
+      <!-- 2つのモード説明 -->
+      <div style="padding:0 0 28px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;color:var(--lime);margin-bottom:14px;">2つの作り方</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="background:var(--s2);border:1px solid rgba(0,255,170,.25);padding:16px 18px;">
+            <div style="font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">⚡ クイック生成（おすすめ・30秒）</div>
+            <p style="font-family:'Noto Sans JP',sans-serif;font-size:12px;line-height:1.8;color:var(--muted2);">ページ上部の「QUICK START」に<strong style="color:var(--lime);">店名と業種を入力するだけ</strong>。デザイン・配色・フォント・文章・画像すべてAIが自動で決めて即座にHPが完成します。詳細業種も選べます。</p>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--border);padding:16px 18px;">
+            <div style="font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">🎨 カスタム生成（こだわり派）</div>
+            <p style="font-family:'Noto Sans JP',sans-serif;font-size:12px;line-height:1.8;color:var(--muted2);">9つのステップで色・フォント・レイアウト・画像まで細かく指定して作ります。下の手順を参照してください。</p>
+          </div>
+        </div>
+      </div>
+
       <div class="help-step">
         <div class="help-step-num">STEP 01</div>
         <div class="help-step-title">業種 &amp; 基本情報</div>
         <div class="help-step-body">
-          <p>ロゴスタイルはサイト名を入力すると右下にプレビューが表示されます。<strong>「AIに任せる」</strong>がおすすめ。</p>
+          <p>店名を入力すると<strong>ロゴスタイル</strong>のプレビューが表示されます。</p>
           <ul>
-            <li>サイト名・キャッチコピー・所在地を入力</li>
-            <li>業種を大カテゴリ→小カテゴリの順に選択</li>
-            <li>ロゴスタイルを7種から選択（AIに任せるが最も自然）</li>
+            <li>店名・キャッチコピー・所在地を入力</li>
+            <li>業種を大カテゴリ→詳細業種の順に選択</li>
+            <li>ロゴスタイルを8種から選択（AIに任せるが最も自然）</li>
           </ul>
         </div>
       </div>
 
-      <!-- STEP 2 -->
       <div class="help-step">
         <div class="help-step-num">STEP 02</div>
         <div class="help-step-title">雰囲気 &amp; テイスト</div>
         <div class="help-step-body">
-          <p>サイト全体の<strong>デザインの方向性</strong>を決めます。業種と合わせて考えましょう。</p>
-          <ul>
-            <li>ナチュラル・ラグジュアリー・ミニマルなど10種から選択</li>
-            <li>選んだ雰囲気がAIへのデザイン指示に直結します</li>
-          </ul>
+          <p>サイト全体の<strong>デザインの方向性</strong>を10種から選びます。ナチュラル・ラグジュアリー・ミニマル・テックなど。</p>
         </div>
       </div>
 
-      <!-- STEP 3 -->
       <div class="help-step">
         <div class="help-step-num">STEP 03</div>
         <div class="help-step-title">レイアウト選択</div>
         <div class="help-step-body">
-          <p>ヒーローセクションの<strong>構成パターン</strong>を選びます。</p>
-          <ul>
-            <li>10種類のレイアウトをプレビューで確認しながら選択</li>
-            <li>業種や雰囲気に合ったものを選ぶとクオリティが上がります</li>
-          </ul>
+          <p>ヒーローセクションの<strong>構成パターン</strong>を10種類から選択。プレビューで確認できます。</p>
         </div>
       </div>
 
-      <!-- STEP 4 -->
       <div class="help-step">
         <div class="help-step-num">STEP 04</div>
         <div class="help-step-title">ページ構成</div>
         <div class="help-step-body">
-          <p>HPに含める<strong>セクション（ページ）</strong>を選びます。</p>
-          <ul>
-            <li>必要なセクションにチェックを入れる</li>
-            <li>少なすぎると寂しくなるので最低5〜6個推奨</li>
-            <li>よくわからなければデフォルトのままでOK</li>
-          </ul>
+          <p>HPに含める<strong>セクション</strong>を選びます。最低5〜6個推奨。迷ったらデフォルトのままでOK。</p>
         </div>
       </div>
 
-      <!-- STEP 5 -->
       <div class="help-step">
         <div class="help-step-num">STEP 05</div>
         <div class="help-step-title">カラー設定</div>
         <div class="help-step-body">
-          <p>サイトの<strong>配色テーマ</strong>を選びます。</p>
-          <ul>
-            <li>プリセットテーマから選ぶだけでOK</li>
-            <li>カスタム背景色・アクセントカラーも細かく指定可能</li>
-            <li>ページごとに色を変えることもできます（上級者向け）</li>
-          </ul>
+          <p>サイトの<strong>配色テーマ</strong>を選びます。プリセットから選ぶか、背景色・アクセント色を自由に指定。ページごとの色設定も可能。</p>
         </div>
       </div>
 
-      <!-- STEP 6 -->
       <div class="help-step">
         <div class="help-step-num">STEP 06</div>
         <div class="help-step-title">フォント選択</div>
         <div class="help-step-body">
-          <p>見出しと本文の<strong>フォント</strong>を選びます。</p>
-          <ul>
-            <li>見出し31種・本文25種から選択可能</li>
-            <li>「もっと見る」で隠れているフォントも表示されます</li>
-            <li>日本語サイトはNoto系・Zen系がおすすめ</li>
-          </ul>
+          <p>見出しと本文の<strong>フォント</strong>を選びます。見出し31種・本文25種から選択可能。日本語サイトはNoto系・Zen系がおすすめ。</p>
         </div>
       </div>
 
-      <!-- STEP 7 -->
       <div class="help-step">
         <div class="help-step-num">STEP 07</div>
         <div class="help-step-title">画像の準備</div>
         <div class="help-step-body">
-          <p>HPに使う<strong>画像</strong>を用意します。3通りの方法があります。</p>
+          <p>写真を<strong>アップロード</strong>して、使う場所（ヒーロー・About等）と表示方法を指定します。</p>
           <ul>
-            <li><strong>① 業種別AI提案</strong>：「5枚提案する」ボタンで業種に合った写真が自動提案される。タップで選択、セクションと表示方法を指定</li>
-            <li><strong>② AI画像生成</strong>：好きなプロンプトを入力してPollinationsで画像を生成。選択後にセクション指定</li>
-            <li><strong>③ 自分でアップロード</strong>：撮影した写真などをアップロード。セクションと表示方法を指定</li>
+            <li>写真がなくてもOK — AIがグラデーション・SVGアートで美しく仕上げます</li>
+            <li>クイック生成では業種に合った画像が自動で入ります</li>
           </ul>
         </div>
       </div>
 
-      <!-- STEP 8 -->
       <div class="help-step">
         <div class="help-step-num">STEP 08</div>
         <div class="help-step-title">テキスト入力</div>
         <div class="help-step-body">
           <p>HPに載せる<strong>文章</strong>を入力します。</p>
           <ul>
-            <li><strong>「全項目をAIで自動生成」</strong>を押すと全部自動で入力されます（最もラク）</li>
-            <li>各項目右の「AI生成」ボタンで1項目ずつ生成することも可能</li>
+            <li>「全項目をAIで自動生成」で全部自動入力（最もラク）</li>
+            <li>各項目の「AI生成」ボタンで1項目ずつ生成も可能</li>
             <li>自分で書いた文章を入力してもOK</li>
           </ul>
         </div>
       </div>
 
-      <!-- STEP 9 -->
-      <div class="help-step" style="border-bottom:none;">
+      <div class="help-step">
         <div class="help-step-num">STEP 09</div>
         <div class="help-step-title">生成 &amp; 仕上げ</div>
         <div class="help-step-body">
           <p>いよいよ<strong>HP生成</strong>です。</p>
           <ul>
-            <li><strong>参照URLモード</strong>：好きなサイトのURLを入力→解析→そのデザインを参考に生成</li>
-            <li>「AIでHP生成」ボタンを押すと数十秒で完成</li>
-            <li>生成後は<strong>QUICK REGEN</strong>でセクション別に再生成できます</li>
-            <li>カスタム指示を入力して細かく調整することも可能</li>
+            <li><strong>参照URLモード</strong>：好きなサイトのURLを入れるとそのデザインを参考に生成</li>
+            <li>「AIでHP生成」で数十秒で完成</li>
             <li>完成したらHTMLをダウンロードして公開！</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- かんたん修正の説明 -->
+      <div class="help-step" style="border-bottom:none;">
+        <div class="help-step-num">★ 完成後</div>
+        <div class="help-step-title">かんたん修正</div>
+        <div class="help-step-body">
+          <p>生成されたHPの下に<strong>「EASY FIX」パネル</strong>が出ます。2タップで修正できます。</p>
+          <ul>
+            <li><strong>① どこを直す？</strong> トップ画面・紹介文・サービス・料金・色・文字・全体から選択</li>
+            <li><strong>② どう直す？</strong> プリセット（✨高級感UP・🧹シンプルに・🎨明るく・✂️文章短く・⚡動き追加・🔍文字大きく）をタップ、または自由に指示を入力</li>
+            <li>「✏️ 修正する」で20秒ほどで反映されます</li>
+            <li>納得いくまで何度でも修正できます</li>
           </ul>
         </div>
       </div>
