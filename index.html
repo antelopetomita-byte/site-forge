@@ -420,6 +420,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .result-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,6vw,72px);letter-spacing:.02em;color:var(--text);}
 .result-title em{color:var(--lime);font-style:normal;}
 .result-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.fix-tgt{font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:8px 14px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .15s;}
+.fix-tgt.selected{background:rgba(0,255,170,.12);border-color:var(--lime);color:var(--lime);}
+.fix-preset{font-family:'Noto Sans JP',sans-serif;font-size:11px;padding:7px 12px;background:var(--s2);border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:14px;transition:all .15s;}
+.fix-preset:hover{border-color:var(--lime);color:var(--lime);}
 .view-toggle{display:flex;border:1px solid var(--border);}
 .tog-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;padding:8px 14px;background:transparent;color:var(--muted3);border:none;cursor:none;transition:all .18s;}
 .tog-btn.active{background:var(--lime);color:#000;}
@@ -856,7 +860,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     <p style="font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;color:var(--muted2);margin-bottom:18px;">店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">
       <input type="text" id="qs-name" placeholder="店名・サービス名" style="flex:1;min-width:160px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
-      <select id="qs-industry" style="min-width:140px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+      <select id="qs-industry" onchange="updateQsSub()" style="min-width:130px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
         <option value="">業種を選択</option>
         <option value="飲食・食品">飲食・食品</option>
         <option value="美容・健康">美容・健康</option>
@@ -870,6 +874,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <option value="医療・介護">医療・介護</option>
         <option value="物流・運輸">物流・運輸</option>
         <option value="その他・一般">その他・一般</option>
+      </select>
+      <select id="qs-sub" style="min-width:130px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;display:none;">
+        <option value="">詳細を選択（任意）</option>
       </select>
       <button onclick="quickStart()" id="qs-btn" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:13px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap;">⚡ おまかせ生成</button>
     </div>
@@ -1368,6 +1375,41 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード</button>
       <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
     </div>
+  </div>
+
+  <!-- ✏️ かんたん修正パネル -->
+  <div id="fix-panel" style="margin:16px 0;border:1px solid rgba(0,255,170,.3);background:var(--s1);padding:20px 22px;">
+    <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--lime);margin-bottom:4px;">// EASY FIX</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.06em;color:var(--text);margin-bottom:14px;">気になるところを直す</div>
+
+    <!-- ① どこを？ -->
+    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.15em;margin-bottom:6px;">① どこを直す？</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="fix-target-btns">
+      <button class="fix-tgt" data-tgt="hero" onclick="selFixTarget(this)">トップ画面</button>
+      <button class="fix-tgt" data-tgt="about" onclick="selFixTarget(this)">紹介文</button>
+      <button class="fix-tgt" data-tgt="service" onclick="selFixTarget(this)">サービス</button>
+      <button class="fix-tgt" data-tgt="price" onclick="selFixTarget(this)">料金</button>
+      <button class="fix-tgt" data-tgt="cta" onclick="selFixTarget(this)">予約・連絡</button>
+      <button class="fix-tgt" data-tgt="color" onclick="selFixTarget(this)">色</button>
+      <button class="fix-tgt" data-tgt="font" onclick="selFixTarget(this)">文字</button>
+      <button class="fix-tgt selected" data-tgt="all" onclick="selFixTarget(this)">全体</button>
+    </div>
+
+    <!-- ② どう直す？ プリセット -->
+    <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.15em;margin-bottom:6px;">② どう直す？（タップ or 自由入力）</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="fix-preset" onclick="setFixText('もっと高級感のあるデザインにして')">✨ 高級感UP</button>
+      <button class="fix-preset" onclick="setFixText('もっとシンプルですっきりさせて')">🧹 シンプルに</button>
+      <button class="fix-preset" onclick="setFixText('もっとポップで明るい印象にして')">🎨 明るく</button>
+      <button class="fix-preset" onclick="setFixText('文章をもっと短く簡潔にして')">✂️ 文章短く</button>
+      <button class="fix-preset" onclick="setFixText('アニメーションをもっと増やして動きのあるページにして')">⚡ 動きを追加</button>
+      <button class="fix-preset" onclick="setFixText('文字をもっと大きく読みやすくして')">🔍 文字大きく</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:stretch;">
+      <input type="text" id="fix-input" placeholder="自由に指示もOK（例：背景をもっと暗く、写真を大きく）" style="flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:12px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+      <button onclick="applyFix()" id="fix-btn" style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.08em;padding:12px 26px;background:var(--lime);color:#000;border:none;cursor:pointer;white-space:nowrap;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));">✏️ 修正する</button>
+    </div>
+    <div id="fix-loading" style="display:none;margin-top:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);align-items:center;gap:8px;"><div class="spin" style="width:10px;height:10px;border-width:2px;"></div>AIが修正中...（20秒ほど）</div>
   </div>
   <!-- プレビューを直接操作できるように -->
   <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;letter-spacing:.1em;">// プレビューは直接スクロール・操作できます</div>
@@ -1952,6 +1994,103 @@ function generateSuggestedImages(){
 }
 
 // ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====// ===== AI IMAGE GEN =====
+// 業種サブカテゴリデータ
+var QS_SUBS = {
+  '飲食・食品': ['カフェ・喫茶店','レストラン・食堂','ラーメン・麺類','寿司・和食','バー・居酒屋','パン・スイーツ','テイクアウト・デリバリー','食品製造・加工業'],
+  '美容・健康': ['美容院・ヘアサロン','マッサージ・整体院','ネイルサロン','まつエク・アイブロウ','エステ・フェイシャル','フィットネス・ジム','ヨガ・ピラティス','クリニック・皮膚科'],
+  '製造業・工業': ['金属加工','機械製造','電子部品','印刷・パッケージ','化学・素材','食品機械','段ボール・紙器'],
+  '建設・不動産': ['工務店・建築','リフォーム','不動産売買','賃貸管理','設計事務所','外構・造園'],
+  'クリエイティブ': ['デザイン事務所','写真スタジオ','映像制作','Web制作','イラスト・アート','音楽・スタジオ'],
+  'IT・テクノロジー': ['ソフトウェア開発','Webサービス','ITコンサル','AI・データ分析','セキュリティ','スタートアップ'],
+  '小売・EC': ['アパレル・古着','雑貨・インテリア','食品販売','ECサイト','スポーツ用品','古本・リサイクル'],
+  '教育・学習': ['学習塾','英会話教室','音楽教室','プログラミング教室','保育園・幼稚園','スポーツ教室'],
+  '士業・専門職': ['弁護士','税理士','行政書士','社労士','司法書士','コンサルタント'],
+  '医療・介護': ['歯科医院','内科・クリニック','整骨院','介護施設','薬局','動物病院'],
+  '物流・運輸': ['運送会社','倉庫・物流','引越し','タクシー・バス','貿易・通関'],
+  'その他・一般': []
+};
+
+// 業種別の実在Unsplash画像（安定URL）
+var INDUSTRY_IMAGES = {
+  '飲食・食品': [
+    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&q=80',
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80'
+  ],
+  '美容・健康': [
+    'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80',
+    'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=1200&q=80'
+  ],
+  '製造業・工業': [
+    'https://images.unsplash.com/photo-1565043666747-69f6646db940?w=1200&q=80',
+    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&q=80',
+    'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=1200&q=80'
+  ],
+  '建設・不動産': [
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1200&q=80'
+  ],
+  'クリエイティブ': [
+    'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1200&q=80',
+    'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=80'
+  ],
+  'IT・テクノロジー': [
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=80',
+    'https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&q=80',
+    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80'
+  ],
+  '小売・EC': [
+    'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&q=80',
+    'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1200&q=80',
+    'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=1200&q=80'
+  ],
+  '教育・学習': [
+    'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80',
+    'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=80',
+    'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1200&q=80'
+  ],
+  '士業・専門職': [
+    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80',
+    'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=80',
+    'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80'
+  ],
+  '医療・介護': [
+    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1200&q=80',
+    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&q=80'
+  ],
+  '物流・運輸': [
+    'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&q=80',
+    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=1200&q=80',
+    'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=1200&q=80'
+  ],
+  'その他・一般': [
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80',
+    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80'
+  ]
+};
+
+function updateQsSub(){
+  var cat = document.getElementById('qs-industry').value;
+  var sub = document.getElementById('qs-sub');
+  sub.innerHTML = '<option value="">詳細を選択（任意）</option>';
+  var subs = QS_SUBS[cat] || [];
+  if(subs.length){
+    subs.forEach(function(s){
+      var o = document.createElement('option');
+      o.value = s; o.textContent = s;
+      sub.appendChild(o);
+    });
+    sub.style.display = 'block';
+  } else {
+    sub.style.display = 'none';
+  }
+}
+
 function quickStart(){
   var name = document.getElementById('qs-name').value.trim();
   var industry = document.getElementById('qs-industry').value;
@@ -1966,7 +2105,7 @@ function quickStart(){
 
   S.siteName = name;
   S.industryCat = industry;
-  S.industrySub = '';
+  S.industrySub = document.getElementById('qs-sub').value || '';
   S.catchcopy = '';
   S.location = '';
   S.logoStyle = 'AI_CHOICE';
@@ -1996,6 +2135,15 @@ function quickStart(){
   S.customAccent = '';
   S.pages = ['ヒーロー（トップビジュアル）','About・コンセプト','特徴・強み','メニュー・料金','お客様の声','アクセス','予約・お問い合わせ','FAQ'];
   S.texts = {top:'',about:'',service:'',price:'',hours:'',tel:'',email:'',line:'',instagram:'',faq:'',staff:''};
+
+  // 業種に合った画像を自動セット
+  var imgs = INDUSTRY_IMAGES[industry] || INDUSTRY_IMAGES['その他・一般'];
+  S.uploadedImages = [
+    {src: imgs[0], section: 'hero', style: 'bg', name: 'hero image'},
+    {src: imgs[1], section: 'about', style: 'card', name: 'about image'},
+    {src: imgs[2], section: 'service', style: 'card', name: 'service image'}
+  ];
+  S.aiImages = [];
 
   // step9へ移動して生成実行
   goToStep(9);
@@ -2052,22 +2200,31 @@ function generateSite(){
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
   var aiImgOnly = S.selectedImages;
   var imgInstructions = '';
+  var sectionNames = {hero:'hero section',about:'About section',service:'Services section',gallery:'Gallery section',cta:'CTA section',other:'appropriate section'};
+  var styleNames = {bg:'full background (position:absolute,inset:0,object-fit:cover,width:100%,height:100%) with dark overlay for text readability',card:'card image (aspect-ratio:4/3,object-fit:cover,border-radius:8px)',circle:'circular (border-radius:50%,aspect-ratio:1,object-fit:cover)',full:'full-width (width:100%,display:block)'};
   if(uploadedOnly.length || aiImgOnly.length){
-    imgInstructions = '【画像配置指定】\n';
+    imgInstructions = '# IMAGE PLACEMENT — CRITICAL: include EVERY image below. Do not skip any.\n';
     uploadedOnly.slice(0,8).forEach(function(img,i){
-      var sectionNames = {hero:'ヒーローセクション',about:'Aboutセクション',service:'サービスセクション',gallery:'ギャラリーセクション',cta:'CTAセクション',other:'適切なセクション'};
-      var styleNames = {bg:'背景画像',card:'カード画像',circle:'丸型写真',full:'全幅画像'};
-      imgInstructions += '画像'+(i+1)+': '+(sectionNames[img.section]||img.section)+' / '+(styleNames[img.style]||img.style)+'\n';
-      imgInstructions += '  img要素に data-upload-index="'+i+'" 属性を付けてsrcは空にする\n';
+      if(img.src && img.src.indexOf('http') === 0){
+        // URL画像 → 直接src指定
+        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+'\n';
+        imgInstructions += '  Style: '+(styleNames[img.style]||img.style)+'\n';
+        imgInstructions += '  Use exactly: <img src="'+img.src+'" alt="" loading="lazy" style="[style above]">\n';
+      } else {
+        // ローカルアップロード → data-upload-index方式
+        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+'\n';
+        imgInstructions += '  Style: '+(styleNames[img.style]||img.style)+'\n';
+        imgInstructions += '  Use exactly: <img src="" data-upload-index="'+i+'" alt="" style="[style above]">\n';
+      }
     });
     if(aiImgOnly.length){
-      imgInstructions += 'AI生成画像（直接URLを使用）:\n';
+      imgInstructions += 'Additional images (use src URL directly):\n';
       aiImgOnly.slice(0,4).forEach(function(url,i){
-        imgInstructions += '画像URL'+(i+1)+': '+url+'\n';
+        imgInstructions += 'URL '+(i+1)+': '+url+'\n';
       });
     }
   } else {
-    imgInstructions = '画像はCSSグラデーション・SVGパターンで美しく代替';
+    imgInstructions = '# IMAGES\nNo images. Use beautiful CSS gradients or SVG geometric art instead.';
   }
 
   var vibeToStyle = {
@@ -2243,6 +2400,60 @@ function regenSite(){
   if(gen) gen.classList.remove('show');
   document.getElementById('app').scrollIntoView({behavior:'smooth'});
   setTimeout(function(){ generateSite(); }, 500);
+}
+
+var fixTarget = 'all';
+function selFixTarget(btn){
+  document.querySelectorAll('.fix-tgt').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  fixTarget = btn.dataset.tgt;
+}
+function setFixText(txt){
+  document.getElementById('fix-input').value = txt;
+}
+function applyFix(){
+  var instruction = document.getElementById('fix-input').value.trim();
+  if(!instruction){ alert('修正内容を入力するかプリセットをタップしてください'); return; }
+  if(!S.generatedHTML){ alert('先にHPを生成してください'); return; }
+
+  var btn = document.getElementById('fix-btn');
+  var loading = document.getElementById('fix-loading');
+  btn.disabled = true; btn.style.opacity = '.5';
+  loading.style.display = 'flex';
+
+  var targetNames = {hero:'トップ画面（ヒーローセクション）',about:'紹介文（Aboutセクション）',service:'サービスセクション',price:'料金セクション',cta:'予約・お問い合わせセクション',color:'サイト全体の配色',font:'サイト全体のフォント・文字',all:'サイト全体'};
+
+  var prompt = '以下のHTMLの「'+(targetNames[fixTarget]||'サイト全体')+'」を修正してください。\n\n'
+    +'# 修正指示\n'+instruction+'\n\n'
+    +'# ルール\n'
+    +'- 修正対象以外は一切変更しない\n'
+    +'- デザインクオリティは維持または向上させる\n'
+    +'- 完全なHTMLファイル全体を出力する\n'
+    +'- 説明・マークダウン記法は不要。<!DOCTYPE html>から開始\n\n'
+    +'# 現在のHTML\n'+S.generatedHTML;
+
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    loading.style.display='none';
+    btn.disabled=false; btn.style.opacity='1';
+    if(data.error) throw new Error(data.error.message);
+    var html = data.content.map(function(b){return b.text||'';}).join('').trim();
+    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    S.generatedHTML = html;
+    var frame = document.getElementById('preview-frame');
+    if(frame) frame.srcdoc = html;
+    var codePre = document.getElementById('code-pre');
+    if(codePre) codePre.textContent = html;
+    document.getElementById('fix-input').value = '';
+  }).catch(function(err){
+    loading.style.display='none';
+    btn.disabled=false; btn.style.opacity='1';
+    alert('修正エラー: '+err.message);
+  });
 }
 
 function toggleEditSection(){
