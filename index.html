@@ -64,7 +64,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .h-bgtxt{position:absolute;font-family:'Bebas Neue',sans-serif;font-size:clamp(120px,24vw,300px);color:transparent;-webkit-text-stroke:1px rgba(0,200,255,.08);top:50%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;user-select:none;}
 .h-tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.22em;text-transform:uppercase;margin-bottom:22px;opacity:0;animation:fup .6s .3s forwards;}
 .h-tag::before{content:'// ';}
-.h-title{font-family:'Audiowide',sans-serif;font-size:clamp(42px,10vw,130px);line-height:.9;letter-spacing:.02em;margin-bottom:28px;opacity:0;animation:fup .7s .5s forwards;font-style:italic;transform:skewX(-6deg);}
+.h-title{font-family:'Audiowide',sans-serif;font-size:clamp(42px,10vw,130px);line-height:.9;letter-spacing:.02em;margin-bottom:28px;font-style:italic;transform:skewX(-6deg);}
 .h-sub{font-size:clamp(13px,1.7vw,17px);color:var(--muted3);font-weight:300;max-width:440px;line-height:1.85;margin-bottom:44px;opacity:0;animation:fup .7s .7s forwards;}
 .h-cta{display:inline-flex;align-items:center;gap:12px;background:var(--lime);color:#000;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.1em;padding:16px 40px;border:none;cursor:none;text-decoration:none;transition:all .18s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));opacity:0;animation:fup .7s .9s forwards;}
 .h-cta:hover{background:#fff;transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--lime);}
@@ -78,44 +78,62 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 .h-title{position:relative;}
 .h-title .line1{
   display:block;
-  opacity:0;
-  animation:fup .7s .5s forwards;
   background:linear-gradient(90deg,#ff3d3d,#ff9e3d,#ffe53d,#3dff7e,#3dd6ff,#9d3dff,#ff3df0,#ff3d3d);
-  background-size:200% auto;
+  background-size:300% auto;
   -webkit-background-clip:text;
   background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:fup .7s .5s forwards, rainbow 4s linear 1.2s infinite;
+  color:transparent;
+  animation:rainbow 3s linear infinite;
 }
 .h-title em{
   display:block;
   font-style:italic;
   font-weight:900;
   background:linear-gradient(90deg,#3dd6ff,#9d3dff,#ff3df0,#ff3d3d,#ff9e3d,#ffe53d,#3dff7e,#3dd6ff) !important;
-  background-size:200% auto !important;
+  background-size:300% auto !important;
   -webkit-background-clip:text !important;
   background-clip:text !important;
   -webkit-text-fill-color:transparent !important;
-  animation:rainbow 4s linear 1.5s infinite;
+  color:transparent !important;
+  animation:rainbow 3s linear infinite !important;
 }
 @keyframes rainbow{
   0%{background-position:0% center;}
-  100%{background-position:200% center;}
+  100%{background-position:300% center;}
 }
 .h-title::after{
   content:'';
   position:absolute;
   top:0;left:-100%;
-  width:60%;height:100%;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.5) 50%,transparent 100%);
+  width:50%;height:100%;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.6) 50%,transparent 100%);
   transform:skewX(-20deg);
-  animation:shine 3s ease-in-out 1.5s infinite;
+  animation:shine 2.3s cubic-bezier(.7,0,.3,1) .8s infinite;
+  pointer-events:none;
+  z-index:1;
+}
+.h-title::before{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:30%;height:100%;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,255,170,.5) 50%,transparent 100%);
+  transform:skewX(-20deg);
+  animation:shine2 3.7s ease-in-out 1.6s infinite;
   pointer-events:none;
   z-index:1;
 }
 @keyframes shine{
   0%{left:-100%;}
+  18%{left:150%;}
+  22%{left:-100%;}
+  35%{left:150%;}
   40%,100%{left:150%;}
+}
+@keyframes shine2{
+  0%{left:-120%;}
+  30%,100%{left:160%;}
 }
 
 /* FEATURES BAR */
@@ -1334,6 +1352,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <div class="gen-bars"><div class="gen-bar"></div><div class="gen-bar"></div><div class="gen-bar"></div><div class="gen-bar"></div><div class="gen-bar"></div><div class="gen-bar"></div><div class="gen-bar"></div></div>
         <div class="gen-label">AIがHPを鍛造中...</div>
         <div class="gen-status" id="gen-status">analyzing requirements...</div>
+        <div style="width:100%;max-width:300px;margin-top:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;">PROGRESS</span>
+            <span id="gen-percent" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--lime);letter-spacing:.05em;">0%</span>
+          </div>
+          <div style="width:100%;height:6px;background:var(--s2);border-radius:3px;overflow:hidden;">
+            <div id="gen-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#00ffaa,#38b8ff);border-radius:3px;transition:width .4s ease;"></div>
+          </div>
+        </div>
       </div>
       <!-- 参照URLモード -->
       <div style="margin-bottom:20px;background:var(--s1);border:1px solid var(--border);padding:20px;">
@@ -2377,6 +2404,21 @@ function generateSite(){
   var mi=0;
   var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
 
+  // 疑似プログレスバー（生成完了まで95%まで徐々に進む）
+  var pct=0;
+  var pctEl=document.getElementById('gen-percent');
+  var barEl=document.getElementById('gen-progress-bar');
+  var progTimer=setInterval(function(){
+    // 最初は速く、後半はゆっくり（95%で止まる）
+    if(pct<95){
+      var inc = pct<40 ? 3 : (pct<70 ? 1.5 : (pct<88 ? 0.6 : 0.2));
+      pct=Math.min(95,pct+inc);
+      if(pctEl) pctEl.textContent=Math.floor(pct)+'%';
+      if(barEl) barEl.style.width=pct+'%';
+    }
+  },350);
+  S._progTimer=progTimer;
+
   var pal = palData[S.globalPalette]||palData['mono-light'];
   var layoutGuide = {
     'FULL SCREEN HERO':'全画面背景画像またはグラデーション上に中央配置の大きなテキストとCTAボタン。',
@@ -2551,13 +2593,20 @@ function generateSite(){
   }).then(function(res){return res.json();})
   .then(function(data){
     clearInterval(timer);
+    if(S._progTimer) clearInterval(S._progTimer);
     if(data.error) throw new Error(data.error.message);
     var html = data.content.map(function(b){return b.text||'';}).join('');
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
-    showResult(html);
+    // 100%表示
+    var pctEl=document.getElementById('gen-percent');
+    var barEl=document.getElementById('gen-progress-bar');
+    if(pctEl) pctEl.textContent='100%';
+    if(barEl) barEl.style.width='100%';
+    setTimeout(function(){ showResult(html); }, 400);
   }).catch(function(err){
     clearInterval(timer);
+    if(S._progTimer) clearInterval(S._progTimer);
     gen.classList.remove('show'); btn.style.display='flex';
     alert('生成エラー: '+err.message);
   });
