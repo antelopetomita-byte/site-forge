@@ -932,6 +932,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <!-- ライブプレビュー -->
         <div id="logo-preview" style="margin-top:12px;padding:14px 20px;background:var(--s2);border:1px solid var(--border);border-radius:4px;font-size:18px;letter-spacing:.15em;color:var(--text);font-family:'Space Mono',monospace;display:none;">
         </div>
+
+        <!-- ロゴ画像アップロード -->
+        <div style="margin-top:16px;">
+          <label style="display:flex;align-items:center;gap:8px;">
+            ロゴ画像をお持ちの方
+            <span style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted2);letter-spacing:.1em;">// アップロードすると文字ロゴの代わりに使用</span>
+          </label>
+          <input type="file" id="logo-upload" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none;" onchange="handleLogoUpload(this.files[0])">
+          <div id="logo-upload-zone" onclick="document.getElementById('logo-upload').click()" style="margin-top:8px;border:1px dashed var(--border);border-radius:6px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--s2);">
+            <div id="logo-upload-placeholder" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:.1em;">📁 タップしてロゴ画像を選択<br><span style="font-size:9px;">PNG / JPG / SVG（透過PNG推奨）</span></div>
+            <div id="logo-upload-preview" style="display:none;flex-direction:column;align-items:center;gap:8px;">
+              <img id="logo-preview-img" style="max-height:60px;max-width:200px;object-fit:contain;" alt="logo">
+              <button type="button" onclick="event.stopPropagation();removeLogo()" style="font-family:'Space Mono',monospace;font-size:9px;padding:4px 12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;">✕ 削除</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="row2">
         <div class="field"><label>所在地（任意）</label><input type="text" id="location" placeholder="例：神奈川県平塚市"></div>
@@ -1577,7 +1593,7 @@ var S = {
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
-  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE', unlocked:false, unlockPlan:'',
+  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE', unlocked:false, unlockPlan:'', logoImage:null,
   texts:{},
   generatedHTML:''
 };
@@ -2135,6 +2151,72 @@ function updateQsSub(){
   }
 }
 
+function handleLogoUpload(file){
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    S.logoImage = e.target.result;
+    document.getElementById('logo-preview-img').src = e.target.result;
+    document.getElementById('logo-upload-placeholder').style.display = 'none';
+    document.getElementById('logo-upload-preview').style.display = 'flex';
+    document.getElementById('logo-upload-zone').style.borderColor = 'var(--lime)';
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo(){
+  S.logoImage = null;
+  var inp = document.getElementById('logo-upload');
+  if(inp) inp.value = '';
+  document.getElementById('logo-upload-placeholder').style.display = 'block';
+  document.getElementById('logo-upload-preview').style.display = 'none';
+  document.getElementById('logo-upload-zone').style.borderColor = 'var(--border)';
+}
+
+function selLogoStyle(btn){
+  document.querySelectorAll('.logo-style-btn').forEach(function(b){
+    b.style.background='transparent';
+    b.style.borderColor='var(--border)';
+    b.style.color='var(--muted2)';
+  });
+  btn.style.background='rgba(0,255,170,.1)';
+  btn.style.borderColor='var(--lime)';
+  btn.style.color='var(--lime)';
+  S.logoStyle = btn.dataset.style;
+  updateLogoPreview();
+}
+
+function updateLogoPreview(){
+  var name = (document.getElementById('site-name')||{}).value;
+  name = (name||'').trim();
+  var preview = document.getElementById('logo-preview');
+  if(!preview) return;
+  if(!name){ preview.style.display='none'; return; }
+  preview.style.display='block';
+  var style = S.logoStyle || 'AI_CHOICE';
+  var html = '';
+  if(style === 'PLAIN'){
+    html = name.toUpperCase();
+  } else if(style === 'ACCENT_FIRST'){
+    html = '<span style="color:var(--lime)">'+name[0].toUpperCase()+'</span>'+name.slice(1).toUpperCase();
+  } else if(style === 'ACCENT_LAST'){
+    var u = name.toUpperCase();
+    html = u.slice(0,-1)+'<span style="color:var(--lime)">'+u.slice(-1)+'</span>';
+  } else if(style === 'ITALIC_MIX'){
+    var words = name.split(' ');
+    html = words.map(function(w,i){ return i%2===1 ? '<em style="font-style:italic;color:var(--lime)">'+w+'</em>' : w.toUpperCase(); }).join(' ');
+  } else if(style === 'SPACED'){
+    html = name.toUpperCase().split('').join(' ');
+  } else if(style === 'SYMBOL_PREFIX'){
+    html = '<span style="color:var(--lime);font-size:0.8em">// </span>'+name.toUpperCase();
+  } else if(style === 'DOT_SPLIT'){
+    var parts = name.split(/\s+/);
+    html = parts.join(' <span style="color:var(--lime)">·</span> ').toUpperCase();
+  } else {
+    html = '<span style="color:var(--muted2);font-size:11px;letter-spacing:.1em">AI がブランドに最適なスタイルを自動選択します</span>';
+  }
+  preview.innerHTML = html;
+}
+
 function quickStart(){
   var name = document.getElementById('qs-name').value.trim();
   var industry = document.getElementById('qs-industry').value;
@@ -2305,7 +2387,7 @@ function generateSite(){
     +'- Catchcopy: '+(S.catchcopy||'[craft a memorable one]')+'\n'
     +'- Location: '+(S.location||'Japan')+'\n'
     +'- Vibe: '+(S.vibe||'Modern Premium')+' → '+currentVibeStyle+'\n'
-    +'- Logo style: '+(logoStyleMap[S.logoStyle]||'AI choice')+'\n\n'
+    +'- Logo style: '+(S.logoImage ? 'IMAGE LOGO PROVIDED — place <img src="" data-logo-image alt="'+S.siteName+'" style="height:40px;width:auto;"> in the navigation header instead of text logo. The src will be injected automatically.' : (logoStyleMap[S.logoStyle]||'AI choice'))+'\n\n'
     +'# CONTENT\n'
     +'- Hero message: '+(S.texts.top||'[generate compelling hero copy in Japanese]')+'\n'
     +'- About: '+(S.texts.about||'[generate warm brand-voice about text in Japanese]')+'\n'
@@ -2388,11 +2470,15 @@ function generateSite(){
 
 function showResult(html){
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
-  if(uploadedOnly.length){
+  var needInject = uploadedOnly.length || S.logoImage;
+  if(needInject){
     var injectScript = '<scr'+'ipt>window.addEventListener("load",function(){';
     uploadedOnly.forEach(function(img,i){
       injectScript += 'var el=document.querySelector(\'[data-upload-index="'+i+'"]\');if(el){el.src="'+img.src+'";}';
     });
+    if(S.logoImage){
+      injectScript += 'var logoEl=document.querySelector("[data-logo-image]");if(logoEl){logoEl.src="'+S.logoImage+'";}';
+    }
     injectScript += '});<\/scr'+'ipt>';
     html = html.replace('</body>', injectScript+'</body>');
   }
@@ -2458,8 +2544,16 @@ function patchHTML(html){
   } else {
     html = safetyCSS + html;
   }
+  // アップロード画像・ロゴ画像をHTMLに直接焼き込む（DLファイル単体で動くように）
+  var imgInject = '';
+  S.uploadedImages.filter(function(im){return im.src && im.src.indexOf('data:')===0;}).forEach(function(im,i){
+    imgInject += 'var e'+i+'=document.querySelector(\'[data-upload-index="'+i+'"]\');if(e'+i+'){e'+i+'.src="'+im.src+'";}';
+  });
+  if(S.logoImage){
+    imgInject += 'var lg=document.querySelector("[data-logo-image]");if(lg){lg.src="'+S.logoImage+'";}';
+  }
   // IntersectionObserverが動かない場合に備え、bodyロード時に全要素を可視化するJS
-  var safetyJS = '<script>window.addEventListener("load",function(){setTimeout(function(){'
+  var safetyJS = '<script>window.addEventListener("load",function(){'+imgInject+'setTimeout(function(){'
     + 'document.querySelectorAll(".reveal,.fade-in,.animate,[class*=fade],[class*=reveal],[class*=animate]").forEach(function(el){'
     + 'el.style.opacity="1";el.style.transform="none";el.classList.add("visible","in-view","active","show");'
     + '});},100);});<\/script>';
