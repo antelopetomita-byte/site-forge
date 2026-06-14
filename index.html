@@ -1780,18 +1780,31 @@ function toggleFontExtra(type) {
 
 // ===== IMAGE PLACEMENT =====
 var PLACEMENT_SECTIONS = [
-  {id:'hero',    label:'🖼 ヒーロー背景'},
-  {id:'about',   label:'👤 About写真'},
+  {id:'hero',    label:'🖼 トップ画面'},
+  {id:'about',   label:'👤 紹介・About'},
   {id:'service', label:'🛠 サービス'},
+  {id:'menu',    label:'📋 メニュー・料金'},
   {id:'gallery', label:'🎨 ギャラリー'},
-  {id:'cta',     label:'📣 CTA背景'},
-  {id:'other',   label:'📌 その他'},
+  {id:'staff',   label:'🧑‍🤝‍🧑 スタッフ'},
+  {id:'review',  label:'💬 お客様の声'},
+  {id:'access',  label:'📍 アクセス'},
+  {id:'cta',     label:'📣 予約・問合せ'},
+  {id:'other',   label:'📌 おまかせ'},
 ];
 var PLACEMENT_STYLES = [
-  {id:'bg',      label:'背景'},
-  {id:'card',    label:'カード'},
-  {id:'circle',  label:'丸型'},
-  {id:'full',    label:'全幅'},
+  {id:'bg',       label:'背景いっぱい'},
+  {id:'card',     label:'カード内'},
+  {id:'circle',   label:'丸型'},
+  {id:'full',     label:'横幅いっぱい'},
+  {id:'half',     label:'半分（左右分割）'},
+  {id:'thumb',    label:'小さめサムネ'},
+];
+var PLACEMENT_POSITIONS = [
+  {id:'auto',   label:'おまかせ'},
+  {id:'top',    label:'上'},
+  {id:'center', label:'中央'},
+  {id:'left',   label:'左'},
+  {id:'right',  label:'右'},
 ];
 
 function handleUpload(files){
@@ -1800,7 +1813,7 @@ function handleUpload(files){
     var reader = new FileReader();
     reader.onload = function(e){
       var dataUrl = e.target.result;
-      var imgData = {src: dataUrl, section: 'hero', style: 'bg', name: file.name};
+      var imgData = {src: dataUrl, section: 'hero', style: 'bg', position: 'auto', name: file.name};
       S.uploadedImages.push(imgData);
       renderPlacementList();
     };
@@ -1853,11 +1866,30 @@ function renderPlacementList(){
       };})(idx, st.id);
       styleRow.appendChild(btn);
     });
+    // 位置指定
+    var posLabel = document.createElement('div');
+    posLabel.style.cssText = 'font-size:9px;color:var(--muted2);font-family:Space Mono,monospace;margin-bottom:4px;margin-top:6px;';
+    posLabel.textContent = '位置：';
+    var posRow = document.createElement('div');
+    posRow.className = 'img-placement-row';
+    PLACEMENT_POSITIONS.forEach(function(po){
+      var btn = document.createElement('button');
+      btn.className = 'style-btn' + ((img.position||'auto')===po.id?' active':'');
+      btn.textContent = po.label;
+      btn.onclick = (function(i, pid){ return function(){
+        S.uploadedImages[i].position = pid;
+        renderPlacementList();
+      };})(idx, po.id);
+      posRow.appendChild(btn);
+    });
+
     ctrl.appendChild(name);
     ctrl.appendChild(secLabel);
     ctrl.appendChild(secRow);
     ctrl.appendChild(styleLabel);
     ctrl.appendChild(styleRow);
+    ctrl.appendChild(posLabel);
+    ctrl.appendChild(posRow);
     var del = document.createElement('button');
     del.className = 'img-placement-del';
     del.textContent = '×';
@@ -2212,19 +2244,19 @@ function generateSite(){
   var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
   var aiImgOnly = S.selectedImages;
   var imgInstructions = '';
-  var sectionNames = {hero:'hero section',about:'About section',service:'Services section',gallery:'Gallery section',cta:'CTA section',other:'appropriate section'};
-  var styleNames = {bg:'full background (position:absolute,inset:0,object-fit:cover,width:100%,height:100%) with dark overlay for text readability',card:'card image (aspect-ratio:4/3,object-fit:cover,border-radius:8px)',circle:'circular (border-radius:50%,aspect-ratio:1,object-fit:cover)',full:'full-width (width:100%,display:block)'};
+  var sectionNames = {hero:'hero section',about:'About section',service:'Services section',menu:'Menu/Pricing section',gallery:'Gallery section',staff:'Staff section',review:'Testimonials section',access:'Access/Map section',cta:'CTA/Contact section',other:'appropriate section'};
+  var styleNames = {bg:'full background (position:absolute,inset:0,object-fit:cover,width:100%,height:100%) with dark overlay for text readability',card:'card image (aspect-ratio:4/3,object-fit:cover,border-radius:8px)',circle:'circular (border-radius:50%,aspect-ratio:1,object-fit:cover)',full:'full-width (width:100%,display:block)',half:'half-width image in a two-column split layout (width:50%)',thumb:'small thumbnail (max-width:200px,border-radius:8px)'};
   if(uploadedOnly.length || aiImgOnly.length){
     imgInstructions = '# IMAGE PLACEMENT — CRITICAL: include EVERY image below. Do not skip any.\n';
     uploadedOnly.slice(0,8).forEach(function(img,i){
+      var posNames = {auto:'',top:' (position at top of section)',center:' (centered)',left:' (on the left side)',right:' (on the right side)'};
+      var posNote = posNames[img.position||'auto'] || '';
       if(img.src && img.src.indexOf('http') === 0){
-        // URL画像 → 直接src指定
-        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+'\n';
+        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+posNote+'\n';
         imgInstructions += '  Style: '+(styleNames[img.style]||img.style)+'\n';
         imgInstructions += '  Use exactly: <img src="'+img.src+'" alt="" loading="lazy" style="[style above]">\n';
       } else {
-        // ローカルアップロード → data-upload-index方式
-        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+'\n';
+        imgInstructions += 'Image '+(i+1)+': place in '+(sectionNames[img.section]||img.section)+posNote+'\n';
         imgInstructions += '  Style: '+(styleNames[img.style]||img.style)+'\n';
         imgInstructions += '  Use exactly: <img src="" data-upload-index="'+i+'" alt="" style="[style above]">\n';
       }
@@ -2284,6 +2316,13 @@ function generateSite(){
     +'- Email: '+(S.texts.email||'none')+'\n'
     +'- LINE: '+(S.texts.line||'none')+'\n'
     +'- Instagram: '+(S.texts.instagram||'none')+'\n'
+    +'\n# CONTACT — MUST BE FUNCTIONAL (実際に動く問い合わせ)\n'
+    +(S.texts.email && S.texts.email!=='none' ? '- Email provided: Create a WORKING contact form using Formspree. Form action="https://formspree.io/f/YOUR_FORM_ID" method="POST". Add a clear note in HTML comment: <!-- 重要：Formspreeで無料登録し、YOUR_FORM_IDを実際のIDに置き換えてください。https://formspree.io --> Fields: name(必須), email(必須), message(必須). Include proper name attributes.\n' : '')
+    +(S.texts.tel && S.texts.tel!=='none' ? '- Phone provided: Make it a tappable link <a href="tel:'+S.texts.tel.replace(/[^0-9+]/g,'')+'">. Display large and prominent.\n' : '')
+    +(S.texts.line && S.texts.line!=='none' ? '- LINE provided: Create a prominent green LINE button <a href="'+S.texts.line+'"> with LINE icon. Also show QR code via api.qrserver.com.\n' : '')
+    +(S.texts.instagram && S.texts.instagram!=='none' ? '- Instagram provided: Add Instagram button/link <a href="'+S.texts.instagram+'"> with Instagram icon.\n' : '')
+    +'- If only phone/LINE/Instagram (no email): do NOT create a non-functional form. Use the actual contact buttons instead.\n'
+    +'- Every contact element must be a real working link, never a fake button.\n'
     +'- FAQ: '+(S.texts.faq||'none')+'\n\n'
     +'# DESIGN SYSTEM\n'
     +'- Layout: '+(S.layout||'FULL SCREEN HERO')+'\n'
