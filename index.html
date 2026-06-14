@@ -2415,19 +2415,20 @@ function generateSite(){
   var mi=0;
   var timer=setInterval(function(){st.textContent=msgs[Math.min(mi++,msgs.length-1)];},1800);
 
-  // 疑似プログレスバー（生成完了まで95%まで徐々に進む）
+  // 疑似プログレスバー（実際の生成時間 約40-60秒に合わせる）
   var pct=0;
   var pctEl=document.getElementById('gen-percent');
   var barEl=document.getElementById('gen-progress-bar');
+  // 1秒ごとに更新。生成は通常50秒前後 → 90%到達まで約50秒かける
   var progTimer=setInterval(function(){
-    // 最初は速く、後半はゆっくり（95%で止まる）
-    if(pct<95){
-      var inc = pct<40 ? 3 : (pct<70 ? 1.5 : (pct<88 ? 0.6 : 0.2));
-      pct=Math.min(95,pct+inc);
+    if(pct<90){
+      // 前半は普通、後半はかなりゆっくり。1秒あたりの増加量を小さく
+      var inc = pct<30 ? 2.2 : (pct<55 ? 1.5 : (pct<75 ? 0.9 : (pct<85 ? 0.5 : 0.25)));
+      pct=Math.min(90,pct+inc);
       if(pctEl) pctEl.textContent=Math.floor(pct)+'%';
       if(barEl) barEl.style.width=pct+'%';
     }
-  },350);
+  },1000);
   S._progTimer=progTimer;
 
   var pal = palData[S.globalPalette]||palData['mono-light'];
