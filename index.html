@@ -2462,7 +2462,7 @@ function generateSite(){
     });
   }
 
-  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && (img.src.indexOf('data:')===0 || img.src.indexOf('http')===0);});
   var aiImgOnly = S.selectedImages;
   var imgInstructions = '';
   var sectionNames = {hero:'hero section',about:'About section',service:'Services section',menu:'Menu/Pricing section',gallery:'Gallery section',staff:'Staff section',review:'Testimonials section',access:'Access/Map section',cta:'CTA/Contact section',other:'appropriate section'};
@@ -2625,7 +2625,7 @@ function generateSite(){
 }
 
 function showResult(html){
-  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && img.src.indexOf('data:')===0;});
+  var uploadedOnly = S.uploadedImages.filter(function(img){return typeof img==='object' && img.src && (img.src.indexOf('data:')===0 || img.src.indexOf('http')===0);});
   var needInject = uploadedOnly.length || S.logoImage;
   if(needInject){
     var injectScript = '<scr'+'ipt>window.addEventListener("load",function(){';
