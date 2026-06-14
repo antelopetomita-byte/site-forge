@@ -845,6 +845,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
   </div>
 </div>
 
+  <!-- パスコードモーダル -->
+<div id="passcode-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(10px);padding:20px;">
+  <div style="max-width:420px;width:100%;background:var(--s1);border:1px solid rgba(0,255,170,.3);padding:32px 28px;position:relative;">
+    <button onclick="closePasscodeModal()" style="position:absolute;top:16px;right:16px;font-family:'Space Mono',monospace;font-size:16px;background:transparent;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;">×</button>
+    <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:8px;">// UNLOCK</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.05em;color:var(--text);margin-bottom:8px;">ダウンロードを解除</div>
+    <p style="font-family:'Noto Sans JP',sans-serif;font-size:12px;line-height:1.8;color:var(--muted2);margin-bottom:20px;">HPのプレビューは無料です。ファイルをダウンロードして公開するにはパスコードが必要です。</p>
+
+    <input type="text" id="passcode-input" placeholder="NRL-XXXX-XXXX" style="width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:14px 16px;font-family:'Space Mono',monospace;font-size:15px;letter-spacing:.1em;text-align:center;outline:none;text-transform:uppercase;margin-bottom:10px;" onkeydown="if(event.key==='Enter')verifyPasscode()">
+    <div id="passcode-error" style="display:none;font-family:'Noto Sans JP',sans-serif;font-size:11px;color:#ff5555;margin-bottom:10px;text-align:center;"></div>
+    <button id="passcode-verify-btn" onclick="verifyPasscode()" style="width:100%;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;padding:14px;background:var(--lime);color:#000;border:none;cursor:pointer;margin-bottom:16px;">ロック解除</button>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <p style="font-family:'Noto Sans JP',sans-serif;font-size:11px;line-height:1.7;color:var(--muted2);margin-bottom:10px;">まだコードをお持ちでない方：</p>
+      <a href="https://booth.pm/" target="_blank" style="display:block;text-align:center;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:12px;background:transparent;border:1px solid var(--lime);color:var(--lime);text-decoration:none;transition:all .2s;">🛒 BOOTHでコードを購入</a>
+    </div>
+  </div>
+</div>
+
   <!-- ⚡ QUICK START MODE -->
   <div id="quick-start" style="position:relative;z-index:2;margin-bottom:32px;border:1px solid rgba(0,255,170,.35);background:linear-gradient(135deg,rgba(0,255,170,.06),rgba(0,140,255,.04));padding:28px 28px 24px;overflow:hidden;">
     <div style="position:absolute;top:-30px;right:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(0,255,170,.05);pointer-events:none;line-height:1;">⚡</div>
@@ -1365,7 +1384,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         別パターンを生成
       </button>
-      <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード</button>
+      <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード <span id="unlock-badge" style="display:none;align-items:center;font-size:10px;margin-left:6px;">✓ 解除済</span></button>
       <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
     </div>
   </div>
@@ -1558,7 +1577,7 @@ var S = {
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
-  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE',
+  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE', unlocked:false, unlockPlan:'',
   texts:{},
   generatedHTML:''
 };
@@ -2377,12 +2396,74 @@ function setDevice(d){
 }
 
 function dlHTML(){
+  // パスコード認証チェック
+  if(!S.unlocked){
+    openPasscodeModal();
+    return;
+  }
   var blob=new Blob([S.generatedHTML],{type:'text/html'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
   a.click();
 };
+
+// ===== パスコード認証 =====
+function openPasscodeModal(){
+  document.getElementById('passcode-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+  setTimeout(function(){ document.getElementById('passcode-input').focus(); }, 100);
+}
+function closePasscodeModal(){
+  document.getElementById('passcode-modal').style.display='none';
+  document.body.style.overflow='';
+}
+function verifyPasscode(){
+  var code = document.getElementById('passcode-input').value.trim().toUpperCase();
+  var errEl = document.getElementById('passcode-error');
+  var btn = document.getElementById('passcode-verify-btn');
+  if(!code){ errEl.textContent='コードを入力してください'; errEl.style.display='block'; return; }
+
+  btn.disabled=true; btn.textContent='確認中...';
+  errEl.style.display='none';
+
+  // Vercel APIでコード検証
+  fetch('https://site-forge-api.vercel.app/api/verify-code',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({code:code})
+  }).then(function(r){return r.json();})
+  .then(function(data){
+    btn.disabled=false; btn.textContent='ロック解除';
+    if(data.valid){
+      S.unlocked=true;
+      S.unlockPlan=data.plan||'light';
+      try{ localStorage.setItem('no_unlock','1'); localStorage.setItem('no_plan',data.plan||'light'); }catch(e){}
+      closePasscodeModal();
+      // 解除アニメーション
+      var badge=document.getElementById('unlock-badge');
+      if(badge) badge.style.display='inline-flex';
+      alert('✅ ロック解除されました！ダウンロードできます。');
+      dlHTML();
+    } else {
+      errEl.textContent='❌ 無効なコードです。BOOTHで購入したコードを確認してください。';
+      errEl.style.display='block';
+    }
+  }).catch(function(err){
+    btn.disabled=false; btn.textContent='ロック解除';
+    errEl.textContent='検証エラー: '+err.message;
+    errEl.style.display='block';
+  });
+}
+// 起動時に解除状態を復元
+(function(){
+  try{
+    if(localStorage.getItem('no_unlock')==='1'){
+      S.unlocked=true;
+      S.unlockPlan=localStorage.getItem('no_plan')||'light';
+    }
+  }catch(e){}
+})();
 
 function regenSite(){
   var rs = document.getElementById('result-section');
