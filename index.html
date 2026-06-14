@@ -868,8 +868,15 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
   <div id="quick-start" style="position:relative;z-index:2;margin-bottom:32px;border:1px solid rgba(0,255,170,.35);background:linear-gradient(135deg,rgba(0,255,170,.06),rgba(0,140,255,.04));padding:28px 28px 24px;overflow:hidden;">
     <div style="position:absolute;top:-30px;right:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(0,255,170,.05);pointer-events:none;line-height:1;">⚡</div>
     <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:6px;">// QUICK START</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,4vw,32px);letter-spacing:.05em;color:var(--text);margin-bottom:6px;">30秒でHP完成。<span style="color:var(--lime)">おまかせ生成</span></div>
-    <p style="font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;color:var(--muted2);margin-bottom:18px;">店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成</p>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,4vw,32px);letter-spacing:.05em;color:var(--text);margin-bottom:12px;">30秒で完成。<span style="color:var(--lime)">おまかせ生成</span></div>
+
+    <!-- モード切替 -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button type="button" id="mode-shop" onclick="setQuickMode('shop')" style="flex:1;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;padding:12px;background:rgba(0,255,170,.12);border:1px solid var(--lime);color:var(--lime);cursor:pointer;border-radius:4px;transition:all .2s;">🏢 お店・会社のHP</button>
+      <button type="button" id="mode-event" onclick="setQuickMode('event')" style="flex:1;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;transition:all .2s;">🎉 イベントページ</button>
+    </div>
+
+    <p id="qs-desc" style="font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;color:var(--muted2);margin-bottom:18px;">店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;">
       <input type="text" id="qs-name" placeholder="店名・サービス名" style="flex:1;min-width:160px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
       <select id="qs-industry" onchange="updateQsSub()" style="min-width:130px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
@@ -890,6 +897,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
       <select id="qs-sub" style="min-width:130px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;display:none;">
         <option value="">詳細を選択（任意）</option>
       </select>
+      <input type="date" id="qs-event-date" style="display:none;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+      <input type="text" id="qs-event-place" placeholder="会場（例：幕張メッセ）" style="display:none;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
       <button onclick="quickStart()" id="qs-btn" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:13px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap;">⚡ おまかせ生成</button>
     </div>
     <div id="qs-status" style="display:none;margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);align-items:center;gap:8px;"><div class="spin" style="width:10px;height:10px;border-width:2px;"></div><span id="qs-status-text">AIがデザインを決定中...</span></div>
@@ -1593,7 +1602,7 @@ var S = {
   globalPalette:'', customBg:'', customAccent:'',
   pageColors:{},
   headingFont:'', bodyFont:'',
-  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE', unlocked:false, unlockPlan:'', logoImage:null,
+  uploadedImages:[], aiImages:[], selectedImages:[], refDNA:null, logoStyle:'AI_CHOICE', unlocked:false, unlockPlan:'', logoImage:null, isEvent:false, eventDate:'', eventPlace:'',
   texts:{},
   generatedHTML:''
 };
@@ -2217,7 +2226,85 @@ function updateLogoPreview(){
   preview.innerHTML = html;
 }
 
+var quickMode = 'shop';
+function setQuickMode(mode){
+  quickMode = mode;
+  var shopBtn = document.getElementById('mode-shop');
+  var eventBtn = document.getElementById('mode-event');
+  var industry = document.getElementById('qs-industry');
+  var sub = document.getElementById('qs-sub');
+  var eDate = document.getElementById('qs-event-date');
+  var ePlace = document.getElementById('qs-event-place');
+  var desc = document.getElementById('qs-desc');
+  var btn = document.getElementById('qs-btn');
+  var nameInput = document.getElementById('qs-name');
+
+  if(mode === 'event'){
+    eventBtn.style.background='rgba(0,255,170,.12)'; eventBtn.style.borderColor='var(--lime)'; eventBtn.style.color='var(--lime)';
+    shopBtn.style.background='transparent'; shopBtn.style.borderColor='var(--border)'; shopBtn.style.color='var(--muted2)';
+    industry.style.display='none'; sub.style.display='none';
+    eDate.style.display='block'; ePlace.style.display='block';
+    desc.textContent='イベント名・開催日・会場を入力 → カウントダウン付きイベントページを即生成';
+    btn.innerHTML='🎉 イベントページ生成';
+    nameInput.placeholder='イベント名';
+  } else {
+    shopBtn.style.background='rgba(0,255,170,.12)'; shopBtn.style.borderColor='var(--lime)'; shopBtn.style.color='var(--lime)';
+    eventBtn.style.background='transparent'; eventBtn.style.borderColor='var(--border)'; eventBtn.style.color='var(--muted2)';
+    industry.style.display='block';
+    eDate.style.display='none'; ePlace.style.display='none';
+    desc.textContent='店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成';
+    btn.innerHTML='⚡ おまかせ生成';
+    nameInput.placeholder='店名・サービス名';
+  }
+}
+
+function quickStartEvent(){
+  var name = document.getElementById('qs-name').value.trim();
+  var date = document.getElementById('qs-event-date').value;
+  var place = document.getElementById('qs-event-place').value.trim();
+  if(!name){ alert('イベント名を入力してください'); return; }
+
+  var btn = document.getElementById('qs-btn');
+  var status = document.getElementById('qs-status');
+  btn.disabled=true; btn.style.opacity='.5';
+  status.style.display='flex';
+
+  S.siteName = name;
+  S.industryCat = 'イベント';
+  S.industrySub = '';
+  S.isEvent = true;
+  S.eventDate = date;
+  S.eventPlace = place;
+  S.catchcopy = '';
+  S.location = place;
+  S.logoStyle = 'AI_CHOICE';
+  S.vibe = 'ボールド';
+  S.globalPalette = 'mono-dark';
+  S.layout = 'FULL SCREEN HERO';
+  S.headingFont = 'Anton';
+  S.bodyFont = 'Noto Sans JP';
+  S.customBg = ''; S.customAccent = '';
+  S.pages = ['ヒーロー（イベント名・日付）','イベント概要','出演者・コンテンツ','タイムテーブル','チケット情報','アクセス','FAQ'];
+  S.texts = {top:'',about:'',service:'',price:'',hours:'',tel:'',email:'',line:'',instagram:'',faq:'',staff:''};
+
+  // イベント向け画像
+  S.uploadedImages = [
+    {src:'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80', section:'hero', style:'bg', position:'auto', name:'event hero'},
+    {src:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80', section:'about', style:'card', position:'auto', name:'event about'}
+  ];
+  S.aiImages = [];
+
+  goToStep(9);
+  setTimeout(function(){
+    generateSite();
+    btn.disabled=false; btn.style.opacity='1'; status.style.display='none';
+  }, 300);
+}
+
 function quickStart(){
+  if(quickMode === 'event'){ quickStartEvent(); return; }
+  S.isEvent = false;
+
   var name = document.getElementById('qs-name').value.trim();
   var industry = document.getElementById('qs-industry').value;
   if(!name){ alert('店名・サービス名を入力してください'); return; }
@@ -2418,6 +2505,16 @@ function generateSite(){
     +'# PAGES\n'+S.pages.join('\n')+'\n\n'
     +imgInstructions+'\n\n'
     +refDNAInstruction
+    +(S.isEvent ? ('# EVENT PAGE MODE — SPECIAL REQUIREMENTS\n'
+      +'This is an EVENT landing page (festival/concert/exhibition style like Ultra Music Festival, Rock in Japan).\n'
+      +'- Event date: '+(S.eventDate||'[prominent date display]')+'\n'
+      +'- Venue: '+(S.eventPlace||'[venue]')+'\n'
+      +'- HERO: Make the event name HUGE and the date very prominent. Bold, energetic, festival-poster aesthetic\n'
+      +'- COUNTDOWN TIMER: Add a live JavaScript countdown to the event date showing days/hours/minutes/seconds. Use this date: '+(S.eventDate||'')+'. Style it prominently near the hero\n'
+      +'- Include: event overview, lineup/performers/content section, timetable, ticket info with prominent CTA button, access/map, FAQ\n'
+      +'- Energetic animations, bold typography, gradient/neon accents appropriate for events\n'
+      +'- Ticket CTA must be the most prominent button\n'
+      +'- If date provided, countdown MUST work with real JavaScript setInterval\n\n') : '')
     +'# MANDATORY TECHNICAL REQUIREMENTS\n'
     +'1. Single HTML file — all CSS and JS inline\n'
     +'2. Google Fonts import\n'
