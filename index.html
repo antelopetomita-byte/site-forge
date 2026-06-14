@@ -1446,7 +1446,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
         別パターンを生成
       </button>
       <button class="btn btn-primary" onclick="dlHTML()">⬇ HTMLダウンロード <span id="unlock-badge" style="display:none;align-items:center;font-size:10px;margin-left:6px;">✓ 解除済</span></button>
-      <button class="btn btn-ghost" onclick="location.reload()">やり直す</button>
+      <button class="btn btn-ghost" onclick="confirmRestart()">やり直す</button>
     </div>
   </div>
 
@@ -2798,6 +2798,12 @@ function verifyPasscode(){
     }
   }catch(e){}
 })();
+
+function confirmRestart(){
+  if(confirm('最初の入力画面に戻ります。\n\n入力した内容はすべてリセットされます。よろしいですか？\n\n（同じ条件で別のデザインを試したい場合は「別パターンを生成」を使ってください）')){
+    location.reload();
+  }
+}
 
 function regenSite(){
   var rs = document.getElementById('result-section');
