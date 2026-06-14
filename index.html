@@ -2581,6 +2581,12 @@ function generateSite(){
     +'11. No images? Use intentional CSS gradients or SVG geometric art\n'
     +'12. Page load fade-in animation\n'
     +'13. Footer: site name, copyright, nav links\n\n'
+    +'# HERO LAYOUT SAFETY (絶対厳守)\n'
+    +'- The fixed/sticky navigation bar overlaps the hero. The hero content MUST have enough top padding so the heading is NEVER hidden behind the nav.\n'
+    +'- Hero section: use min-height:100vh with display:flex, flex-direction:column, justify-content:center, and padding-top at least 100px (or 120px on mobile)\n'
+    +'- The hero h1 must be fully visible — never cut off at the top by the header\n'
+    +'- On mobile, ensure the hero heading starts BELOW the nav bar height\n'
+    +'- Vertically center hero content so it is balanced, not crammed at the top\n\n'
     +'# QUALITY STANDARDS — NON-NEGOTIABLE\n'
     +'- Hero h1 font-size: clamp(3rem, 9vw, 8rem)\n'
     +'- Body line-height: 1.8–2.0\n'
@@ -2693,6 +2699,8 @@ function patchHTML(html){
     + '@media(prefers-reduced-motion:no-preference){'
     + '.reveal,.fade-in,.animate{opacity:1!important;}'
     + '}'
+    + 'section:first-of-type,.hero,[class*="hero"]{padding-top:max(110px,12vh)!important;}'
+    + '@media(max-width:768px){section:first-of-type,.hero,[class*="hero"]{padding-top:120px!important;}}'
     + '</style>';
   // </head>の直前に挿入
   if(html.indexOf('</head>') !== -1){
