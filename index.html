@@ -2318,7 +2318,14 @@ function generateSite(){
     +'- Section padding: clamp(80px, 12vw, 140px) top/bottom\n'
     +'- Harmonious color palette — no random colors\n'
     +'- Mobile tap targets ≥ 44px\n'
-    +'- Animations: subtle, purposeful (0.4s–0.8s ease-out)\n\n'
+    +'- Animations: subtle, purposeful (0.4s–0.8s ease-out)\n'
+    +'\n# CRITICAL — ANIMATION SAFETY (絶対厳守)\n'
+    +'- NEVER set opacity:0 as the default/resting state of any text or content element\n'
+    +'- All text MUST be visible WITHOUT JavaScript and WITHOUT animations running\n'
+    +'- For entrance animations: use a CSS approach where content is visible by default, OR add this fallback: if using IntersectionObserver, set elements to opacity:1 by default and only animate enhancement. NEVER leave content stuck at opacity:0 if JS fails\n'
+    +'- Hero text, headings, and all body content must render visibly even when opened as a local file with no animation support\n'
+    +'- Safe pattern: .animate{opacity:1;} then .animate.visible{animation:fadeUp...} — content shows even if .visible is never added\n'
+    +'- Do NOT rely on animation-fill-mode:forwards to reveal content — it fails in some browsers\n\n'
     +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
 
   fetch('https://site-forge-api.vercel.app/api/generate',{
@@ -2391,8 +2398,38 @@ function setDevice(d){
   }
   if(S.generatedHTML){
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = S.generatedHTML;
+    if(frame) frame.srcdoc = patchHTML(S.generatedHTML);
   }
+}
+
+// アニメーションで消えないようにする安全パッチ
+function patchHTML(html){
+  // すべての要素にフォールバックCSSを注入
+  var safetyCSS = '<style id="no-safety-patch">'
+    + '*{animation-fill-mode:both!important;}'
+    + '[style*="opacity:0"],[style*="opacity: 0"]{opacity:1!important;}'
+    + '.reveal,.fade-in,.animate,[class*="fade"],[class*="reveal"],[class*="animate"]{opacity:1!important;transform:none!important;}'
+    + '@media(prefers-reduced-motion:no-preference){'
+    + '.reveal,.fade-in,.animate{opacity:1!important;}'
+    + '}'
+    + '</style>';
+  // </head>の直前に挿入
+  if(html.indexOf('</head>') !== -1){
+    html = html.replace('</head>', safetyCSS + '</head>');
+  } else {
+    html = safetyCSS + html;
+  }
+  // IntersectionObserverが動かない場合に備え、bodyロード時に全要素を可視化するJS
+  var safetyJS = '<script>window.addEventListener("load",function(){setTimeout(function(){'
+    + 'document.querySelectorAll(".reveal,.fade-in,.animate,[class*=fade],[class*=reveal],[class*=animate]").forEach(function(el){'
+    + 'el.style.opacity="1";el.style.transform="none";el.classList.add("visible","in-view","active","show");'
+    + '});},100);});<\/script>';
+  if(html.indexOf('</body>') !== -1){
+    html = html.replace('</body>', safetyJS + '</body>');
+  } else {
+    html = html + safetyJS;
+  }
+  return html;
 }
 
 function dlHTML(){
@@ -2401,7 +2438,7 @@ function dlHTML(){
     openPasscodeModal();
     return;
   }
-  var blob=new Blob([S.generatedHTML],{type:'text/html'});
+  var blob=new Blob([patchHTML(S.generatedHTML)],{type:'text/html'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
@@ -2519,7 +2556,7 @@ function applyFix(){
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = html;
+    if(frame) frame.srcdoc = patchHTML(html);
     var codePre = document.getElementById('code-pre');
     if(codePre) codePre.textContent = html;
     document.getElementById('fix-input').value = '';
@@ -2573,7 +2610,7 @@ function applyEdit(){
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = html;
+    if(frame) frame.srcdoc = patchHTML(html);
     document.getElementById('code-pre').textContent = html;
     document.getElementById('edit-instruction').value='';
     document.getElementById('edit-input-area').style.display='none';
@@ -2814,7 +2851,7 @@ function buildLivePreview(){
     +'<footer>© 2025 '+siteName+'</footer></body></html>';
 
   var frame = document.getElementById('lp-frame');
-  if(frame) frame.srcdoc = html;
+  if(frame) frame.srcdoc = patchHTML(html);
   var label = document.getElementById('lp-step-label');
   if(label) label.textContent = 'STEP '+S.step+' / '+layout;
 }
