@@ -2687,11 +2687,33 @@ function setDevice(d){
   }
   if(S.generatedHTML){
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = patchHTML(S.generatedHTML);
+    if(frame) frame.srcdoc = patchHTMLForPreview(S.generatedHTML);
   }
 }
 
 // アニメーションで消えないようにする安全パッチ
+// プレビュー専用：内部リンクのクリックでプレビューが壊れないようにする
+function patchHTMLForPreview(html){
+  html = patchHTML(html);
+  // プレビュー内のリンククリックを無効化するスクリプトを注入
+  var previewGuard = '<scr'+'ipt>document.addEventListener("click",function(e){'
+    + 'var a=e.target.closest("a");'
+    + 'if(a){'
+    + 'var href=a.getAttribute("href")||"";'
+    + 'if(href.indexOf("#")===0){return;}' // ページ内アンカーはOK（スクロール）
+    + 'e.preventDefault();' // それ以外のリンクは無効化
+    + '}'
+    + '},true);'
+    + 'document.querySelectorAll("form").forEach(function(f){f.addEventListener("submit",function(e){e.preventDefault();});});'
+    + '<\/scr'+'ipt>';
+  if(html.indexOf('</body>') !== -1){
+    html = html.replace('</body>', previewGuard + '</body>');
+  } else {
+    html = html + previewGuard;
+  }
+  return html;
+}
+
 function patchHTML(html){
   // すべての要素にフォールバックCSSを注入
   var safetyCSS = '<style id="no-safety-patch">'
@@ -2861,7 +2883,7 @@ function applyFix(){
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = patchHTML(html);
+    if(frame) frame.srcdoc = patchHTMLForPreview(html);
     var codePre = document.getElementById('code-pre');
     if(codePre) codePre.textContent = html;
     document.getElementById('fix-input').value = '';
@@ -2915,7 +2937,7 @@ function applyEdit(){
     html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     S.generatedHTML = html;
     var frame = document.getElementById('preview-frame');
-    if(frame) frame.srcdoc = patchHTML(html);
+    if(frame) frame.srcdoc = patchHTMLForPreview(html);
     document.getElementById('code-pre').textContent = html;
     document.getElementById('edit-instruction').value='';
     document.getElementById('edit-input-area').style.display='none';
@@ -3156,7 +3178,7 @@ function buildLivePreview(){
     +'<footer>© 2025 '+siteName+'</footer></body></html>';
 
   var frame = document.getElementById('lp-frame');
-  if(frame) frame.srcdoc = patchHTML(html);
+  if(frame) frame.srcdoc = patchHTMLForPreview(html);
   var label = document.getElementById('lp-step-label');
   if(label) label.textContent = 'STEP '+S.step+' / '+layout;
 }
