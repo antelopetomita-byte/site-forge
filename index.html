@@ -2630,24 +2630,76 @@ function generateSite(){
     +'- Do NOT rely on animation-fill-mode:forwards to reveal content — it fails in some browsers\n\n'
     +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
 
-  fetch('https://site-forge-api.vercel.app/api/generate',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
-  }).then(function(res){return res.json();})
-  .then(function(data){
+  function finishGen(html){
     clearInterval(timer);
     if(S._progTimer) clearInterval(S._progTimer);
-    if(data.error) throw new Error(data.error.message);
-    var html = data.content.map(function(b){return b.text||'';}).join('');
-    html = html.replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    html = (html||'').replace(/^```html\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    if(!html){ gen.classList.remove('show'); btn.style.display='flex'; alert('生成エラー: 空の応答が返りました。もう一度お試しください。'); return; }
     S.generatedHTML = html;
-    // 100%表示
     var pctEl=document.getElementById('gen-percent');
     var barEl=document.getElementById('gen-progress-bar');
     if(pctEl) pctEl.textContent='100%';
     if(barEl) barEl.style.width='100%';
     setTimeout(function(){ showResult(html); }, 400);
+  }
+  function parseSSEText(t){
+    var out='';
+    t.split('\n').forEach(function(line){
+      line=line.trim();
+      if(line.indexOf('data:')!==0) return;
+      var p=line.slice(5).trim();
+      if(!p || p==='[DONE]') return;
+      try{ var ev=JSON.parse(p); if(ev.type==='content_block_delta' && ev.delta && ev.delta.text) out+=ev.delta.text; }catch(e){}
+    });
+    return out;
+  }
+  fetch('https://site-forge-api.vercel.app/api/generate',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:64000,messages:[{role:'user',content:prompt}]})
+  }).then(function(res){
+    if(!res.ok){
+      return res.text().then(function(t){ var m=t; try{var j=JSON.parse(t); m=(j.error&&(j.error.message||j.error))||t;}catch(e){} throw new Error('API '+res.status+': '+String(m).slice(0,200)); });
+    }
+    // ストリーミング非対応ブラウザ用フォールバック
+    if(!res.body || !res.body.getReader){
+      return res.text().then(function(t){
+        var html='';
+        try{ var j=JSON.parse(t); if(j.error) throw new Error(j.error.message||j.error); html=(j.content||[]).map(function(b){return b.text||'';}).join(''); }
+        catch(e){ html=parseSSEText(t); }
+        finishGen(html);
+      });
+    }
+    var reader=res.body.getReader();
+    var decoder=new TextDecoder();
+    var buf=''; var full='';
+    var pctEl2=document.getElementById('gen-percent');
+    var barEl2=document.getElementById('gen-progress-bar');
+    function pump(){
+      return reader.read().then(function(r){
+        if(r.done){ finishGen(full); return; }
+        buf += decoder.decode(r.value,{stream:true});
+        var parts=buf.split('\n');
+        buf=parts.pop();
+        for(var i=0;i<parts.length;i++){
+          var line=parts[i].trim();
+          if(line.indexOf('data:')!==0) continue;
+          var p=line.slice(5).trim();
+          if(!p || p==='[DONE]') continue;
+          var ev=null; try{ ev=JSON.parse(p); }catch(e){ continue; }
+          if(ev.type==='content_block_delta' && ev.delta && ev.delta.text){ full += ev.delta.text; }
+          else if(ev.type==='error'){ throw new Error((ev.error&&ev.error.message)||'生成中にエラーが発生しました'); }
+        }
+        // 受信量に応じてゆるく進捗を進める（上限95%）
+        if(full.length){
+          var pc=Math.min(95, 20+Math.floor(full.length/180));
+          if(pctEl2) pctEl2.textContent=pc+'%';
+          if(barEl2) barEl2.style.width=pc+'%';
+        }
+        return pump();
+      });
+    }
+    return pump();
   }).catch(function(err){
     clearInterval(timer);
     if(S._progTimer) clearInterval(S._progTimer);
