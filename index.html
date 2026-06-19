@@ -1486,6 +1486,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
     </div>
     <div id="fix-loading" style="display:none;margin-top:12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);align-items:center;gap:8px;"><div class="spin" style="width:10px;height:10px;border-width:2px;"></div>AIが修正中...（20秒ほど）</div>
   </div>
+  <!-- 直接編集モード -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;">
+    <button id="de-btn" onclick="toggleDirectEdit()" style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.06em;padding:11px 20px;background:transparent;color:var(--lime);border:1px solid var(--lime);cursor:pointer;white-space:nowrap;">✏️ 直接編集（タップして打ち替え）</button>
+  </div>
+  <div id="de-hint" style="display:none;font-family:'Noto Sans JP',sans-serif;font-size:11px;line-height:1.7;color:var(--lime);background:rgba(0,200,120,.08);border:1px solid rgba(0,200,120,.3);padding:8px 12px;margin-bottom:10px;">
+    📝 編集中：プレビュー内の文字をタップして、そのまま打ち替えられます。終わったら上の「編集を終える（保存）」を押してください。
+  </div>
   <!-- プレビューを直接操作できるように -->
   <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);margin-bottom:8px;letter-spacing:.1em;">// プレビューは直接スクロール・操作できます</div>
   <div class="device-wrap pc-mode" id="device-wrap">
@@ -2662,6 +2669,7 @@ function showPrev(){
   document.getElementById('code-btn-tog').classList.remove('active');
 }
 function showCode(){
+  if(_directEdit) disableDirectEdit(true);
   document.getElementById('device-wrap').style.display='none';
   document.getElementById('code-view').classList.add('show');
   document.getElementById('code-btn-tog').classList.add('active');
@@ -2671,6 +2679,7 @@ function showCode(){
 // ===== DEVICE TOGGLE =====
 var currentDevice = 'pc';
 function setDevice(d){
+  if(_directEdit) disableDirectEdit(true);
   currentDevice = d;
   var wrap = document.getElementById('device-wrap');
   document.querySelectorAll('.dev-btn').forEach(function(b){b.classList.remove('active');});
@@ -2692,12 +2701,67 @@ function setDevice(d){
   }
 }
 
-// アニメーションで消えないようにする安全パッチ
+/* ===== DIRECT EDIT MODE (tap text to retype, no AI) ===== */
+var _directEdit = false;
+function getPreviewDoc(){
+  var f = document.getElementById('preview-frame');
+  try { return f && (f.contentDocument || (f.contentWindow && f.contentWindow.document)) || null; } catch(e){ return null; }
+}
+function toggleDirectEdit(){
+  if(!S.generatedHTML) return;
+  if(!_directEdit) enableDirectEdit();
+  else disableDirectEdit(true);
+}
+function enableDirectEdit(){
+  var doc = getPreviewDoc();
+  if(!doc || !doc.body){ alert('プレビューを準備中です。数秒後にもう一度お試しください。'); return; }
+  _directEdit = true;
+  if(doc.head && !doc.getElementById('__de-style')){
+    var st = doc.createElement('style');
+    st.id = '__de-style';
+    st.textContent = '*:focus{outline:2px solid #00c878 !important;outline-offset:2px;} a{cursor:text !important;}';
+    doc.head.appendChild(st);
+  }
+  doc.body.setAttribute('contenteditable','true');
+  doc.body.setAttribute('spellcheck','false');
+  var b = document.getElementById('de-btn');
+  if(b){ b.textContent='✓ 編集を終える（保存）'; b.style.background='var(--lime)'; b.style.color='#000'; }
+  var h = document.getElementById('de-hint'); if(h) h.style.display='block';
+}
+function disableDirectEdit(save){
+  var doc = getPreviewDoc();
+  if(doc && doc.body){
+    doc.body.removeAttribute('contenteditable');
+    doc.body.removeAttribute('spellcheck');
+    if(save) saveDirectEdit(doc);
+    var dst = doc.getElementById('__de-style'); if(dst && dst.parentNode) dst.parentNode.removeChild(dst);
+  }
+  _directEdit = false;
+  var b = document.getElementById('de-btn');
+  if(b){ b.textContent='✏️ 直接編集（タップして打ち替え）'; b.style.background='transparent'; b.style.color='var(--lime)'; }
+  var h = document.getElementById('de-hint'); if(h) h.style.display='none';
+}
+function saveDirectEdit(doc){
+  try {
+    var clone = doc.documentElement.cloneNode(true);
+    ['no-safety-patch','__sfjs','__pvguard','__de-style'].forEach(function(id){
+      var n = clone.querySelector('#'+id); if(n && n.parentNode) n.parentNode.removeChild(n);
+    });
+    Array.prototype.forEach.call(clone.querySelectorAll('[contenteditable]'), function(el){
+      el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck');
+    });
+    S.generatedHTML = '<!DOCTYPE html>\n' + clone.outerHTML;
+    var pre = document.getElementById('code-pre'); if(pre) pre.textContent = S.generatedHTML;
+    var f = document.getElementById('preview-frame'); if(f) f.srcdoc = patchHTMLForPreview(S.generatedHTML);
+  } catch(e){ alert('保存エラー: ' + e.message); }
+}
+
+
 // プレビュー専用：内部リンクのクリックでプレビューが壊れないようにする
 function patchHTMLForPreview(html){
   html = patchHTML(html);
   // プレビュー内のリンククリックを無効化するスクリプトを注入
-  var previewGuard = '<scr'+'ipt>document.addEventListener("click",function(e){'
+  var previewGuard = '<scr'+'ipt id="__pvguard">document.addEventListener("click",function(e){'
     + 'var a=e.target.closest("a");'
     + 'if(a){'
     + 'var href=a.getAttribute("href")||"";'
@@ -2742,7 +2806,7 @@ function patchHTML(html){
     imgInject += 'var lg=document.querySelector("[data-logo-image]");if(lg){lg.src="'+S.logoImage+'";}';
   }
   // IntersectionObserverが動かない場合に備え、bodyロード時に全要素を可視化するJS
-  var safetyJS = '<script>window.addEventListener("load",function(){'+imgInject+'setTimeout(function(){'
+  var safetyJS = '<script id="__sfjs">window.addEventListener("load",function(){'+imgInject+'setTimeout(function(){'
     + 'document.querySelectorAll(".reveal,.fade-in,.animate,[class*=fade],[class*=reveal],[class*=animate]").forEach(function(el){'
     + 'el.style.opacity="1";el.style.transform="none";el.classList.add("visible","in-view","active","show");'
     + '});},100);});<\/script>';
