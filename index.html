@@ -2628,7 +2628,12 @@ function generateSite(){
     +'- Hero text, headings, and all body content must render visibly even when opened as a local file with no animation support\n'
     +'- Safe pattern: .animate{opacity:1;} then .animate.visible{animation:fadeUp...} — content shows even if .visible is never added\n'
     +'- Do NOT rely on animation-fill-mode:forwards to reveal content — it fails in some browsers\n\n'
-    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html>.';
+    +'# CRITICAL — COMPLETENESS & EFFICIENCY (絶対厳守)\n'
+    +'- Generation is time-limited. Be EFFICIENT: build a focused single page of about 5-6 sections (hero, about, services/menu, gallery or features, contact/footer). Do NOT pad with filler.\n'
+    +'- Keep each section concise. COMPLETION matters more than length — a fully finished page always beats a longer one that gets cut off.\n'
+    +'- Put ALL interactive JavaScript INLINE just before </body>. The mobile hamburger menu MUST open and close on tap — include and verify that toggle logic.\n'
+    +'- ALWAYS finish the whole document: close every tag and end with </body></html>. Never stop mid-section or mid-sentence.\n\n'
+    +'OUTPUT: Pure HTML only. No markdown. No explanation. Start with <!DOCTYPE html> and end with </body></html>.';
 
   function finishGen(html){
     clearInterval(timer);
@@ -2640,7 +2645,11 @@ function generateSite(){
     var barEl=document.getElementById('gen-progress-bar');
     if(pctEl) pctEl.textContent='100%';
     if(barEl) barEl.style.width='100%';
+    var truncated = (html.indexOf('</body>')===-1 && html.indexOf('</html>')===-1);
     setTimeout(function(){ showResult(html); }, 400);
+    if(truncated){
+      setTimeout(function(){ alert('⚠️ 生成が途中で切れた可能性があります。\n表示はされますが、メニューなど一部が動かない場合は、もう一度「AIでHP生成」を押してください。'); }, 700);
+    }
   }
   function parseSSEText(t){
     var out='';
