@@ -1712,16 +1712,11 @@ function goToStep(n){
     el.classList.toggle('done',(i+1)<n-1);
   });
   S.step=n;
-  // スクロール: stepの先頭input/textareaに、なければstep要素自体に合わせる
   setTimeout(function(){
-    var stepEl = document.getElementById('step-'+n);
-    var firstInput = stepEl && stepEl.querySelector('input,textarea,select,.ind-cat,.vibe-card,.layout-card');
-    var target = firstInput || stepEl;
-    if(!target) return;
-    var rect = target.getBoundingClientRect();
-    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    var offset = rect.top + scrollTop - 80; // ナビ分の余白80px
-    window.scrollTo({top: offset, behavior: 'smooth'});
+    var pb = document.getElementById('progress-bar');
+    if(!pb) return;
+    var pbTop = pb.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop);
+    window.scrollTo({top: pbTop - 16, behavior: 'smooth'});
   }, 60);
   debouncedLP();
   if(n===5) setTimeout(autoSelectColor, 100);
