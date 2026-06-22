@@ -539,11 +539,20 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
 @media (hover:none) and (pointer:coarse){
   body{cursor:default;}
   #cur,#cur-ring{display:none;}
+  /* body::before/afterの固定オーバーレイがiOS SafariでpointerEventsを貫通しないバグ対策 */
+  body::before,body::after{display:none !important;}
   .ptt-tab,.pb-step,.pb-dot,.ind-cat,.ind-sub-item,.vibe-card,.layout-card,
   .page-card,.font-card,.pal-item,.pct-tab,.font-expand-btn,.upload-zone,
   .btn,.ai-assist-all-btn,.ai-assist-btn,.ai-img-btn,.ld-skip,.h-cta,
   .placement-btn,.style-btn,.img-placement-del,.img-thumb-del,
-  [onclick],[data-step]{cursor:pointer!important;touch-action:manipulation;}
+  [onclick],[data-step]{cursor:pointer !important;touch-action:manipulation;}
+  /* textareaとinputのタップを確実に有効化 */
+  .field input,.field textarea,.field select{
+    touch-action:auto !important;
+    -webkit-user-select:text !important;
+    user-select:text !important;
+    -webkit-appearance:auto !important;
+  }
 }
 </style>
 </head>
