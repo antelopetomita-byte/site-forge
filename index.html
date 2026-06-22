@@ -1723,10 +1723,10 @@ function goToStep(n){
   });
   S.step=n;
   setTimeout(function(){
-    var pb = document.getElementById('progress-bar');
-    if(!pb) return;
-    var pbTop = pb.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop);
-    window.scrollTo({top: pbTop - 16, behavior: 'smooth'});
+    var titleEl = document.querySelector('#step-'+n+' .sc-title');
+    if(!titleEl) return;
+    var y = titleEl.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop) - 20;
+    window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
   }, 60);
   debouncedLP();
   if(n===5) setTimeout(autoSelectColor, 100);
