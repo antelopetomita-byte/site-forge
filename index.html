@@ -534,7 +534,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9989;}
   .feat-item{flex:none;width:50%;}
   .summary-grid{grid-template-columns:1fr;}
 }
-</style>
+/* iOS Safari: タップ無反応修正 — cursor:noneのdivはタップイベントが届かないため、
+   タッチデバイスではcursor:pointerに強制上書きする */
+@media (hover:none) and (pointer:coarse){
+  body{cursor:default;}
+  #cur,#cur-ring{display:none;}
+  .ptt-tab,.pb-step,.pb-dot,.ind-cat,.ind-sub-item,.vibe-card,.layout-card,
+  .page-card,.font-card,.pal-item,.pct-tab,.font-expand-btn,.upload-zone,
+  .btn,.ai-assist-all-btn,.ai-assist-btn,.ai-img-btn,.ld-skip,.h-cta,
+  .placement-btn,.style-btn,.img-placement-del,.img-thumb-del,
+  [onclick],[data-step]{cursor:pointer!important;touch-action:manipulation;}
+}
 </head>
 <body>
 <!-- 宇宙背景 -->
@@ -1702,7 +1712,17 @@ function goToStep(n){
     el.classList.toggle('done',(i+1)<n-1);
   });
   S.step=n;
-  document.getElementById('app').scrollIntoView({behavior:'smooth',block:'start'});
+  // スクロール: stepの先頭input/textareaに、なければstep要素自体に合わせる
+  setTimeout(function(){
+    var stepEl = document.getElementById('step-'+n);
+    var firstInput = stepEl && stepEl.querySelector('input,textarea,select,.ind-cat,.vibe-card,.layout-card');
+    var target = firstInput || stepEl;
+    if(!target) return;
+    var rect = target.getBoundingClientRect();
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var offset = rect.top + scrollTop - 80; // ナビ分の余白80px
+    window.scrollTo({top: offset, behavior: 'smooth'});
+  }, 60);
   debouncedLP();
   if(n===5) setTimeout(autoSelectColor, 100);
   if(n===9) setTimeout(loadApiKey, 50);
@@ -1715,7 +1735,16 @@ function nextStep(from){
 function prevStep(from){if(from>1)goToStep(from-1);}
 document.querySelectorAll('.pb-step').forEach(function(el){
   el.addEventListener('click',function(){goToStep(parseInt(el.dataset.step));});
+  // iOS Safari: cursor:noneの要素はtouchstartを補完する
+  el.addEventListener('touchstart',function(){},true);
 });
+// iOS tap修正: cursor:noneのdivタップ問題をtouchstart補完で解消
+(function(){
+  var sels = '.ptt-tab,.ind-cat,.ind-sub-item,.vibe-card,.layout-card,.page-card,.font-card,.pal-item,.pct-tab,.font-expand-btn,.page-text-tabs';
+  document.querySelectorAll(sels).forEach(function(el){
+    el.addEventListener('touchstart',function(){},true);
+  });
+})();
 
 // ===== INDUSTRY =====
 function selectCat(el){
