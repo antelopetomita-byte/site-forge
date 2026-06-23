@@ -2820,7 +2820,28 @@ function generateSite(){
     clearInterval(timer);
     if(S._progTimer) clearInterval(S._progTimer);
     gen.classList.remove('show'); btn.style.display='flex';
-    alert('生成エラー: '+err.message);
+    var msg = err.message || String(err);
+    var userMsg = msg;
+    if(msg.indexOf('401')>=0 || msg.indexOf('authentication')>=0 || msg.indexOf('api_key')>=0 || msg.indexOf('invalid x-api-key')>=0){
+      userMsg = 'APIキーエラー (401)\nVercelのダッシュボードで ANTHROPIC_API_KEY が設定されているか確認してください。\n\n詳細: '+msg;
+    } else if(msg.indexOf('529')>=0 || msg.indexOf('overloaded')>=0){
+      userMsg = 'APIが過負荷状態です。\n少し待ってからもう一度お試しください。\n\n詳細: '+msg;
+    } else if(msg.indexOf('timeout')>=0 || msg.indexOf('Timeout')>=0){
+      userMsg = 'タイムアウトしました。\nVercelの無料プランでは60秒の制限があります。もう一度お試しください。\n\n詳細: '+msg;
+    } else if(msg.indexOf('Failed to fetch')>=0 || msg.indexOf('NetworkError')>=0 || msg.indexOf('fetch')>=0){
+      userMsg = 'ネットワーク接続エラー。\nAPIサーバー(site-forge-api.vercel.app)に接続できませんでした。\n\n詳細: '+msg;
+    }
+    var errBox = document.getElementById('gen-error-box');
+    if(!errBox){
+      errBox = document.createElement('div');
+      errBox.id = 'gen-error-box';
+      errBox.style.cssText = 'background:#1a0810;border:1px solid #ff3355;padding:18px;margin:16px 0;border-radius:6px;font-family:"Space Mono",monospace;font-size:12px;color:#ff8898;white-space:pre-wrap;word-break:break-all;';
+      var genEl = document.getElementById('generating');
+      if(genEl && genEl.parentNode) genEl.parentNode.insertBefore(errBox, genEl.nextSibling);
+    }
+    errBox.style.display = 'block';
+    errBox.textContent = '⚠ 生成エラー\n\n' + userMsg;
+    errBox.scrollIntoView({behavior:'smooth', block:'center'});
   });
 }
 
