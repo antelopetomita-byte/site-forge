@@ -1732,6 +1732,15 @@ function goToStep(n){
   if(n===5) setTimeout(autoSelectColor, 100);
   if(n===9) setTimeout(loadApiKey, 50);
 }
+// ===== Step8 タブ切り替え =====
+function selTxtTab(el){
+  document.querySelectorAll('.ptt-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.ptt-panel').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active');
+  var panelId = el.getAttribute('data-panel');
+  var panel = document.getElementById(panelId);
+  if(panel) panel.classList.add('active');
+}
 // ===== Step8 AI テキスト自動生成 =====
 function _callAIForField(fieldLabel, context){
   var siteName=(document.getElementById('site-name')||{}).value||'(店名未設定)';
