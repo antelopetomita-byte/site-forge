@@ -1378,6 +1378,22 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;}
       </div>
 
       <div class="ptt-panel" id="txt-extra">
+        <div class="field">
+          <label>イベント開催期間（任意）</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input type="date" id="t-event-start" style="flex:1;min-width:130px;" placeholder="開始日">
+            <span style="color:var(--muted2);font-size:13px;">〜</span>
+            <input type="date" id="t-event-end" style="flex:1;min-width:130px;" placeholder="終了日">
+          </div>
+          <div style="margin-top:6px;">
+            <input type="text" id="t-event-date-text" placeholder="例：毎週土日 / 2025年8月1日〜31日 / 不定期開催" style="font-size:13px;">
+            <div style="font-size:11px;color:var(--muted2);margin-top:4px;">↑ 日付ピッカーで選ぶか、自由テキストで入力できます</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>開催場所・会場（任意）</label>
+          <input type="text" id="t-event-venue" placeholder="例：渋谷区文化センター 大ホール / オンライン（Zoom）/ 未定">
+        </div>
         <div class="field field-with-ai">
           <label>よくある質問（Q&amp;A形式で）</label>
           <textarea id="t-faq" placeholder="例：&#10;Q: 予約は必要ですか？&#10;A: 不要ですが、5名以上の場合はご連絡ください。"></textarea>
@@ -1832,13 +1848,24 @@ function buildSummary(){
     hours:'t-hours', tel:'t-tel', email:'t-email', access:'t-access',
     line:'t-line', instagram:'t-instagram', twitter:'t-twitter',
     facebook:'t-facebook', otherSns:'t-other-sns',
-    faq:'t-faq', extra:'t-extra'
+    faq:'t-faq', extra:'t-extra',
+    eventVenue:'t-event-venue', eventDateText:'t-event-date-text'
   };
   if(!S.texts) S.texts = {};
   Object.keys(map).forEach(function(key){
     var el = document.getElementById(map[key]);
     if(el) S.texts[key] = el.value;
   });
+  // イベント日程を統合（日付ピッカー優先、テキスト入力をフォールバック）
+  var startEl = document.getElementById('t-event-start');
+  var endEl = document.getElementById('t-event-end');
+  if(startEl && startEl.value){
+    var start = startEl.value.replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日');
+    var end = (endEl && endEl.value) ? endEl.value.replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日') : '';
+    S.texts.eventDate = start + (end ? '〜' + end : '');
+  } else if(S.texts.eventDateText) {
+    S.texts.eventDate = S.texts.eventDateText;
+  }
   // step1の基本情報も更新
   ['site-name','catchcopy','location','founded'].forEach(function(id){
     var el = document.getElementById(id);
