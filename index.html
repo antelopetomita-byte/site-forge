@@ -973,7 +973,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;}
       <select id="qs-sub" style="min-width:130px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;display:none;">
         <option value="">詳細を選択（任意）</option>
       </select>
-      <input type="date" id="qs-event-date" style="display:none;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+      <input type="date" id="qs-event-start" style="display:none;min-width:140px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;" placeholder="開始日">
+      <span id="qs-event-sep" style="display:none;color:var(--muted2);font-size:14px;padding:0 2px;">〜</span>
+      <input type="date" id="qs-event-end" style="display:none;min-width:140px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;" placeholder="終了日">
       <input type="text" id="qs-event-place" placeholder="会場（例：幕張メッセ）" style="display:none;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
       <button onclick="quickStart()" id="qs-btn" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:13px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap;">⚡ おまかせ生成</button>
     </div>
@@ -2513,7 +2515,9 @@ function setQuickMode(mode){
   var eventBtn = document.getElementById('mode-event');
   var industry = document.getElementById('qs-industry');
   var sub = document.getElementById('qs-sub');
-  var eDate = document.getElementById('qs-event-date');
+  var eStart = document.getElementById('qs-event-start');
+  var eEnd = document.getElementById('qs-event-end');
+  var eSep = document.getElementById('qs-event-sep');
   var ePlace = document.getElementById('qs-event-place');
   var desc = document.getElementById('qs-desc');
   var btn = document.getElementById('qs-btn');
@@ -2523,15 +2527,15 @@ function setQuickMode(mode){
     eventBtn.style.background='rgba(0,255,170,.12)'; eventBtn.style.borderColor='var(--lime)'; eventBtn.style.color='var(--lime)';
     shopBtn.style.background='transparent'; shopBtn.style.borderColor='var(--border)'; shopBtn.style.color='var(--muted2)';
     industry.style.display='none'; sub.style.display='none';
-    eDate.style.display='block'; ePlace.style.display='block';
-    desc.textContent='イベント名・開催日・会場を入力 → カウントダウン付きイベントページを即生成';
+    eStart.style.display='block'; eSep.style.display='inline'; eEnd.style.display='block'; ePlace.style.display='block';
+    desc.textContent='イベント名・開催期間・会場を入力 → カウントダウン付きイベントページを即生成';
     btn.innerHTML='🎉 イベントページ生成';
     nameInput.placeholder='イベント名';
   } else {
     shopBtn.style.background='rgba(0,255,170,.12)'; shopBtn.style.borderColor='var(--lime)'; shopBtn.style.color='var(--lime)';
     eventBtn.style.background='transparent'; eventBtn.style.borderColor='var(--border)'; eventBtn.style.color='var(--muted2)';
     industry.style.display='block';
-    eDate.style.display='none'; ePlace.style.display='none';
+    eStart.style.display='none'; eSep.style.display='none'; eEnd.style.display='none'; ePlace.style.display='none';
     desc.textContent='店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成';
     btn.innerHTML='⚡ おまかせ生成';
     nameInput.placeholder='店名・サービス名';
@@ -2540,9 +2544,14 @@ function setQuickMode(mode){
 
 function quickStartEvent(){
   var name = document.getElementById('qs-name').value.trim();
-  var date = document.getElementById('qs-event-date').value;
+  var startVal = document.getElementById('qs-event-start').value;
+  var endVal = document.getElementById('qs-event-end').value;
   var place = document.getElementById('qs-event-place').value.trim();
   if(!name){ alert('イベント名を入力してください'); return; }
+
+  // 日付を「○年○月○日〜○年○月○日」形式に変換
+  function fmtDate(v){ return v ? v.replace(/(\d{4})-(\d{2})-(\d{2})/,'$1年$2月$3日') : ''; }
+  var dateStr = startVal ? (fmtDate(startVal) + (endVal ? '〜' + fmtDate(endVal) : '')) : '';
 
   var btn = document.getElementById('qs-btn');
   var status = document.getElementById('qs-status');
@@ -2553,7 +2562,7 @@ function quickStartEvent(){
   S.industryCat = 'イベント';
   S.industrySub = '';
   S.isEvent = true;
-  S.eventDate = date;
+  S.eventDate = dateStr;
   S.eventPlace = place;
   S.catchcopy = '';
   S.location = place;
