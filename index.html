@@ -919,6 +919,43 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;}
   </div>
 </div>
 
+  <!-- ダウンロード後ガイドモーダル -->
+<div id="dl-guide-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9100;align-items:center;justify-content:center;backdrop-filter:blur(12px);padding:20px;">
+  <div style="max-width:480px;width:100%;background:var(--s1);border:1px solid rgba(0,255,170,.3);padding:32px 28px;position:relative;border-radius:2px;">
+    <button onclick="document.getElementById('dl-guide-modal').style.display='none'" style="position:absolute;top:16px;right:16px;font-family:'Space Mono',monospace;font-size:16px;background:transparent;border:1px solid var(--border);color:var(--muted2);width:32px;height:32px;cursor:pointer;border-radius:2px;">×</button>
+    <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--lime);margin-bottom:8px;">// DOWNLOAD COMPLETE</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.05em;color:var(--text);margin-bottom:6px;">ダウンロード完了！🎉</div>
+    <p style="font-family:'Noto Sans JP',sans-serif;font-size:12px;line-height:1.8;color:var(--muted2);margin-bottom:24px;">次の3ステップでサイトを公開しましょう。</p>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px;">
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:rgba(0,255,170,.05);border:1px solid rgba(0,255,170,.15);border-radius:4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--lime);line-height:1;flex-shrink:0;">01</div>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text);font-weight:700;margin-bottom:4px;">HTMLファイルをブラウザで確認</div>
+          <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--muted2);line-height:1.7;">ダウンロードした <code style="background:rgba(0,255,170,.1);padding:1px 5px;border-radius:2px;font-size:10px;">_site.html</code> をダブルクリックしてブラウザで開いて確認。文言・連絡先に問題がなければOK。</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:rgba(0,140,255,.05);border:1px solid rgba(0,140,255,.15);border-radius:4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#008cff;line-height:1;flex-shrink:0;">02</div>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text);font-weight:700;margin-bottom:4px;">無料ホスティングにアップロード</div>
+          <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--muted2);line-height:1.7;"><strong style="color:var(--text);">おすすめ（無料）：</strong> <a href="https://www.netlify.com/drop" target="_blank" style="color:#008cff;text-decoration:none;">Netlify Drop</a> — サイトにHTMLファイルをドラッグ＆ドロップするだけで即公開。独自ドメインも設定可能。</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:rgba(255,170,0,.05);border:1px solid rgba(255,170,0,.15);border-radius:4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ffaa00;line-height:1;flex-shrink:0;">03</div>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text);font-weight:700;margin-bottom:4px;">お問い合わせフォームを設定</div>
+          <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;color:var(--muted2);line-height:1.7;">メール入力した場合、HTMLコメントに <code style="background:rgba(255,170,0,.1);padding:1px 5px;border-radius:2px;font-size:10px;">Formspree</code> の設定方法が書いてあります。<a href="https://formspree.io" target="_blank" style="color:#ffaa00;text-decoration:none;">formspree.io</a> で無料登録してIDを取得してください。</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="https://app.netlify.com/drop" target="_blank" style="flex:1;display:block;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.08em;padding:13px;background:var(--lime);color:#000;text-decoration:none;border-radius:4px;">🚀 Netlifyで公開する</a>
+      <button onclick="document.getElementById('dl-guide-modal').style.display='none'" style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.05em;padding:13px 18px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;border-radius:4px;">閉じる</button>
+    </div>
+  </div>
+</div>
+
   <!-- パスコードモーダル -->
 <div id="passcode-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(10px);padding:20px;">
   <div style="max-width:420px;width:100%;background:var(--s1);border:1px solid rgba(0,255,170,.3);padding:32px 28px;position:relative;">
@@ -978,6 +1015,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;}
       <input type="date" id="qs-event-end" style="display:none;min-width:140px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 12px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;" placeholder="終了日">
       <input type="text" id="qs-event-place" placeholder="会場（例：幕張メッセ）" style="display:none;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px 16px;font-family:'Noto Sans JP',sans-serif;font-size:14px;outline:none;border-radius:4px;">
       <button onclick="quickStart()" id="qs-btn" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;padding:13px 32px;background:var(--lime);color:#000;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));white-space:nowrap;">⚡ おまかせ生成</button>
+    </div>
+    <div id="qs-shop-extra" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <input type="tel" id="qs-phone" placeholder="📞 電話番号（任意）" style="flex:1;min-width:150px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
+      <input type="text" id="qs-address" placeholder="📍 住所（任意）→ Googleマップリンク自動生成" style="flex:2;min-width:220px;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;border-radius:4px;">
     </div>
     <div id="qs-status" style="display:none;margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:var(--lime);align-items:center;gap:8px;"><div class="spin" style="width:10px;height:10px;border-width:2px;"></div><span id="qs-status-text">AIがデザインを決定中...</span></div>
   </div>
@@ -2523,11 +2564,13 @@ function setQuickMode(mode){
   var btn = document.getElementById('qs-btn');
   var nameInput = document.getElementById('qs-name');
 
+  var extraRow = document.getElementById('qs-shop-extra');
   if(mode === 'event'){
     eventBtn.style.background='rgba(0,255,170,.12)'; eventBtn.style.borderColor='var(--lime)'; eventBtn.style.color='var(--lime)';
     shopBtn.style.background='transparent'; shopBtn.style.borderColor='var(--border)'; shopBtn.style.color='var(--muted2)';
     industry.style.display='none'; sub.style.display='none';
     eStart.style.display='block'; eSep.style.display='inline'; eEnd.style.display='block'; ePlace.style.display='block';
+    if(extraRow) extraRow.style.display='none';
     desc.textContent='イベント名・開催期間・会場を入力 → カウントダウン付きイベントページを即生成';
     btn.innerHTML='🎉 イベントページ生成';
     nameInput.placeholder='イベント名';
@@ -2536,6 +2579,7 @@ function setQuickMode(mode){
     eventBtn.style.background='transparent'; eventBtn.style.borderColor='var(--border)'; eventBtn.style.color='var(--muted2)';
     industry.style.display='block';
     eStart.style.display='none'; eSep.style.display='none'; eEnd.style.display='none'; ePlace.style.display='none';
+    if(extraRow) extraRow.style.display='flex';
     desc.textContent='店名と業種だけ入力 → デザイン・文章・配色すべてAIが決定して即生成';
     btn.innerHTML='⚡ おまかせ生成';
     nameInput.placeholder='店名・サービス名';
@@ -2637,6 +2681,10 @@ function quickStart(){
   S.customAccent = '';
   S.pages = ['ヒーロー（トップビジュアル）','About・コンセプト','特徴・強み','メニュー・料金','お客様の声','アクセス','予約・お問い合わせ','FAQ'];
   S.texts = {top:'',about:'',service:'',price:'',hours:'',tel:'',email:'',line:'',instagram:'',faq:'',staff:''};
+  var qsPhone = (document.getElementById('qs-phone')||{}).value||'';
+  var qsAddress = (document.getElementById('qs-address')||{}).value||'';
+  if(qsPhone.trim()) S.texts.tel = qsPhone.trim();
+  if(qsAddress.trim()) S.texts.address = qsAddress.trim();
 
   // 業種に合った画像を自動セット
   var imgs = INDUSTRY_IMAGES[industry] || INDUSTRY_IMAGES['その他・一般'];
@@ -2788,12 +2836,14 @@ function generateSite(){
     +'- Pricing: '+(S.texts.price||'none')+'\n'
     +'- Hours: '+(S.texts.hours||'none')+'\n'
     +'- Phone: '+(S.texts.tel||'none')+'\n'
+    +'- Address: '+(S.texts.address||'none')+'\n'
     +'- Email: '+(S.texts.email||'none')+'\n'
     +'- LINE: '+(S.texts.line||'none')+'\n'
     +'- Instagram: '+(S.texts.instagram||'none')+'\n'
     +'\n# CONTACT — MUST BE FUNCTIONAL (実際に動く問い合わせ)\n'
     +(S.texts.email && S.texts.email!=='none' ? '- Email provided: Create a WORKING contact form using Formspree. Form action="https://formspree.io/f/YOUR_FORM_ID" method="POST". Add a clear note in HTML comment: <!-- 重要：Formspreeで無料登録し、YOUR_FORM_IDを実際のIDに置き換えてください。https://formspree.io --> Fields: name(必須), email(必須), message(必須). Include proper name attributes.\n' : '')
     +(S.texts.tel && S.texts.tel!=='none' ? '- Phone provided: Make it a tappable link <a href="tel:'+S.texts.tel.replace(/[^0-9+]/g,'')+'">. Display large and prominent.\n' : '')
+    +(S.texts.address && S.texts.address!=='none' ? '- Address provided: "'+S.texts.address+'". MUST include Google Maps link in access section: <a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(S.texts.address)+'" target="_blank" rel="noopener noreferrer">📍 Googleマップで見る</a>. Also display the address text prominently in the access section.\n' : '')
     +(S.texts.line && S.texts.line!=='none' ? '- LINE provided: Create a prominent green LINE button <a href="'+S.texts.line+'"> with LINE icon. Also show QR code via api.qrserver.com.\n' : '')
     +(S.texts.instagram && S.texts.instagram!=='none' ? '- Instagram provided: Add Instagram button/link <a href="'+S.texts.instagram+'"> with Instagram icon.\n' : '')
     +'- If only phone/LINE/Instagram (no email): do NOT create a non-functional form. Use the actual contact buttons instead.\n'
@@ -2834,7 +2884,9 @@ function generateSite(){
     +'10. SNS URLs → SVG icon buttons in footer\n'
     +'11. No images? Use intentional CSS gradients or SVG geometric art\n'
     +'12. Page load fade-in animation\n'
-    +'13. Footer: site name, copyright, nav links\n\n'
+    +'13. Footer: site name, copyright, nav links\n'
+    +'14. SEO meta tags in <head> (REQUIRED): <meta name="description" content="[50〜80字の日本語説明文 — 業種・特徴・所在地を自然に含む]">, <meta property="og:title" content="'+S.siteName+'">, <meta property="og:description" content="[同じ説明文]">, <meta name="keywords" content="[業種に合った5つの日本語キーワード、カンマ区切り]">, <meta property="og:type" content="website">\n'
+    +'15. All images MUST use loading="lazy" attribute for fast page load\n\n'
     +'# HERO LAYOUT SAFETY (絶対厳守)\n'
     +'- The fixed/sticky navigation bar overlaps the hero. The hero content MUST have enough top padding so the heading is NEVER hidden behind the nav.\n'
     +'- Hero section: use min-height:100vh with display:flex, flex-direction:column, justify-content:center, and padding-top at least 100px (or 120px on mobile)\n'
@@ -2963,12 +3015,22 @@ function generateSite(){
     if(!errBox){
       errBox = document.createElement('div');
       errBox.id = 'gen-error-box';
-      errBox.style.cssText = 'background:#1a0810;border:1px solid #ff3355;padding:18px;margin:16px 0;border-radius:6px;font-family:"Space Mono",monospace;font-size:12px;color:#ff8898;white-space:pre-wrap;word-break:break-all;';
+      errBox.style.cssText = 'background:#1a0810;border:1px solid #ff3355;padding:20px 22px;margin:16px 0;border-radius:6px;';
       var genEl = document.getElementById('generating');
       if(genEl && genEl.parentNode) genEl.parentNode.insertBefore(errBox, genEl.nextSibling);
     }
     errBox.style.display = 'block';
-    errBox.textContent = '⚠ 生成エラー\n\n' + userMsg;
+    var safeMsg = userMsg.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    errBox.innerHTML = '<div style="display:flex;align-items:flex-start;gap:14px;">'
+      +'<div style="font-size:28px;line-height:1;flex-shrink:0;">⚠</div>'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;letter-spacing:.08em;color:#ff3355;margin-bottom:6px;">生成エラー</div>'
+      +'<div style="font-family:\'Space Mono\',monospace;font-size:11px;color:#ff8898;white-space:pre-wrap;word-break:break-all;line-height:1.7;margin-bottom:16px;">'+safeMsg+'</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'
+      +'<button onclick="generateSite()" style="font-family:\'Bebas Neue\',sans-serif;font-size:15px;letter-spacing:.08em;padding:10px 24px;background:var(--lime);color:#000;border:none;cursor:pointer;border-radius:4px;transition:all .2s;">🔄 もう一度試す</button>'
+      +'<button onclick="document.getElementById(\'gen-error-box\').style.display=\'none\'" style="font-family:\'Space Mono\',monospace;font-size:10px;letter-spacing:.05em;padding:10px 18px;background:transparent;border:1px solid rgba(255,51,85,.4);color:#ff8898;cursor:pointer;border-radius:4px;transition:all .2s;">✕ 閉じる</button>'
+      +'</div>'
+      +'</div></div>';
     errBox.scrollIntoView({behavior:'smooth', block:'center'});
   });
 }
@@ -3169,6 +3231,11 @@ function dlHTML(){
   a.href=URL.createObjectURL(blob);
   a.download=(S.siteName||'mysite').replace(/[\s\/\\]/g,'_')+'_site.html';
   a.click();
+  // ダウンロード後ガイドを表示
+  setTimeout(function(){
+    var guide = document.getElementById('dl-guide-modal');
+    if(guide) guide.style.display='flex';
+  }, 800);
 };
 
 // ===== パスコード認証 =====
